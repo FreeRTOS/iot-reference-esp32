@@ -1,0 +1,9 @@
+menu "Golden Reference Integration"
+    menu "Certificate Configurations"
+        config GRI_USE_DS_PERIPHERAL
+            bool "Use Digital Signature Peripheral"
+            default n
+            help
+                This sets the GRI to use the Digital Signature Peripheral for authentication.
+    endmenu # Certificate Configurations
+endmenu # Golden Reference Integration 
