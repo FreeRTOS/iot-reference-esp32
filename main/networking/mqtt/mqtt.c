@@ -1,5 +1,4 @@
 #include "mqtt.h"
-#include "esp_tls_transport.h"
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
@@ -19,7 +18,7 @@
 #include "subscription_manager.h"
 
 /* TLS transport */
-#include "esp_tls_transport.h"
+#include "network_transport.h"
 
 /* Network manager */
 #include "network_manager.h"

@@ -1,0 +1,20 @@
+{
+    "project_name":       "bootloader",
+    "project_path":       "C:/Users/jason/Desktop/esp-idf/components/bootloader/subproject",
+    "build_dir":          "C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader",
+    "config_file":        "C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/sdkconfig",
+    "config_defaults":    "",
+    "app_elf":            "bootloader.elf",
+    "app_bin":            "bootloader.bin",
+    "git_revision":       "v4.3.1",
+    "target":             "esp32c3",
+    "phy_data_partition": "",
+    "monitor_baud" :      "115200",
+    "monitor_toolprefix": "riscv32-esp-elf-",
+    "config_environment" : {
+        "COMPONENT_KCONFIGS" : "C:/Users/jason/Desktop/esp-idf/components/efuse/Kconfig;C:/Users/jason/Desktop/esp-idf/components/esp32c3/Kconfig;C:/Users/jason/Desktop/esp-idf/components/esp_common/Kconfig;C:/Users/jason/Desktop/esp-idf/components/esp_system/Kconfig;C:/Users/jason/Desktop/esp-idf/components/log/Kconfig;C:/Users/jason/Desktop/esp-idf/components/newlib/Kconfig;C:/Users/jason/Desktop/esp-idf/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "C:/Users/jason/Desktop/esp-idf/components/bootloader/Kconfig.projbuild;C:/Users/jason/Desktop/esp-idf/components/esptool_py/Kconfig.projbuild;C:/Users/jason/Desktop/esp-idf/components/partition_table/Kconfig.projbuild"
+    },
+    "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp32c3", "esp_common", "esp_hw_support", "esp_rom", "esp_system", "esptool_py", "hal", "log", "main", "micro-ecc", "newlib", "partition_table", "riscv", "soc", "spi_flash", "" ],
+    "build_component_paths" : [ "C:/Users/jason/Desktop/esp-idf/components/bootloader", "C:/Users/jason/Desktop/esp-idf/components/bootloader_support", "C:/Users/jason/Desktop/esp-idf/components/efuse", "C:/Users/jason/Desktop/esp-idf/components/esp32c3", "C:/Users/jason/Desktop/esp-idf/components/esp_common", "C:/Users/jason/Desktop/esp-idf/components/esp_hw_support", "C:/Users/jason/Desktop/esp-idf/components/esp_rom", "C:/Users/jason/Desktop/esp-idf/components/esp_system", "C:/Users/jason/Desktop/esp-idf/components/esptool_py", "C:/Users/jason/Desktop/esp-idf/components/hal", "C:/Users/jason/Desktop/esp-idf/components/log", "C:/Users/jason/Desktop/esp-idf/components/bootloader/subproject/main", "C:/Users/jason/Desktop/esp-idf/components/bootloader/subproject/components/micro-ecc", "C:/Users/jason/Desktop/esp-idf/components/newlib", "C:/Users/jason/Desktop/esp-idf/components/partition_table", "C:/Users/jason/Desktop/esp-idf/components/riscv", "C:/Users/jason/Desktop/esp-idf/components/soc", "C:/Users/jason/Desktop/esp-idf/components/spi_flash", "" ]
+}

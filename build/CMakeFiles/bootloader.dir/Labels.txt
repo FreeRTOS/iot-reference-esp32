@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/CMakeFiles/bootloader
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/CMakeFiles/bootloader.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/CMakeFiles/bootloader-complete.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule

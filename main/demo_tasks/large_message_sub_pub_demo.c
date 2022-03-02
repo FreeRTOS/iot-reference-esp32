@@ -62,6 +62,11 @@
 /* Subscription manager header include. */
 #include "subscription_manager.h"
 
+#ifdef LIBRARY_LOG_NAME
+#undef LIBRARY_LOG_NAME
+#define LIBRARY_LOG_NAME "large_message_pub_sub_demo"
+#endif
+
 /**
  * @brief This demo uses task notifications to signal tasks from MQTT callback
  * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
