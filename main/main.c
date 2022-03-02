@@ -31,5 +31,6 @@ void app_main(void)
     }
 
     xStartNetworkManager();
+#
     vStartLargeMessageSubscribePublishTask( 4096, 2 );
 }

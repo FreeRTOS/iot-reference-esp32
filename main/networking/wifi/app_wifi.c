@@ -347,7 +347,7 @@ esp_err_t app_wifi_start(app_wifi_pop_type_t pop_type)
     return ESP_OK;
 }
 
-void vWaitOnWifiConnected(void)
+void vWaitOnWifiConnected( void )
 {
     xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_EVENT, false, true, portMAX_DELAY);
 }

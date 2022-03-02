@@ -4,7 +4,7 @@
 #include "freertos/event_groups.h"
 
 /* Network transport */
-#include "esp_tls_transport.h"
+#include "network_transport.h"
 
 /* Wifi */
 #include "app_wifi.h"
