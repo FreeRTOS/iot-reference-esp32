@@ -48,6 +48,9 @@ extern const char pcRootCA[] asm("_binary_root_cert_auth_pem_start");
 extern const char pcClientCert[] asm("_binary_client_crt_start");
 extern const char pcClientKey[] asm("_binary_client_key_start");
 
+extern bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
+                                MQTTPublishInfo_t * pxPublishInfo );
+                                
 static uint32_t prvGetTimeMs(void)
 {
     TickType_t xTickCount = 0;
@@ -81,16 +84,14 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
                                                pxPublishInfo );
 
 
-    #if ( democonfigCREATE_CODE_SIGNING_OTA_DEMO == 1 )
 
-        /*
-         * Check if the incoming publish is for OTA agent.
-         */
-        if( xPublishHandled != true )
-        {
-            xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
-        }
-    #endif
+    /*
+     * Check if the incoming publish is for OTA agent.
+     */
+    if( xPublishHandled != true )
+    {
+        xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
+    }
 
     /* If there are no callbacks to handle the incoming publishes,
      * handle it as an unsolicited publish. */
