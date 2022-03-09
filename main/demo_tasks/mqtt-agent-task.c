@@ -819,17 +819,15 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
     xPublishHandled = handleIncomingPublishes( ( SubscriptionElement_t * ) pMqttAgentContext->pIncomingCallbackContext,
                                                pxPublishInfo );
 
+    ESP_LOGI("TESSEESSSTTESTSTSTSTSTSTSTST", "SDRDFASFDFSDFSDFSDF");
 
-    #if ( democonfigCREATE_CODE_SIGNING_OTA_DEMO == 1 )
-
-        /*
-         * Check if the incoming publish is for OTA agent.
-         */
-        if( xPublishHandled != true )
-        {
-            xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
-        }
-    #endif
+    /*
+     * Check if the incoming publish is for OTA agent.
+     */
+    if( xPublishHandled != true )
+    {
+        xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
+    }
 
     /* If there are no callbacks to handle the incoming publishes,
      * handle it as an unsolicited publish. */

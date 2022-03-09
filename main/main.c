@@ -16,6 +16,8 @@ static const char *TAG = "main";
 
 extern void vStartLargeMessageSubscribePublishTask( configSTACK_DEPTH_TYPE uxStackSize,
     UBaseType_t uxPriority );
+extern void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
+                                      UBaseType_t uxPriority );
 
 void app_main(void)
 {
@@ -31,6 +33,7 @@ void app_main(void)
     }
 
     xStartNetworkManager();
-#
-    vStartLargeMessageSubscribePublishTask( 4096, 2 );
+    //vStartLargeMessageSubscribePublishTask( 4096, 2 );
+    vStartOTACodeSigningDemo(4096, 2);
+    
 }

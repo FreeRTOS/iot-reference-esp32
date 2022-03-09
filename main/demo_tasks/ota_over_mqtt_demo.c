@@ -47,12 +47,12 @@
 #include <assert.h>
 
 /* Kernel includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 #include "ota_config.h"
-#include "demo_config.h"
+//#include "demo_config.h"
 
 /* MQTT library includes. */
 #include "core_mqtt_agent.h"
@@ -74,17 +74,23 @@
 /* Include platform abstraction header. */
 #include "ota_pal.h"
 
+#ifdef LIBRARY_LOG_NAME
+#undef LIBRARY_LOG_NAME
+#define LIBRARY_LOG_NAME "ota_over_mqtt_demo"
+#endif
+
 /*------------- Demo configurations -------------------------*/
 
+#define democonfigCLIENT_IDENTIFIER "esp32c3test"
 #ifndef democonfigCLIENT_IDENTIFIER
     #error "Please define the democonfigCLIENT_IDENTIFIER with the thing name for which OTA is performed"
 #endif
 
-#if ( democonfigCREATE_DEFENDER_DEMO != 0 )
-    #if !defined( MQTT_AGENT_NETWORK_BUFFER_SIZE ) || ( MQTT_AGENT_NETWORK_BUFFER_SIZE < OTA_DATA_BLOCK_SIZE )
-        #error "MQTT agent buffer is too small. Please increase the buffer size to atleast the size required for OTA data block."
-    #endif
-#endif
+// #if ( democonfigCREATE_DEFENDER_DEMO != 0 )
+//     #if !defined( MQTT_AGENT_NETWORK_BUFFER_SIZE ) || ( MQTT_AGENT_NETWORK_BUFFER_SIZE < OTA_DATA_BLOCK_SIZE )
+//         #error "MQTT agent buffer is too small. Please increase the buffer size to atleast the size required for OTA data block."
+//     #endif
+// #endif
 
 /**
  * @brief The maximum size of the file paths used in the demo.
