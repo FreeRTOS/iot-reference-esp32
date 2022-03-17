@@ -74,6 +74,15 @@
 /* Include platform abstraction header. */
 #include "ota_pal.h"
 
+/* ESP-IDF includes */
+#include "esp_event.h"
+
+/* coreMQTT-Agent network manager includes */
+#include "core_mqtt_agent_events.h"
+#include "core_mqtt_agent_network_manager.h"
+
+
+static const char *TAG = "AWS_OTA";
 #ifdef LIBRARY_LOG_NAME
 #undef LIBRARY_LOG_NAME
 #define LIBRARY_LOG_NAME "ota_over_mqtt_demo"
@@ -205,6 +214,59 @@ struct MQTTAgentCommandContext
     TaskHandle_t xTaskToNotify;
     void * pArgs;
 };
+
+void vSuspendOTACodeSigningDemo( void )
+{
+    if( ( OTA_GetState() != OtaAgentStateSuspended ) && ( OTA_GetState() != OtaAgentStateStopped ) )
+    {
+        OTA_Suspend();
+
+        while( ( OTA_GetState() != OtaAgentStateSuspended ) &&
+               ( OTA_GetState() != OtaAgentStateStopped ) )
+        {
+            vTaskDelay( pdMS_TO_TICKS( otaexampleTASK_DELAY_MS ) );
+        }
+    }
+}
+
+void vResumeOTACodeSigningDemo( void )
+{
+    if( OTA_GetState() == OtaAgentStateSuspended )
+    {
+        OTA_Resume();
+
+        while( OTA_GetState() == OtaAgentStateSuspended )
+        {
+            vTaskDelay( pdMS_TO_TICKS( otaexampleTASK_DELAY_MS ) );
+        }
+    }
+}
+
+static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
+                                         esp_event_base_t xEventBase, 
+                                         int32_t lEventId, 
+                                         void* pvEventData)
+{
+    (void)pvHandlerArg;
+    (void)xEventBase;
+    (void)pvEventData;
+
+    switch (lEventId)
+    {
+    case CORE_MQTT_AGENT_CONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent connected.");
+        vResumeOTACodeSigningDemo();
+        break;
+    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
+        vSuspendOTACodeSigningDemo();
+        break;
+    default:
+        ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
+                 lEventId);
+        break;
+    }
+}
 
 /**
  * @brief Function used by OTA agent to publish control messages to the MQTT broker.
@@ -1135,6 +1197,7 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
 {
     BaseType_t xResult;
 
+    xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
     if( ( xResult = xTaskCreate( prvOTADemoTask,
                                  "OTADemoTask",
                                  uxStackSize,
@@ -1148,30 +1211,4 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
     }
 
     configASSERT( xResult == pdPASS );
-}
-void vSuspendOTACodeSigningDemo( void )
-{
-    if( ( OTA_GetState() != OtaAgentStateSuspended ) && ( OTA_GetState() != OtaAgentStateStopped ) )
-    {
-        OTA_Suspend();
-
-        while( ( OTA_GetState() != OtaAgentStateSuspended ) &&
-               ( OTA_GetState() != OtaAgentStateStopped ) )
-        {
-            vTaskDelay( pdMS_TO_TICKS( otaexampleTASK_DELAY_MS ) );
-        }
-    }
-}
-
-void vResumeOTACodeSigningDemo( void )
-{
-    if( OTA_GetState() == OtaAgentStateSuspended )
-    {
-        OTA_Resume();
-
-        while( OTA_GetState() == OtaAgentStateSuspended )
-        {
-            vTaskDelay( pdMS_TO_TICKS( otaexampleTASK_DELAY_MS ) );
-        }
-    }
 }

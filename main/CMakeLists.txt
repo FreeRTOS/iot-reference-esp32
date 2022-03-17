@@ -3,9 +3,12 @@ set(MAIN_SRCS
     "networking/wifi/app_wifi.c"
     "networking/mqtt/mqtt.c"
     "networking/mqtt/subscription_manager.c"
-    "networking/network_manager/network_manager.c"
-    "demo_tasks/large_message_sub_pub_demo.c"
+    #"networking/network_manager/network_manager.c"
+    "networking/network_manager/core_mqtt_agent_network_manager.c"
+    "networking/network_manager/core_mqtt_agent_events.c"
+    #"demo_tasks/large_message_sub_pub_demo.c"
     "demo_tasks/ota_over_mqtt_demo.c"
+
 )
 
 set(MAIN_INCLUDE_DIRS

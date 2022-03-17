@@ -209,7 +209,7 @@ void app_wifi_init(void)
 #endif
 
     /* Initialize the event loop */
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    //ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_event_group = xEventGroupCreate();
 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
