@@ -3,6 +3,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/event_groups.h"
 
 /* coreMQTT */
 #include "core_mqtt.h"
@@ -21,7 +22,11 @@
 #include "network_transport.h"
 
 /* Network manager */
-#include "network_manager.h"
+//#include "network_manager.h"
+#include "core_mqtt_agent_events.h"
+#include "core_mqtt_agent_network_manager.h"
+#include "esp_event.h"
+
 
 static const char *TAG = "MQTT";
 
@@ -37,6 +42,9 @@ static const char *TAG = "MQTT";
 #define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 0U )
 #define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 4096U )
 
+/* coreMQTT-Agent event group bit definitions */
+#define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
+
 static uint32_t ulGlobalEntryTimeMs;
 static uint16_t usPublishPacketIdentifier;
 static uint8_t ucNetworkBuffer[ MQTT_AGENT_NETWORK_BUFFER_SIZE ];
@@ -44,12 +52,34 @@ static MQTTAgentMessageContext_t xCommandQueue;
 MQTTAgentContext_t xGlobalMqttAgentContext;
 SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ];
 
-extern const char pcRootCA[] asm("_binary_root_cert_auth_pem_start");
-extern const char pcClientCert[] asm("_binary_client_crt_start");
-extern const char pcClientKey[] asm("_binary_client_key_start");
+static EventGroupHandle_t xCoreMqttAgentEventGroup;
+
+static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
+                                         esp_event_base_t xEventBase, 
+                                         int32_t lEventId, 
+                                         void* pvEventData)
+{
+    (void)pvHandlerArg;
+    (void)xEventBase;
+    (void)pvEventData;
+
+    switch (lEventId)
+    {
+    case CORE_MQTT_AGENT_CONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent connected.");
+        xEventGroupSetBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
+        break;
+    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
+    default:
+        ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
+                 lEventId);
+        break;
+    }
+}
 
 extern bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
-                                MQTTPublishInfo_t * pxPublishInfo );
+                                 MQTTPublishInfo_t * pxPublishInfo );
                                 
 static uint32_t prvGetTimeMs(void)
 {
@@ -82,8 +112,6 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
      * subscription manager. */
     xPublishHandled = handleIncomingPublishes( ( SubscriptionElement_t * ) pMqttAgentContext->pIncomingCallbackContext,
                                                pxPublishInfo );
-
-
 
     /*
      * Check if the incoming publish is for OTA agent.
@@ -211,7 +239,9 @@ static void prvMQTTAgentTask( void * pvParameters )
 
     do
     {
-        vWaitOnNetworkConnected();
+        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
+            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
+            portMAX_DELAY);
         /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
          * will manage the MQTT protocol until such time that an error occurs,
          * which could be a disconnect.  If an error occurs the MQTT context on
@@ -229,7 +259,8 @@ static void prvMQTTAgentTask( void * pvParameters )
         /* Error. */
         else
         {
-            vNotifyNetworkDisconnection();
+            xEventGroupClearBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
+            xCoreMqttAgentNetworkManagerPost(CORE_MQTT_AGENT_DISCONNECTED_EVENT);
         }
     } while( xMQTTStatus != MQTTSuccess );
 }
@@ -286,6 +317,9 @@ MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext )
                               prvIncomingPublishCallback,
                               /* Context to pass into the callback. Passing the pointer to subscription array. */
                               xGlobalSubscriptionList );
+
+    xCoreMqttAgentEventGroup = xEventGroupCreate();
+    xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
 
     return xReturn;
 }
