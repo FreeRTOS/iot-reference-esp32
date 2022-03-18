@@ -1126,6 +1126,20 @@ CONFIG_MQTT_AGENT_MAX_EVENT_QUEUE_WAIT_TIME=1000
 # end of coreMQTT-Agent
 
 #
+# corePKCS11
+#
+
+#
+# Logging
+#
+# CONFIG_CORE_PKCS_LOG_ERROR is not set
+# CONFIG_CORE_PKCS_LOG_WARN is not set
+CONFIG_CORE_PKCS_LOG_INFO=y
+# CONFIG_CORE_PKCS_LOG_DEBUG is not set
+# end of Logging
+# end of corePKCS11
+
+#
 # Device Defender
 #
 
@@ -1164,10 +1178,10 @@ CONFIG_AWS_OTA_OTA_PRIMARY_DATA_PROTOCOL_MQTT=y
 #
 # Logging
 #
-CONFIG_AWS_OTA_LOG_ERROR=y
-CONFIG_AWS_OTA_LOG_WARN=y
+# CONFIG_AWS_OTA_LOG_ERROR is not set
+# CONFIG_AWS_OTA_LOG_WARN is not set
 CONFIG_AWS_OTA_LOG_INFO=y
-CONFIG_AWS_OTA_LOG_DEBUG=y
+# CONFIG_AWS_OTA_LOG_DEBUG is not set
 # end of Logging
 # end of AWS OTA
 # end of AWS IoT Library Configurations

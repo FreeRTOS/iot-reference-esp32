@@ -40,7 +40,7 @@ static const char *TAG = "MQTT";
 #define MQTT_AGENT_COMMAND_QUEUE_LENGTH     ( 10U )
 #define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 60U )
 #define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 0U )
-#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 4096U )
+#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 20000U )
 
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
@@ -71,6 +71,7 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
         break;
     case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
         ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
+        break;
     default:
         ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
                  lEventId);
@@ -242,12 +243,15 @@ static void prvMQTTAgentTask( void * pvParameters )
         xEventGroupWaitBits(xCoreMqttAgentEventGroup,
             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
             portMAX_DELAY);
+
+        ESP_LOGI(TAG, "Before command loop");
         /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
          * will manage the MQTT protocol until such time that an error occurs,
          * which could be a disconnect.  If an error occurs the MQTT context on
          * which the error happened is returned so there can be an attempt to
          * clean up and reconnect however the application writer prefers. */
         xMQTTStatus = MQTTAgent_CommandLoop( &xGlobalMqttAgentContext );
+        ESP_LOGI(TAG, "after command loop");
 
         /* Success is returned for disconnect or termination. The socket should
          * be disconnected. */
@@ -268,7 +272,7 @@ static void prvMQTTAgentTask( void * pvParameters )
 void vStartCoreMqttAgent( void )
 {
     xTaskCreate( prvMQTTAgentTask, /* Function that implements the task. */
-                 "coreMQTT-Agent",             /* Text name for the task - only used for debugging. */
+                 "coreMQTT-Agent-test",             /* Text name for the task - only used for debugging. */
                  CONFIG_MQTT_AGENT_TASK_STACK_SIZE,     /* Size of stack (in words, not bytes) to allocate for the task. */
                  NULL,                         /* Optional - task parameter - not used in this case. */
                  tskIDLE_PRIORITY + 1,         /* Task priority, must be between 0 and configMAX_PRIORITIES - 1. */

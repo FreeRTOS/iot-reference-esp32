@@ -1,7 +1,8 @@
 /* FreeRTOS includes */
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <freertos/event_groups.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+#include "freertos/semphr.h"
 
 /* ESP-IDF includes */
 #include "esp_log.h"
@@ -44,6 +45,8 @@ void app_main(void)
     xNetworkContext.pcServerRootCAPem = pcServerRootCAPem;
     xNetworkContext.pcClientCertPem = pcClientCertPem;
     xNetworkContext.pcClientKeyPem = pcClientKeyPem;
+    xNetworkContext.pxTls = NULL;
+    xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
 
     /* Initialize NVS partition */
     esp_err_t ret = nvs_flash_init();
@@ -58,13 +61,12 @@ void app_main(void)
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    xCoreMqttAgentNetworkManagerInit(&xNetworkContext);
-    xCoreMqttAgentNetworkManagerStart();
+    xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
 
     /* Start wifi */
     app_wifi_init();
     app_wifi_start(POP_TYPE_MAC);
-    //vStartLargeMessageSubscribePublishTask( 4096, 2 );
+
     vStartOTACodeSigningDemo(4096, 2);
     
 }

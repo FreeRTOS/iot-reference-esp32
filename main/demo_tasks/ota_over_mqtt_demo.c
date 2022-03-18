@@ -82,7 +82,7 @@
 #include "core_mqtt_agent_network_manager.h"
 
 
-static const char *TAG = "AWS_OTA";
+static const char *TAG = "ota_over_mqtt_demo";
 #ifdef LIBRARY_LOG_NAME
 #undef LIBRARY_LOG_NAME
 #define LIBRARY_LOG_NAME "ota_over_mqtt_demo"
