@@ -897,7 +897,7 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
      * duration of the command. */
     if( mqttStatus == MQTTSuccess )
     {
-        result = xTaskNotifyWait( 0, otaexampleMAX_UINT32, &ulNotifiedValue, pdMS_TO_TICKS( otaexampleMQTT_TIMEOUT_MS ) );
+        result = xTaskNotifyWait( 0, otaexampleMAX_UINT32, &ulNotifiedValue, portMAX_DELAY );
 
         if( result == pdTRUE )
         {
@@ -962,7 +962,7 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
      * duration of the command. */
     if( mqttStatus == MQTTSuccess )
     {
-        result = xTaskNotifyWait( 0, otaexampleMAX_UINT32, NULL, pdMS_TO_TICKS( otaexampleMQTT_TIMEOUT_MS ) );
+        result = xTaskNotifyWait( 0, otaexampleMAX_UINT32, NULL, portMAX_DELAY );
 
         if( result != pdTRUE )
         {
@@ -1198,6 +1198,7 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
     BaseType_t xResult;
 
     xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
+
     if( ( xResult = xTaskCreate( prvOTADemoTask,
                                  "OTADemoTask",
                                  uxStackSize,
