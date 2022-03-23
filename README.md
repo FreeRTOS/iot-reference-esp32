@@ -1,17 +1,20 @@
-## My Project
+## IoT Reference Integration on ESP32-C3 RISC-V MCU
 
-TODO: Fill this README out!
+### Introduction
 
-Be sure to:
+### Features
 
-* Change the title in this README
-* Edit your repository description on GitHub
+### Getting Started
 
-## Security
+#### Cloning the Repository
+
+#### Running the demo
+
+### Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
-## License
+### License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+Example source code under ./main/ are licensed under the MIT-0 License. See the LICENSE file. For all other source code licenses including components/, see source header documentation.
 
