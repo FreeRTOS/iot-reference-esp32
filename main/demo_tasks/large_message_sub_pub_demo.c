@@ -48,6 +48,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "freertos/event_groups.h"
 
 /* Demo Specific configs. */
 //#include "demo_config.h"
@@ -62,11 +63,19 @@
 /* Subscription manager header include. */
 #include "subscription_manager.h"
 
+/* coreMQTT-Agent network manager includes */
+#include "core_mqtt_agent_events.h"
+#include "core_mqtt_agent_network_manager.h"
+
+/* coreMQTT-Agent event group bit definitions */
+#define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
+
 #ifdef LIBRARY_LOG_NAME
 #undef LIBRARY_LOG_NAME
 #define LIBRARY_LOG_NAME "large_message_pub_sub_demo"
 #endif
 
+static const char *TAG = "large_message_pub_sub_demo";
 /**
  * @brief This demo uses task notifications to signal tasks from MQTT callback
  * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
@@ -107,6 +116,34 @@ struct MQTTAgentCommandContext
     TaskHandle_t xTaskToNotify; /* Handle of the task to send a notification to. */
     void * pvTag;               /* Use for callback specific data. */
 };
+
+static EventGroupHandle_t xCoreMqttAgentEventGroup;
+
+static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
+                                         esp_event_base_t xEventBase, 
+                                         int32_t lEventId, 
+                                         void* pvEventData)
+{
+    (void)pvHandlerArg;
+    (void)xEventBase;
+    (void)pvEventData;
+
+    switch (lEventId)
+    {
+    case CORE_MQTT_AGENT_CONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent connected.");
+        xEventGroupSetBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
+        break;
+    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+        ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
+        xEventGroupClearBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
+        break;
+    default:
+        ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
+                 lEventId);
+        break;
+    }
+}
 
 /**
  * @brief Passed into MQTTAgent_Subscribe() as the callback to execute when the
@@ -197,6 +234,8 @@ extern MQTTAgentContext_t xGlobalMqttAgentContext;
 void vStartLargeMessageSubscribePublishTask( configSTACK_DEPTH_TYPE uxStackSize,
                                              UBaseType_t uxPriority )
 {
+    xCoreMqttAgentEventGroup = xEventGroupCreate();
+    xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
     xTaskCreate( prvLargeMessageSubscribePublishTask,
                  "LargeSubPub",
                  uxStackSize,
@@ -212,6 +251,7 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
 {
     bool xSubscriptionAdded = false;
 
+    ESP_LOGI(TAG, "SUBSCRIBE CALLBACK");
     /* Store the result in the application defined context so the calling task
      * can check it. */
     pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
@@ -332,10 +372,13 @@ static void prvSubscribeToTopic( char * pcReceivedPublishPayload )
     xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
     xCommandParams.cmdCompleteCallback = prvSubscribeCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = &xApplicationDefinedContext;
-    LogInfo( ( "Sending subscribe request to agent for topic filter: %s", pcTopicFilter ) );
 
     do
     {
+        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
+            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
+            portMAX_DELAY);
+        LogInfo( ( "Sending subscribe request to agent for topic filter: %s", pcTopicFilter ) );
         xStatus = MQTTAgent_Subscribe( &xGlobalMqttAgentContext,
                                        &( xSubscribeArgs ),
                                        &xCommandParams );
@@ -402,6 +445,9 @@ static void prvLargeMessageSubscribePublishTask( void * pvParameters )
                    pcTopicFilter ) );
         xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
         xCommandParams.cmdCompleteCallback = NULL; /* Note not used as going to wait for the echo anyway. */
+        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
+            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
+            portMAX_DELAY);
         xCommandAdded = MQTTAgent_Publish( &xGlobalMqttAgentContext,
                                            &xPublishInfo,
                                            &xCommandParams );
@@ -412,6 +458,7 @@ static void prvLargeMessageSubscribePublishTask( void * pvParameters )
         /* Wait for the publish back to this task.  prvSubscribeCommandCallback()
          * will notify this task. */
         ulNotificationValue = ulTaskNotifyTake( pdFALSE, mqttexampleMS_TO_WAIT_FOR_NOTIFICATION );
+        ESP_LOGI(TAG, "PUBSUB TASK NOTIFIED.");
 
         /* Only expect a single notification from the callback that executes
          * when the incoming publish (the message being echoed back) is

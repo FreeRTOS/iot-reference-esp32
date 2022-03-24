@@ -7,6 +7,7 @@ set(MAIN_SRCS
     "networking/network_manager/core_mqtt_agent_network_manager.c"
     "networking/network_manager/core_mqtt_agent_events.c"
     #"demo_tasks/large_message_sub_pub_demo.c"
+    "demo_tasks/simple_sub_pub_demo.c"
     "demo_tasks/ota_over_mqtt_demo.c"
 
 )
