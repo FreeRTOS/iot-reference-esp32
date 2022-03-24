@@ -1,4 +1,7 @@
+/* Standard includes */
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* FreeRTOS includes */
 #include "freertos/FreeRTOS.h"
@@ -10,6 +13,9 @@
 #include "esp_event.h"
 #include "esp_err.h"
 #include "esp_log.h"
+
+/* Backoff algorithm include */
+#include "backoff_algorithm.h"
 
 /* coreMQTT-Agent events */
 #include "core_mqtt_agent_events.h"
@@ -24,7 +30,7 @@
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_QUEUE_SIZE 5
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_PRIORITY 5
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_STACK_SIZE 4096
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE 4096
+#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE 8192
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_STACK_SIZE 4096
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MANAGER_TASK_STACK_SIZE 4096
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY 1
@@ -32,13 +38,27 @@
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MANAGER_TASK_PRIORITY 2
 #define CONFIG_THING_NAME "esp32c3test"
 
+/**
+ * @brief The maximum number of retries for network operation with server.
+ */
+#define RETRY_MAX_ATTEMPTS                           ( 5U )
+
+/**
+ * @brief The maximum back-off delay (in milliseconds) for retrying failed operation
+ *  with server.
+ */
+#define RETRY_MAX_BACKOFF_DELAY_MS                   ( 5000U )
+
+/**
+ * @brief The base back-off delay (in milliseconds) to use for network operation retry
+ * attempts.
+ */
+#define RETRY_BACKOFF_BASE_MS                        ( 500U )
+
 /* Network event group bit definitions */
-#define WIFI_CONNECTED_BIT                   (1 << 1)
-#define WIFI_DISCONNECTED_BIT                (1 << 2)
-#define TLS_CONNECTED_BIT                    (1 << 3)
-#define TLS_DISCONNECTED_BIT                 (1 << 4)
-#define MQTT_CONNECTED_BIT                   (1 << 5)
-#define MQTT_DISCONNECTED_BIT                (1 << 6)
+#define WIFI_CONNECTED_BIT                   (1 << 0)
+#define WIFI_DISCONNECTED_BIT                (1 << 1)
+#define CORE_MQTT_AGENT_DISCONNECTED_BIT     (1 << 2)
 
 static const char *TAG = "CoreMqttAgentNetworkManager";
 
@@ -47,52 +67,34 @@ static esp_event_loop_handle_t xCoreMqttAgentNetworkManagerEventLoop;
 static NetworkContext_t *pxNetworkContext;
 static EventGroupHandle_t xNetworkEventGroup;
 
-static void prvTlsConnectionTask(void* pvParameters)
+static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams )
 {
-    (void)pvParameters;
+    BaseType_t xReturnStatus = pdFAIL;
+    uint16_t usNextRetryBackOff = 0U;
+    BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
 
-    TlsTransportStatus_t xRet;
+    uint32_t ulRandomNum = rand();
 
-    while(1)
+    /* Get back-off value (in milliseconds) for the next retry attempt. */
+    xBackoffAlgStatus = BackoffAlgorithm_GetNextBackoff( pxRetryParams, ulRandomNum, &usNextRetryBackOff );
+
+    if( xBackoffAlgStatus == BackoffAlgorithmRetriesExhausted )
     {
-        /* Wait for the device to be connected to WiFi and be disconnected from
-         * TLS connection. */
-        xEventGroupWaitBits(xNetworkEventGroup,
-                WIFI_CONNECTED_BIT | TLS_DISCONNECTED_BIT, pdFALSE, pdTRUE, 
-                portMAX_DELAY);
+        ESP_LOGI(TAG, "All retry attempts have exhausted. Operation will not be retried.");
+    }
+    else if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
+    {
+        /* Perform the backoff delay. */
+        vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
 
-        ESP_LOGI(TAG, "Establishing a TLS connection...");
+        xReturnStatus = pdPASS;
 
-        /* If a connection was previously established, close it to free memory. */
-        if (pxNetworkContext != NULL && pxNetworkContext->pxTls != NULL)
-        {
-
-            if(xTlsDisconnect(pxNetworkContext) != pdTRUE)
-            {
-                ESP_LOGE(TAG, "Something went wrong closing an existing TLS "
-                    "connection.");
-            }
-
-            ESP_LOGI(TAG, "TLS connection was disconnected.");
-        }
-
-        xRet = xTlsConnect(pxNetworkContext);
-
-        if (xRet == TLS_TRANSPORT_SUCCESS)
-        {
-            ESP_LOGI(TAG, "TLS connection established.");
-            /* Flag that a TLS connection has been established. */
-            xEventGroupClearBits(xNetworkEventGroup, TLS_DISCONNECTED_BIT);
-            xEventGroupSetBits(xNetworkEventGroup, TLS_CONNECTED_BIT);
-        }
-        else
-        {
-            ESP_LOGE(TAG, "TLS connection failed.");
-        }
-
+        ESP_LOGI(TAG, "Retry attempt %lu out of maximum retry attempts %lu.",
+                   pxRetryParams->attemptsDone,
+                   pxRetryParams->maxRetryAttempts);
     }
 
-    vTaskDelete(NULL);
+    return xReturnStatus;
 }
 
 BaseType_t xCoreMqttAgentNetworkManagerPost(int32_t lEventId)
@@ -110,55 +112,75 @@ BaseType_t xCoreMqttAgentNetworkManagerPost(int32_t lEventId)
     return xRet;
 }
 
-static void prvMqttConnectionTask(void* pvParameters)
+static void prvCoreMqttAgentConnectionTask(void* pvParameters)
 {
     (void)pvParameters;
 
     static bool xCleanSession = true;
-
-    MQTTStatus_t eRet;
+    BackoffAlgorithmContext_t xReconnectParams;
+    BaseType_t xBackoffRet;
+    TlsTransportStatus_t xTlsRet;
+    MQTTStatus_t eMqttRet;
 
     while(1)
     {
-        /* Wait for device to be connected to WiFi, have a TLS connection,
-         * and to be currently disconnected from MQTT broker. */
-        xEventGroupWaitBits(xNetworkEventGroup, 
-            WIFI_CONNECTED_BIT | TLS_CONNECTED_BIT | MQTT_DISCONNECTED_BIT, 
-            pdFALSE, pdTRUE,portMAX_DELAY);
+        /* Wait for the device to be connected to WiFi and be disconnected from
+         * MQTT broker. */
+        xEventGroupWaitBits(xNetworkEventGroup,
+                WIFI_CONNECTED_BIT | CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdTRUE, 
+                portMAX_DELAY);
 
-        ESP_LOGI(TAG, "Establishing an MQTT connection...");
+        xBackoffRet = pdFAIL;
+        xTlsRet = TLS_TRANSPORT_CONNECT_FAILURE;
+        eMqttRet = MQTTBadParameter;
 
-        eRet = eCoreMqttAgentConnect(xCleanSession, CONFIG_THING_NAME);
-
-        if (eRet == MQTTSuccess)
+        /* If a connection was previously established, close it to free memory. */
+        if (pxNetworkContext != NULL && pxNetworkContext->pxTls != NULL)
         {
-            ESP_LOGI(TAG, "MQTT connection established.");
 
-            /* This prevents a clean session on re-connection */
+            if(xTlsDisconnect(pxNetworkContext) != pdTRUE)
+            {
+                ESP_LOGE(TAG, "Something went wrong closing an existing TLS "
+                    "connection.");
+            }
+
+            ESP_LOGI(TAG, "TLS connection was disconnected.");
+        }
+
+        BackoffAlgorithm_InitializeParams(&xReconnectParams,
+            RETRY_BACKOFF_BASE_MS,
+            RETRY_MAX_BACKOFF_DELAY_MS,
+            BACKOFF_ALGORITHM_RETRY_FOREVER);
+
+        do
+        {
+            xTlsRet = xTlsConnect(pxNetworkContext);
+
+            if(xTlsRet == TLS_TRANSPORT_SUCCESS)
+            {
+                eMqttRet = eCoreMqttAgentConnect(xCleanSession, CONFIG_THING_NAME);
+                if(eMqttRet != MQTTSuccess)
+                {
+                    ESP_LOGE(TAG, "MQTT_Status: %s", MQTT_Status_strerror(eMqttRet));
+                }
+            }
+
+            if(eMqttRet != MQTTSuccess)
+            {
+                xTlsDisconnect(pxNetworkContext);
+                xBackoffRet = prvBackoffForRetry(&xReconnectParams);
+            }
+
+        } while((eMqttRet != MQTTSuccess) && (xBackoffRet == pdPASS));
+
+        if (eMqttRet == MQTTSuccess)
+        {
             xCleanSession = false;
-
-            /* Flag that an MQTT connection was established */
-            xEventGroupSetBits(xNetworkEventGroup, MQTT_CONNECTED_BIT);
-            xEventGroupClearBits(xNetworkEventGroup, MQTT_DISCONNECTED_BIT);
+            /* Flag that an MQTT connection has been established. */
+            xEventGroupClearBits(xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT);
             xCoreMqttAgentNetworkManagerPost(CORE_MQTT_AGENT_CONNECTED_EVENT);
         }
-        else if (eRet == MQTTNoMemory)
-        {
-            ESP_LOGE(TAG, "MQTT network buffer is too small to send the "
-            "connection packet.");
-        }
-        else if (eRet == MQTTSendFailed || eRet == MQTTRecvFailed)
-        {
-            ESP_LOGE(TAG, "MQTT send or receive failed.");
-            xEventGroupClearBits(xNetworkEventGroup, TLS_CONNECTED_BIT);
-            xEventGroupSetBits(xNetworkEventGroup,
-                TLS_DISCONNECTED_BIT | MQTT_DISCONNECTED_BIT);
-        }
-        else
-        {
-            ESP_LOGE(TAG, "MQTT_Status: %s", MQTT_Status_strerror(eRet));
-            xEventGroupSetBits(xNetworkEventGroup, MQTT_DISCONNECTED_BIT);
-        }
+
     }
 
     vTaskDelete(NULL);
@@ -181,9 +203,7 @@ static void prvWifiEventHandler(void* pvHandlerArg,
             /* Notify networking tasks that WiFi, TLS, and MQTT
              * are disconnected. */
             xEventGroupClearBits(xNetworkEventGroup, 
-                WIFI_CONNECTED_BIT | TLS_CONNECTED_BIT | MQTT_CONNECTED_BIT);
-            xEventGroupSetBits(xNetworkEventGroup,
-                TLS_DISCONNECTED_BIT | MQTT_DISCONNECTED_BIT);
+                WIFI_CONNECTED_BIT);
             break;
         default:
             break;
@@ -226,10 +246,8 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
     case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
         ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
         /* Notify networking tasks of TLS and MQTT disconnection. */
-        xEventGroupClearBits(xNetworkEventGroup, 
-            TLS_CONNECTED_BIT | MQTT_CONNECTED_BIT);
         xEventGroupSetBits(xNetworkEventGroup,
-            TLS_DISCONNECTED_BIT | MQTT_DISCONNECTED_BIT);
+            CORE_MQTT_AGENT_DISCONNECTED_BIT);
         break;
     default:
         ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
@@ -254,12 +272,6 @@ BaseType_t xCoreMqttAgentNetworkManagerRegisterHandler(esp_event_handler_t xEven
     }
 
     return xRet;
-}
-
-BaseType_t xCoreMqttAgentNetworkManagerInit(NetworkContext_t *pxNetworkContextIn)
-{
-    pxNetworkContext = pxNetworkContextIn;
-    return pdTRUE;
 }
 
 BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t *pxNetworkContextIn )
@@ -327,24 +339,22 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t *pxNetworkContext
         }
     }
 
-    /* Start MQTT */
-    eCoreMqttAgentInit( pxNetworkContext );
-    vStartCoreMqttAgent();
+    if(xRet != pdFAIL)
+    {
+        /* Start MQTT */
+        eCoreMqttAgentInit( pxNetworkContext );
+        vStartCoreMqttAgent();
     
-    /* Start network establishing tasks */
-    xTaskCreate(prvTlsConnectionTask, "TlsConnectionTask", 
-                CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE,
-                NULL, CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY, 
-                NULL);
+        /* Start network establishing tasks */
+        xTaskCreate(prvCoreMqttAgentConnectionTask, "CoreMqttAgentConnectionTask", 
+            CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE,
+            NULL, CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY, 
+            NULL);
 
-    xTaskCreate(prvMqttConnectionTask, "MqttConnectionTask", 
-                CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_STACK_SIZE,
-                NULL, CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_PRIORITY, 
-                NULL);
-
-    /* Set initial state of network connection */
-    xEventGroupSetBits(xNetworkEventGroup, 
-        TLS_DISCONNECTED_BIT | MQTT_DISCONNECTED_BIT);
+        /* Set initial state of network connection */
+        xEventGroupSetBits(xNetworkEventGroup, 
+            CORE_MQTT_AGENT_DISCONNECTED_BIT);
+    }
 
     return xRet;
 }

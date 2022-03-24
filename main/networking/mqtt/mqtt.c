@@ -36,10 +36,10 @@ static const char *TAG = "MQTT";
     configTICK_RATE_HZ )
 
 /* Buffer sizes */
-#define MQTT_AGENT_NETWORK_BUFFER_SIZE      ( 10000U )
+#define MQTT_AGENT_NETWORK_BUFFER_SIZE      ( 100000U )
 #define MQTT_AGENT_COMMAND_QUEUE_LENGTH     ( 10U )
-#define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 60U )
-#define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 0U )
+#define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 20U )
+#define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 5000U )
 #define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 20000U )
 
 /* coreMQTT-Agent event group bit definitions */
@@ -176,8 +176,10 @@ static MQTTStatus_t prvHandleResubscribe( void )
 
     /* These variables need to stay in scope until command completes. */
     static MQTTAgentSubscribeArgs_t xSubArgs = { 0 };
-    static MQTTSubscribeInfo_t xSubInfo[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ] = { 0 };
+    static MQTTSubscribeInfo_t xSubInfo[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ];
     static MQTTAgentCommandInfo_t xCommandParams = { 0 };
+
+    memset( &( xSubInfo[ 0 ] ), 0, SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS * sizeof( MQTTSubscribeInfo_t ) );
 
     /* Loop through each subscription in the subscription list and add a subscribe
      * command to the command queue. */
@@ -251,14 +253,15 @@ static void prvMQTTAgentTask( void * pvParameters )
          * which the error happened is returned so there can be an attempt to
          * clean up and reconnect however the application writer prefers. */
         xMQTTStatus = MQTTAgent_CommandLoop( &xGlobalMqttAgentContext );
-        ESP_LOGI(TAG, "after command loop");
+        ESP_LOGI(TAG, "after command loop: %s", MQTT_Status_strerror( xMQTTStatus ));
 
         /* Success is returned for disconnect or termination. The socket should
          * be disconnected. */
         if( xMQTTStatus == MQTTSuccess )
         {
             /* MQTT Disconnect. Disconnect the socket. */
-            //xNetworkResult = prvSocketDisconnect( &xNetworkContext );
+            ESP_LOGI(TAG, "MQTT Disconnect from broker.");
+            //xTlsDisconnect( pxNetworkContext );
         }
         /* Error. */
         else
@@ -387,7 +390,7 @@ MQTTStatus_t eCoreMqttAgentConnect( bool xCleanSession, const char *pcClientIden
                             CONFIG_CONNACK_RECV_TIMEOUT_MS,
                             &xSessionPresent );
 
-    // LogInfo( ( "Session present: %d\n", xSessionPresent ) );
+    LogInfo( ( "Session present: %d\n", xSessionPresent ) );
 
     /* Resume a session if desired. */
     if( ( xResult == MQTTSuccess ) && ( xCleanSession == false ) )
