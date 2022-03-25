@@ -343,7 +343,7 @@ esp_err_t app_wifi_start(app_wifi_pop_type_t pop_type)
         wifi_init_sta();
     }
     /* Wait for Wi-Fi connection */
-    xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_EVENT, false, true, portMAX_DELAY);
+    vWaitOnWifiConnected();
     return ESP_OK;
 }
 
