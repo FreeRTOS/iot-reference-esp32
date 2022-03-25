@@ -6,4 +6,38 @@ menu "Golden Reference Integration"
             help
                 This sets the GRI to use the Digital Signature Peripheral for authentication.
     endmenu # Certificate Configurations
+
+    config APP_WIFI_PROV_SHOW_QR
+        bool "Show provisioning QR code"
+        default y
+        help
+            Show the QR code for provisioning.
+
+    choice APP_WIFI_PROV_TRANSPORT
+        bool "Provisioning Transport method"
+        default APP_WIFI_PROV_TRANSPORT_BLE
+        help
+            Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
+    config APP_WIFI_PROV_TRANSPORT_SOFTAP
+        bool "Soft AP"
+    config APP_WIFI_PROV_TRANSPORT_BLE
+        bool "BLE"
+        select BT_ENABLED
+    endchoice
+
+    config APP_WIFI_PROV_TRANSPORT
+        int
+        default 1 if APP_WIFI_PROV_TRANSPORT_SOFTAP
+        default 2 if APP_WIFI_PROV_TRANSPORT_BLE
+
+    config NETWORK_MANAGER_HOSTNAME
+        string "AWS Endpoint"
+        default "abcd-ats.iot.us-east-1.amazonaws.com"
+
+    config NETWORK_MANAGER_PORT
+        int "Port for MQTT Broker use"
+        default 8883
+
 endmenu # Golden Reference Integration 
+
+
