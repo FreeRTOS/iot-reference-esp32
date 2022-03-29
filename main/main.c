@@ -21,7 +21,6 @@
 #include <app_wifi.h>
 
 #include <app_driver.h>
-#include <ws2812_led.h>
 
 static const char *TAG = "main";
 
@@ -40,19 +39,30 @@ extern void vStartTempSensorRead( configSTACK_DEPTH_TYPE uxStackSize,
                        UBaseType_t uxPriority, QueueHandle_t queue);
 extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
                                        configSTACK_DEPTH_TYPE uxStackSize,
-                                       UBaseType_t uxPriority,
-                                       QueueHandle_t queue);
-
-static QueueHandle_t temperature_queue_handle = NULL;
+                                       UBaseType_t uxPriority);
 
 void app_main(void)
 {
     /* Initialize network context */
     xNetworkContext.pcHostname = CONFIG_NETWORK_MANAGER_HOSTNAME;
     xNetworkContext.xPort = CONFIG_NETWORK_MANAGER_PORT;
-    xNetworkContext.pcServerRootCAPem = pcServerRootCAPem;
+
+#ifdef CONFIG_EXAMPLE_USE_SECURE_ELEMENT
+    xNetworkContext.pcClientCertPem = NULL;
+    xNetworkContext.pcClientKeyPem = NULL;
+    xNetworkContext.use_secure_element = true;
+#elif CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+    xNetworkContext.pcClientCertPem = pcClientCertPem;
+    xNetworkContext.pcClientKeyPem = NULL;
+#error "Populate the ds_data structure and remove this line"
+    /* xNetworkContext.ds_data = DS_DATA; */
+    /* The ds_data can be populated using the API's provided by esp_secure_cert_mgr */
+#else
     xNetworkContext.pcClientCertPem = pcClientCertPem;
     xNetworkContext.pcClientKeyPem = pcClientKeyPem;
+#endif
+    xNetworkContext.pcServerRootCAPem = pcServerRootCAPem;
+
     xNetworkContext.pxTls = NULL;
     xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
 
@@ -67,23 +77,17 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    temperature_queue_handle = xQueueCreate( 20, sizeof(xMessage) );
-    if (temperature_queue_handle != NULL) {
-        ESP_LOGI(TAG, "Queue is created");
-    }
-
-    ws2812_led_init();
-    ws2812_led_set_rgb(0, 25, 0);
-
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
+
+    /* Hardware initialisation */
+    app_driver_init();
 
     /* Start wifi */
     app_wifi_init();
     app_wifi_start(POP_TYPE_MAC);
 
-    vStartTempSubscribePublishTask(1, 4096, 2, temperature_queue_handle);
-    vStartTempSensorRead(2048, 5, temperature_queue_handle);
+    vStartTempSubscribePublishTask(1, 4096, 2);
     vStartOTACodeSigningDemo(4096, 2);
 }
