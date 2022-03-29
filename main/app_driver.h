@@ -18,10 +18,12 @@
 extern "C" {
 #endif
 
-typedef struct xMessage
-{
-    float temperature_value;
-} xMessage;
+#include "ws2812_led.h"
+#include "driver/temp_sensor.h"
+
+esp_err_t app_driver_init();
+
+float app_driver_temp_sensor_read_celsius();
 
 #ifdef __cplusplus
 }

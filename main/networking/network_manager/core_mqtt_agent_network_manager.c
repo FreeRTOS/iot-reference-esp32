@@ -30,6 +30,7 @@
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY 1
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_PRIORITY 1
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MANAGER_TASK_PRIORITY 2
+#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_RETRY_DELAY 5000
 #define CONFIG_THING_NAME "esp32c3test"
 
 /* Network event group bit definitions */
@@ -52,6 +53,7 @@ static void prvTlsConnectionTask(void* pvParameters)
     (void)pvParameters;
 
     TlsTransportStatus_t xRet;
+    TickType_t xTicksToDelay;
 
     while(1)
     {
@@ -89,7 +91,8 @@ static void prvTlsConnectionTask(void* pvParameters)
         {
             ESP_LOGE(TAG, "TLS connection failed.");
         }
-
+        xTicksToDelay = pdMS_TO_TICKS( CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_RETRY_DELAY );
+        vTaskDelay( xTicksToDelay );
     }
 
     vTaskDelete(NULL);
