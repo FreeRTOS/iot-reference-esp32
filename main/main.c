@@ -9,7 +9,6 @@
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
-#include "lwip/stats.h"
 
 /* Network transport */
 #include "network_transport.h"
@@ -24,7 +23,9 @@
 static const char *TAG = "main";
 
 /* TODO - Config to be moved to kconfig */
-#define CONFIG_NETWORK_MANAGER_HOSTNAME "th0tfkmk5jj9z.deviceadvisor.iot.us-west-2.amazonaws.com"
+//a2np9zbvnebvto-ats.iot.us-west-2.amazonaws.com
+//th0tfkmk5jj9z.deviceadvisor.iot.us-west-2.amazonaws.com
+#define CONFIG_NETWORK_MANAGER_HOSTNAME "a2np9zbvnebvto-ats.iot.us-west-2.amazonaws.com"
 #define CONFIG_NETWORK_MANAGER_PORT 8883
 
 /* Network credentials */
@@ -41,9 +42,6 @@ extern void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
 
 void app_main(void)
 {
-    /* LWIP networking stats initialization */
-    stats_init();
-
     /* Initialize network context */
     xNetworkContext.pcHostname = CONFIG_NETWORK_MANAGER_HOSTNAME;
     xNetworkContext.xPort = CONFIG_NETWORK_MANAGER_PORT;
@@ -81,11 +79,4 @@ void app_main(void)
 
     //vStartOTACodeSigningDemo(4096, 2);
     vStartSimpleSubscribePublishTask(4096, 2);
-
-    while(1)
-    {
-        TCP_STATS_DISPLAY();
-        vTaskDelay(1000);
-    }
-    
 }
