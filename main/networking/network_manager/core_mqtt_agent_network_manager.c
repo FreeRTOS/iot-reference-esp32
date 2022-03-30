@@ -47,7 +47,7 @@
  * @brief The maximum back-off delay (in milliseconds) for retrying failed operation
  *  with server.
  */
-#define RETRY_MAX_BACKOFF_DELAY_MS                   ( 5000U )
+#define RETRY_MAX_BACKOFF_DELAY_MS                   ( 10000U )
 
 /**
  * @brief The base back-off delay (in milliseconds) to use for network operation retry

@@ -68,8 +68,6 @@
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
 
-static const char *TAG = "sub_pub_demo";
-
 /**
  * @brief This demo uses task notifications to signal tasks from MQTT callback
  * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
@@ -86,12 +84,7 @@ static const char *TAG = "sub_pub_demo";
 /**
  * @brief Delay for each task between publishes.
  */
-#define mqttexampleDELAY_BETWEEN_PUBLISH_OPERATIONS_MS    ( 1000U )
-
-/**
- * @brief Number of publishes done by each task in this demo.
- */
-#define mqttexamplePUBLISH_COUNT                          ( 100UL )
+#define mqttexampleDELAY_BETWEEN_SUB_PUB_LOOPS_MS    ( 1000U )
 
 /**
  * @brief The maximum amount of time in milliseconds to wait for the commands
@@ -107,9 +100,16 @@ static const char *TAG = "sub_pub_demo";
  */
 #define mqttexampleQOS_MODULUS                            ( 2UL )
 
-#define mqttexampleNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE     ( 1UL )
+#define mqttexampleNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE     ( 3UL )
 
 /*-----------------------------------------------------------*/
+
+typedef struct IncomingPublishCallbackContext
+{
+    TaskHandle_t xTaskToNotify;
+    uint32_t ulNotificationValue;
+    char pcIncomingPublish[ mqttexampleSTRING_BUFFER_LENGTH ];
+} IncomingPublishCallbackContext_t;
 
 /**
  * @brief Defines the structure to use as the command callback context in this
@@ -120,6 +120,7 @@ struct MQTTAgentCommandContext
     MQTTStatus_t xReturnStatus;
     TaskHandle_t xTaskToNotify;
     uint32_t ulNotificationValue;
+    IncomingPublishCallbackContext_t * pxIncomingPublishCallbackContext;
     void * pArgs;
 };
 
@@ -149,6 +150,9 @@ struct DemoParams
  */
 static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                          MQTTAgentReturnInfo_t * pxReturnInfo );
+
+static void prvUnsubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                           MQTTAgentReturnInfo_t * pxReturnInfo );
 
 /**
  * @brief Passed into MQTTAgent_Publish() as the callback to execute when the
@@ -180,7 +184,7 @@ static void prvPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandCont
  *
  * @return pdTRUE if the task received a notification, otherwise pdFALSE.
  */
-static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue );
+static BaseType_t prvWaitForNotification( uint32_t * pulNotifiedValue );
 
 /**
  * @brief Passed into MQTTAgent_Subscribe() as the callback to execute when
@@ -206,8 +210,12 @@ static void prvIncomingPublishCallback( void * pvIncomingPublishCallbackContext,
  * does not support QoS2.
  * @param[in] pcTopicFilter Topic filter to subscribe to.
  */
-static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
+static void prvSubscribeToTopic( IncomingPublishCallbackContext_t * pxIncomingPublishCallbackContext,
+                                 MQTTQoS_t xQoS,
                                  char * pcTopicFilter );
+
+static void prvUnsubscribeToTopic( MQTTQoS_t xQoS,
+                                   char * pcTopicFilter );
 
 /**
  * @brief The function that implements the task demonstrated by this file.
@@ -235,6 +243,15 @@ static TaskHandle_t xMainTask;
 static char topicBuf[ mqttexampleNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE ][ mqttexampleSTRING_BUFFER_LENGTH ];
 
 static EventGroupHandle_t xCoreMqttAgentEventGroup;
+
+static SemaphoreHandle_t xMessageIdSemaphore;
+
+static uint32_t ulMessageId = 0;
+
+static const char *TAG = "sub_pub_demo";
+
+
+/*-----------------------------------------------------------*/
 
 static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
                                          esp_event_base_t xEventBase, 
@@ -271,6 +288,7 @@ void vStartSimpleSubscribePublishTask( configSTACK_DEPTH_TYPE uxStackSize,
     char pcTaskNameBuf[ 15 ];
     uint32_t ulTaskNumber;
 
+    xMessageIdSemaphore = xSemaphoreCreateMutex();
     xCoreMqttAgentEventGroup = xEventGroupCreate();
     xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
 
@@ -324,8 +342,7 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
      * initiated the subscribe can check the operation's status. */
     pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
 
-    /* Check if the subscribe operation is a success. Only one topic is
-     * subscribed by this demo. */
+    /* Check if the subscribe operation is a success. */
     if( pxReturnInfo->returnCode == MQTTSuccess )
     {
         /* Add subscription so that incoming publishes are routed to the application
@@ -334,7 +351,7 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
                                               pxSubscribeArgs->pSubscribeInfo->pTopicFilter,
                                               pxSubscribeArgs->pSubscribeInfo->topicFilterLength,
                                               prvIncomingPublishCallback,
-                                              NULL );
+                                              ( void * ) ( pxCommandContext->pxIncomingPublishCallbackContext ) );
 
         if( xSubscriptionAdded == false )
         {
@@ -352,9 +369,35 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
     }
 }
 
+static void prvUnsubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                           MQTTAgentReturnInfo_t * pxReturnInfo )
+{
+    MQTTAgentSubscribeArgs_t * pxUnsubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) pxCommandContext->pArgs;
+
+    /* Store the result in the application defined context so the task that
+     * initiated the subscribe can check the operation's status. */
+    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
+
+    /* Check if the unsubscribe operation is a success. */
+    if( pxReturnInfo->returnCode == MQTTSuccess )
+    {
+        /* Remove subscription from subscription manager. */
+        removeSubscription( ( SubscriptionElement_t * ) xGlobalMqttAgentContext.pIncomingCallbackContext,
+                            pxUnsubscribeArgs->pSubscribeInfo->pTopicFilter,
+                            pxUnsubscribeArgs->pSubscribeInfo->topicFilterLength);
+    }
+
+    if( pxCommandContext->xTaskToNotify != NULL )
+    {
+        xTaskNotify( pxCommandContext->xTaskToNotify,
+            pxCommandContext->ulNotificationValue,
+            eSetValueWithOverwrite );
+    }
+}
+
 /*-----------------------------------------------------------*/
 
-static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue )
+static BaseType_t prvWaitForNotification( uint32_t * pulNotifiedValue )
 {
     BaseType_t xReturn;
 
@@ -372,211 +415,94 @@ static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue )
 static void prvIncomingPublishCallback( void * pvIncomingPublishCallbackContext,
                                         MQTTPublishInfo_t * pxPublishInfo )
 {
-    static char cTerminatedString[ mqttexampleSTRING_BUFFER_LENGTH ];
-
-    ( void ) pvIncomingPublishCallbackContext;
+    IncomingPublishCallbackContext_t * pxIncomingPublishCallbackContext = (IncomingPublishCallbackContext_t *) pvIncomingPublishCallbackContext;
 
     /* Create a message that contains the incoming MQTT payload to the logger,
      * terminating the string first. */
     if( pxPublishInfo->payloadLength < mqttexampleSTRING_BUFFER_LENGTH )
     {
-        memcpy( ( void * ) cTerminatedString, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
-        cTerminatedString[ pxPublishInfo->payloadLength ] = 0x00;
+        memcpy( ( void * ) ( pxIncomingPublishCallbackContext->pcIncomingPublish ), pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
+        ( pxIncomingPublishCallbackContext->pcIncomingPublish )[ pxPublishInfo->payloadLength ] = 0x00;
     }
     else
     {
-        memcpy( ( void * ) cTerminatedString, pxPublishInfo->pPayload, mqttexampleSTRING_BUFFER_LENGTH );
-        cTerminatedString[ mqttexampleSTRING_BUFFER_LENGTH - 1 ] = 0x00;
+        memcpy( ( void * ) ( pxIncomingPublishCallbackContext->pcIncomingPublish ), pxPublishInfo->pPayload, mqttexampleSTRING_BUFFER_LENGTH );
+        ( pxIncomingPublishCallbackContext->pcIncomingPublish )[ mqttexampleSTRING_BUFFER_LENGTH - 1 ] = 0x00;
     }
 
-    LogInfo( ( "Received incoming publish message %s", cTerminatedString ) );
+    xTaskNotify( pxIncomingPublishCallbackContext->xTaskToNotify,
+                 pxIncomingPublishCallbackContext->ulNotificationValue,
+                 eSetValueWithOverwrite );
 }
 
 /*-----------------------------------------------------------*/
 
-static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
-                                 char * pcTopicFilter )
+static void prvPublishToTopic( MQTTQoS_t xQoS,
+                               char * pcTopicName,
+                               char * pcPayload )
 {
+    uint32_t ulPublishMessageId, ulNotifiedValue = 0;
+
     MQTTStatus_t xCommandAdded;
     BaseType_t xCommandAcknowledged = pdFALSE;
-    uint32_t ulSubscribeMessageID, ulNotifiedValue = 0;
-    MQTTAgentSubscribeArgs_t xSubscribeArgs;
-    MQTTSubscribeInfo_t xSubscribeInfo;
-    static int32_t ulNextSubscribeMessageID = 0;
-    MQTTAgentCommandContext_t xApplicationDefinedContext;
+    
+    MQTTPublishInfo_t xPublishInfo = { 0 };
+    
+    MQTTAgentCommandContext_t xCommandContext = { 0 };
     MQTTAgentCommandInfo_t xCommandParams = { 0 };
 
-    memset( &( xApplicationDefinedContext ), 0, sizeof( MQTTAgentCommandContext_t ) );
-
-    /* Create a unique number of the subscribe that is about to be sent.  The number
-     * is used as the command context and is sent back to this task as a notification
-     * in the callback that executed upon receipt of the subscription acknowledgment.
-     * That way this task can match an acknowledgment to a subscription. This is useful
-     * if there is more than one subscription, but only included for demonstration
-     * purposes here as there is only one subscription per task. */
     xTaskNotifyStateClear( NULL );
-    taskENTER_CRITICAL(0);
+
+    /* Create a unique number for the publish that is about to be sent. 
+     * This number is used in the command context and is sent back to this task 
+     * as a notification in the callback that's executed upon receipt of the 
+     * publish from coreMQTT-Agent.
+     * That way this task can match an acknowledgment to the message being sent.
+     */
+    xSemaphoreTake(xMessageIdSemaphore, portMAX_DELAY);
     {
-        ulNextSubscribeMessageID++;
-        ulSubscribeMessageID = ulNextSubscribeMessageID;
+        ++ulMessageId;
+        ulPublishMessageId = ulMessageId;
     }
-    taskEXIT_CRITICAL(0);
+    xSemaphoreGive(xMessageIdSemaphore);
 
-    /* Complete the subscribe information.  The topic string must persist for
-     * duration of subscription! */
-    xSubscribeInfo.pTopicFilter = pcTopicFilter;
-    xSubscribeInfo.topicFilterLength = ( uint16_t ) strlen( pcTopicFilter );
-    xSubscribeInfo.qos = xQoS;
-    xSubscribeArgs.pSubscribeInfo = &xSubscribeInfo;
-    xSubscribeArgs.numSubscriptions = 1;
-
-    /* Complete an application defined context associated with this subscribe message.
-     * This gets updated in the callback function so the variable must persist until
-     * the callback executes. */
-    xApplicationDefinedContext.ulNotificationValue = ulSubscribeMessageID;
-    xApplicationDefinedContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
-    xApplicationDefinedContext.pArgs = ( void * ) &xSubscribeArgs;
-
-    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
-    xCommandParams.cmdCompleteCallback = prvSubscribeCommandCallback;
-    xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xApplicationDefinedContext;
-
-    do
-    {
-        /* Wait for coreMQTT-Agent task to have working network connection */
-        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
-            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
-            portMAX_DELAY);
-
-        /* The queue will not become full if the priority of the MQTT agent task is
-         * higher than the priority of the task calling this function. */
-        LogInfo( ( "Sending subscribe request to agent for topic filter: %s with id %d",
-                   pcTopicFilter,
-                   ( int ) ulSubscribeMessageID ) );
-
-        xCommandAdded = MQTTAgent_Subscribe( &xGlobalMqttAgentContext,
-                                             &xSubscribeArgs,
-                                             &xCommandParams );
-
-        xCommandAcknowledged = pdFALSE;
-
-        if( xCommandAdded == MQTTSuccess )
-        {
-            /* Wait for acks to the subscribe message - this is optional but done here
-             * so the code below can check the notification sent by the callback matches
-             * the ulNextSubscribeMessageID value set in the context above. */
-            xCommandAcknowledged = prvWaitForCommandAcknowledgment( &ulNotifiedValue );
-        }
-        else
-        {
-            LogError( ( "Failed to enqueue subscribe command." ) );
-        }
-
-        /* Check all ways the status was passed back just for demonstration
-         * purposes. */
-        if( ( xCommandAcknowledged != pdTRUE ) ||
-            ( xApplicationDefinedContext.xReturnStatus != MQTTSuccess ) ||
-            ( ulNotifiedValue != ulSubscribeMessageID ) )
-        {
-            LogWarn( ( "Error or timed out waiting for ack to subscribe message topic %s. Re-attempting subscribe.",
-                       pcTopicFilter ) );
-        }
-        else
-        {
-            LogInfo( ( "Received subscribe ack for topic %s containing ID %d",
-                       pcTopicFilter,
-                       ( int ) xApplicationDefinedContext.ulNotificationValue ) );
-        }
-
-    } while (( xCommandAcknowledged != pdTRUE ) ||
-            ( xApplicationDefinedContext.xReturnStatus != MQTTSuccess ) ||
-            ( ulNotifiedValue != ulSubscribeMessageID ));
-
-    return xCommandAcknowledged;
-}
-
-/*-----------------------------------------------------------*/
-
-static void prvSimpleSubscribePublishTask( void * pvParameters )
-{
-    MQTTPublishInfo_t xPublishInfo;
-    char payloadBuf[ mqttexampleSTRING_BUFFER_LENGTH ];
-    char taskName[ mqttexampleSTRING_BUFFER_LENGTH ];
-    MQTTAgentCommandContext_t xCommandContext;
-    uint32_t ulNotification = 0U, ulValueToNotify = 0UL;
-    MQTTStatus_t xCommandAdded;
-    struct DemoParams * pxParams = ( struct DemoParams * ) pvParameters;
-    uint32_t ulTaskNumber = pxParams->ulTaskNumber;
-    MQTTQoS_t xQoS;
-    TickType_t xTicksToDelay;
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    char * pcTopicBuffer = topicBuf[ ulTaskNumber ];
-    uint32_t numSuccesses = 0U;
-
-    memset( &( xPublishInfo ), 0, sizeof( MQTTPublishInfo_t ) );
-
-    /* Have different tasks use different QoS.  0 and 1.  2 can also be used
-     * if supported by the broker. */
-    xQoS = 1;//( MQTTQoS_t ) ( ulTaskNumber % mqttexampleQOS_MODULUS );
-
-    /* Create a unique name for this task from the task number that is passed into
-     * the task using the task's parameter. */
-    snprintf( taskName, mqttexampleSTRING_BUFFER_LENGTH, "Publisher%d", ( int ) ulTaskNumber );
-
-    /* Create a topic name for this task to publish to. */
-    snprintf( pcTopicBuffer, mqttexampleSTRING_BUFFER_LENGTH, "/filter/%s", taskName );
-
-    /* Subscribe to the same topic to which this task will publish.  That will
-     * result in each published message being published from the server back to
-     * the target. */
-    prvSubscribeToTopic( xQoS, pcTopicBuffer );
-
-    /* Configure the publish operation. */
-    memset( ( void * ) &xPublishInfo, 0x00, sizeof( xPublishInfo ) );
+    /* Configure the publish operation. The topic name string must persist for
+     * duration of publish! */
     xPublishInfo.qos = xQoS;
-    xPublishInfo.pTopicName = pcTopicBuffer;
-    xPublishInfo.topicNameLength = ( uint16_t ) strlen( pcTopicBuffer );
-    xPublishInfo.pPayload = payloadBuf;
+    xPublishInfo.pTopicName = pcTopicName;
+    xPublishInfo.topicNameLength = ( uint16_t ) strlen( pcTopicName );
+    xPublishInfo.pPayload = pcPayload;
+    xPublishInfo.payloadLength = ( uint16_t ) strlen( pcPayload );
 
-    /* Store the handler to this task in the command context so the callback
-     * that executes when the command is acknowledged can send a notification
-     * back to this task. */
-    memset( ( void * ) &xCommandContext, 0x00, sizeof( xCommandContext ) );
+    /* Complete an application defined context associated with this publish 
+     * message.
+     * This gets updated in the callback function so the variable must persist 
+     * until the callback executes. */
+    xCommandContext.ulNotificationValue = ulPublishMessageId;
     xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
 
     xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
     xCommandParams.cmdCompleteCallback = prvPublishCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = &xCommandContext;
 
-    /* For a finite number of publishes... */
-    for( ulValueToNotify = 0UL; ulValueToNotify < mqttexamplePUBLISH_COUNT; ulValueToNotify++ )
+    do
     {
-        /* Create a payload to send with the publish message.  This contains
-         * the task name and an incrementing number. */
-        snprintf( payloadBuf,
-                  mqttexampleSTRING_BUFFER_LENGTH,
-                  "%s publishing message %d",
-                  taskName,
-                  ( int ) ulValueToNotify );
-
-        xPublishInfo.payloadLength = ( uint16_t ) strlen( payloadBuf );
-
-        /* Also store the incrementing number in the command context so it can
-         * be accessed by the callback that executes when the publish operation
-         * is acknowledged. */
-        xCommandContext.ulNotificationValue = ulValueToNotify;
-
-        LogInfo( ( "Sending publish request to agent with message \"%s\" on topic \"%s\"",
-                   payloadBuf,
-                   pcTopicBuffer ) );
-
-        /* To ensure ulNotification doesn't accidentally hold the expected value
-         * as it is to be checked against the value sent from the callback.. */
-        ulNotification = ~ulValueToNotify;
-
+        /* Wait for coreMQTT-Agent task to have working network connection. */
         xEventGroupWaitBits(xCoreMqttAgentEventGroup,
             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
             portMAX_DELAY);
+
+        LogInfo( ( "Task \"%s\" sending publish request to coreMQTT-Agent with message \"%s\" on topic \"%s\" with ID %ld.",
+                   pcTaskGetName(xCommandContext.xTaskToNotify),
+                   pcPayload,
+                   pcTopicName,
+                   ulPublishMessageId ) );
+
+        /* To ensure ulNotification doesn't accidentally hold the expected value
+         * as it is to be checked against the value sent from the callback.. */
+        ulNotifiedValue = ~ulPublishMessageId;
+
+        xCommandAcknowledged = pdFALSE;
 
         xCommandAdded = MQTTAgent_Publish( &xGlobalMqttAgentContext,
                                            &xPublishInfo,
@@ -586,39 +512,290 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
         {
             /* For QoS 1 and 2, wait for the publish acknowledgment.  For QoS0,
              * wait for the publish to be sent. */
-            LogInfo( ( "Task %s waiting for publish %d to complete.",
-                       taskName,
-                       ulValueToNotify ) );
-            prvWaitForCommandAcknowledgment( &ulNotification );
+            LogInfo( ( "Task \"%s\" waiting for publish %d to complete.",
+                       pcTaskGetName(xCommandContext.xTaskToNotify),
+                       ulPublishMessageId ) );
+
+            xCommandAcknowledged = prvWaitForNotification( &ulNotifiedValue );
         }
         else
         {
             LogError( ( "Failed to enqueue publish command. Error code=%s", MQTT_Status_strerror( xCommandAdded ) ) );
         }
 
-        /* The value received by the callback that executed when the publish was
-         * completed came from the context passed into MQTTAgent_Publish() above,
-         * so should match the value set in the context above. */
-        if( ulNotification == ulValueToNotify )
+        /* Check all ways the status was passed back just for demonstration
+         * purposes. */
+        if( ( xCommandAcknowledged != pdTRUE ) ||
+            ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+            ( ulNotifiedValue != ulPublishMessageId ) )
         {
-            numSuccesses++;
-            /* Log statement to indicate successful reception of publish. */
-            LogInfo( ( "Publish %d completed successfully.\r\n", ulValueToNotify ) );
+            LogWarn( ( "Error or timed out waiting for ack for publish message %ld. Re-attempting publish.",
+                       ulPublishMessageId) );
+        }
+        else
+        {
+            LogInfo( ( "Publish %ld succeeded for task \"%s\".",
+                       ulPublishMessageId,
+                       pcTaskGetName(xCommandContext.xTaskToNotify)) );
         }
 
-        LogInfo( ( "Short delay before next publish... \r\n\r\n" ) );
+    } while (( xCommandAcknowledged != pdTRUE ) ||
+             ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+             ( ulNotifiedValue != ulPublishMessageId ));
+}
 
-        xTicksToDelay = pdMS_TO_TICKS( mqttexampleDELAY_BETWEEN_PUBLISH_OPERATIONS_MS );
-        vTaskDelay( xTicksToDelay );
-    }
+/*-----------------------------------------------------------*/
 
-    /* Mark this task as successful if every publish was successfully completed. */
-    if( numSuccesses == mqttexamplePUBLISH_COUNT )
+static void prvSubscribeToTopic( IncomingPublishCallbackContext_t * pxIncomingPublishCallbackContext, 
+                                 MQTTQoS_t xQoS,
+                                 char * pcTopicFilter )
+{
+    uint32_t ulSubscribeMessageId, ulNotifiedValue = 0;
+
+    MQTTStatus_t xCommandAdded;
+    BaseType_t xCommandAcknowledged = pdFALSE;
+
+    MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
+    MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
+
+    MQTTAgentCommandContext_t xCommandContext = { 0 };
+    MQTTAgentCommandInfo_t xCommandParams = { 0 };
+
+    xTaskNotifyStateClear( NULL );
+
+    /* Create a unique number for the subscribe that is about to be sent. 
+     * This number is used in the command context and is sent back to this task 
+     * as a notification in the callback that's executed upon receipt of the 
+     * publish from coreMQTT-Agent.
+     * That way this task can match an acknowledgment to the message being sent.
+     */
+    xSemaphoreTake(xMessageIdSemaphore, portMAX_DELAY);
     {
-        LogInfo( ( "Task %s successful.", taskName ) );
+        ++ulMessageId;
+        ulSubscribeMessageId = ulMessageId;
+    }
+    xSemaphoreGive(xMessageIdSemaphore);
+
+    /* Configure the subscribe operation.  The topic string must persist for
+     * duration of subscription! */
+    xSubscribeInfo.qos = xQoS;
+    xSubscribeInfo.pTopicFilter = pcTopicFilter;
+    xSubscribeInfo.topicFilterLength = ( uint16_t ) strlen( pcTopicFilter );
+
+    xSubscribeArgs.pSubscribeInfo = &xSubscribeInfo;
+    xSubscribeArgs.numSubscriptions = 1;
+
+    /* Complete an application defined context associated with this subscribe 
+     * message.
+     * This gets updated in the callback function so the variable must persist 
+     * until the callback executes. */
+    xCommandContext.ulNotificationValue = ulSubscribeMessageId;
+    xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
+    xCommandContext.pxIncomingPublishCallbackContext = pxIncomingPublishCallbackContext;
+    xCommandContext.pArgs = ( void * ) &xSubscribeArgs;
+
+    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
+    xCommandParams.cmdCompleteCallback = prvSubscribeCommandCallback;
+    xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xCommandContext;
+
+    do
+    {
+        /* Wait for coreMQTT-Agent task to have working network connection. */
+        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
+            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
+            portMAX_DELAY);
+
+        LogInfo( ( "Task \"%s\" sending subscribe request to coreMQTT-Agent for topic filter: %s with id %ld",
+                   pcTaskGetName(xCommandContext.xTaskToNotify),
+                   pcTopicFilter,
+                   ulSubscribeMessageId ) );
+
+        xCommandAcknowledged = pdFALSE;
+
+        xCommandAdded = MQTTAgent_Subscribe( &xGlobalMqttAgentContext,
+                                             &xSubscribeArgs,
+                                             &xCommandParams );
+
+
+        if( xCommandAdded == MQTTSuccess )
+        {
+            /* For QoS 1 and 2, wait for the subscription acknowledgment.  For QoS0,
+             * wait for the subscribe to be sent. */
+            xCommandAcknowledged = prvWaitForNotification( &ulNotifiedValue );
+        }
+        else
+        {
+            LogError( ( "Failed to enqueue subscribe command. Error code=%s", MQTT_Status_strerror( xCommandAdded ) ) );
+        }
+
+        /* Check all ways the status was passed back just for demonstration
+         * purposes. */
+        if( ( xCommandAcknowledged != pdTRUE ) ||
+            ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+            ( ulNotifiedValue != ulSubscribeMessageId ) )
+        {
+            LogWarn( ( "Error or timed out waiting for ack to subscribe message %ld. Re-attempting subscribe.",
+                       ulSubscribeMessageId ) );
+        }
+        else
+        {
+            LogInfo( ( "Subscribe %ld for topic filter %s succeeded for task \"%s\".",
+                       ulSubscribeMessageId,
+                       pcTopicFilter,
+                       pcTaskGetName(xCommandContext.xTaskToNotify)) );
+        }
+
+    } while (( xCommandAcknowledged != pdTRUE ) ||
+             ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+             ( ulNotifiedValue != ulSubscribeMessageId ));
+}
+
+static void prvUnsubscribeToTopic(MQTTQoS_t xQoS,
+                                 char * pcTopicFilter )
+{
+    uint32_t ulUnsubscribeMessageId, ulNotifiedValue = 0;
+
+    MQTTStatus_t xCommandAdded;
+    BaseType_t xCommandAcknowledged = pdFALSE;
+
+    MQTTAgentSubscribeArgs_t xUnsubscribeArgs = { 0 };
+    MQTTSubscribeInfo_t xUnsubscribeInfo = { 0 };
+
+    MQTTAgentCommandContext_t xCommandContext = { 0 };
+    MQTTAgentCommandInfo_t xCommandParams = { 0 };
+
+    xTaskNotifyStateClear( NULL );
+
+    /* Create a unique number for the subscribe that is about to be sent. 
+     * This number is used in the command context and is sent back to this task 
+     * as a notification in the callback that's executed upon receipt of the 
+     * publish from coreMQTT-Agent.
+     * That way this task can match an acknowledgment to the message being sent.
+     */
+    xSemaphoreTake(xMessageIdSemaphore, portMAX_DELAY);
+    {
+        ++ulMessageId;
+        ulUnsubscribeMessageId = ulMessageId;
+    }
+    xSemaphoreGive(xMessageIdSemaphore);
+
+    /* Configure the subscribe operation.  The topic string must persist for
+     * duration of subscription! */
+    xUnsubscribeInfo.qos = xQoS;
+    xUnsubscribeInfo.pTopicFilter = pcTopicFilter;
+    xUnsubscribeInfo.topicFilterLength = ( uint16_t ) strlen( pcTopicFilter );
+
+    xUnsubscribeArgs.pSubscribeInfo = &xUnsubscribeInfo;
+    xUnsubscribeArgs.numSubscriptions = 1;
+
+    /* Complete an application defined context associated with this subscribe 
+     * message.
+     * This gets updated in the callback function so the variable must persist 
+     * until the callback executes. */
+    xCommandContext.ulNotificationValue = ulUnsubscribeMessageId;
+    xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
+    xCommandContext.pArgs = ( void * ) &xUnsubscribeArgs;
+
+    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
+    xCommandParams.cmdCompleteCallback = prvUnsubscribeCommandCallback;
+    xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xCommandContext;
+
+    do
+    {
+        /* Wait for coreMQTT-Agent task to have working network connection. */
+        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
+            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
+            portMAX_DELAY);
+
+        LogInfo( ( "Task \"%s\" sending unsubscribe request to coreMQTT-Agent for topic filter: %s with id %ld",
+                   pcTaskGetName(xCommandContext.xTaskToNotify),
+                   pcTopicFilter,
+                   ulUnsubscribeMessageId ) );
+
+        xCommandAcknowledged = pdFALSE;
+
+        xCommandAdded = MQTTAgent_Unsubscribe( &xGlobalMqttAgentContext,
+                                             &xUnsubscribeArgs,
+                                             &xCommandParams );
+
+
+        if( xCommandAdded == MQTTSuccess )
+        {
+            /* For QoS 1 and 2, wait for the subscription acknowledgment.  For QoS0,
+             * wait for the subscribe to be sent. */
+            xCommandAcknowledged = prvWaitForNotification( &ulNotifiedValue );
+        }
+        else
+        {
+            LogError( ( "Failed to enqueue unsubscribe command. Error code=%s", MQTT_Status_strerror( xCommandAdded ) ) );
+        }
+
+        /* Check all ways the status was passed back just for demonstration
+         * purposes. */
+        if( ( xCommandAcknowledged != pdTRUE ) ||
+            ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+            ( ulNotifiedValue != ulUnsubscribeMessageId ) )
+        {
+            LogWarn( ( "Error or timed out waiting for ack to unsubscribe message %ld. Re-attempting subscribe.",
+                       ulUnsubscribeMessageId ) );
+        }
+        else
+        {
+            LogInfo( ( "Unsubscribe %ld for topic filter %s succeeded for task \"%s\".",
+                       ulUnsubscribeMessageId,
+                       pcTopicFilter,
+                       pcTaskGetName(xCommandContext.xTaskToNotify)) );
+        }
+
+    } while (( xCommandAcknowledged != pdTRUE ) ||
+             ( xCommandContext.xReturnStatus != MQTTSuccess ) ||
+             ( ulNotifiedValue != ulUnsubscribeMessageId ));
+}
+
+/*-----------------------------------------------------------*/
+
+static void prvSimpleSubscribePublishTask( void * pvParameters )
+{
+    struct DemoParams * pxParams = ( struct DemoParams * ) pvParameters;
+    uint32_t ulNotifiedValue;
+    uint32_t ulTaskNumber = pxParams->ulTaskNumber;
+
+    IncomingPublishCallbackContext_t xIncomingPublishCallbackContext;
+
+    MQTTQoS_t xQoS;
+    char * pcTopicBuffer = topicBuf[ ulTaskNumber ];
+    char pcPayload[ mqttexampleSTRING_BUFFER_LENGTH ];
+
+    xIncomingPublishCallbackContext.ulNotificationValue = ulTaskNumber;
+    xIncomingPublishCallbackContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
+
+    /* Have different tasks use different QoS. 0 and 1. 2 can also be used
+     * if supported by the broker. */
+    xQoS = ( MQTTQoS_t ) ( ulTaskNumber % mqttexampleQOS_MODULUS );
+
+    /* Create a topic name for this task to publish to. */
+    snprintf( pcTopicBuffer, mqttexampleSTRING_BUFFER_LENGTH, "/filter/%s", pcTaskGetName( xIncomingPublishCallbackContext.xTaskToNotify ));
+
+    while(1)
+    {
+        /* Subscribe to the same topic to which this task will publish.  That will
+         * result in each published message being published from the server back to
+         * the target. */
+        prvSubscribeToTopic( &xIncomingPublishCallbackContext, xQoS, pcTopicBuffer );
+    
+        snprintf( pcPayload, mqttexampleSTRING_BUFFER_LENGTH, "%s", pcTaskGetName( xIncomingPublishCallbackContext.xTaskToNotify ));
+        prvPublishToTopic( xQoS, pcTopicBuffer, pcPayload );
+    
+        prvWaitForNotification( &ulNotifiedValue );
+    
+        ESP_LOGI(TAG, "Task \"%s\" received: %s", pcTaskGetName( xIncomingPublishCallbackContext.xTaskToNotify ), xIncomingPublishCallbackContext.pcIncomingPublish);
+    
+        prvUnsubscribeToTopic( xQoS, pcTopicBuffer );
+    
+        /* Delete the task if it is complete. */
+        LogInfo( ( "Task \"%s\" completed a loop. Delaying before next loop.", pcTaskGetName( xIncomingPublishCallbackContext.xTaskToNotify ) ) );
+        vTaskDelay(pdMS_TO_TICKS(mqttexampleDELAY_BETWEEN_SUB_PUB_LOOPS_MS));
     }
 
-    /* Delete the task if it is complete. */
-    LogInfo( ( "Task %s completed.", taskName ) );
     vTaskDelete( NULL );
 }
