@@ -27,7 +27,7 @@ static esp_err_t temperature_sensor_init()
 
 static esp_err_t led_init()
 {
-    esp_err_t ret;
+    esp_err_t ret = ESP_FAIL;
     ret = ws2812_led_init();
     if (ret == ESP_OK) {
         ws2812_led_set_rgb(0, 25, 0);
@@ -41,7 +41,7 @@ esp_err_t app_driver_init()
 	temp_sensor_ret = temperature_sensor_init();
     led_ret = led_init();
     if (temp_sensor_ret && led_ret) {
-        return ESP_OK;
+            return ESP_OK;
     } else {
         return ESP_FAIL;
     }

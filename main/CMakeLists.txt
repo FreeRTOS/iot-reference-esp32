@@ -26,6 +26,7 @@ set(MAIN_REQUIRES
     coreMQTT-Agent
     corePKCS11
     coreJSON
+    backoffAlgorithm
     ota-for-aws-iot-embedded-sdk
 )
 
