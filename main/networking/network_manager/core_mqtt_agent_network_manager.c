@@ -70,24 +70,9 @@ static EventGroupHandle_t xNetworkEventGroup;
 
 static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams )
 {
-<<<<<<< HEAD
     BaseType_t xReturnStatus = pdFAIL;
     uint16_t usNextRetryBackOff = 0U;
     BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
-=======
-    (void)pvParameters;
-
-    TlsTransportStatus_t xRet;
-    TickType_t xTicksToDelay;
-
-    while(1)
-    {
-        /* Wait for the device to be connected to WiFi and be disconnected from
-         * TLS connection. */
-        xEventGroupWaitBits(xNetworkEventGroup,
-                WIFI_CONNECTED_BIT | TLS_DISCONNECTED_BIT, pdFALSE, pdTRUE, 
-                portMAX_DELAY);
->>>>>>> espressif/new-dev-branch
 
     uint32_t ulRandomNum = rand();
 
@@ -103,29 +88,11 @@ static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams 
         /* Perform the backoff delay. */
         vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
 
-<<<<<<< HEAD
         xReturnStatus = pdPASS;
 
         ESP_LOGI(TAG, "Retry attempt %lu out of maximum retry attempts %lu.",
                    pxRetryParams->attemptsDone,
                    pxRetryParams->maxRetryAttempts);
-=======
-        xRet = xTlsConnect(pxNetworkContext);
-
-        if (xRet == TLS_TRANSPORT_SUCCESS)
-        {
-            ESP_LOGI(TAG, "TLS connection established.");
-            /* Flag that a TLS connection has been established. */
-            xEventGroupClearBits(xNetworkEventGroup, TLS_DISCONNECTED_BIT);
-            xEventGroupSetBits(xNetworkEventGroup, TLS_CONNECTED_BIT);
-        }
-        else
-        {
-            ESP_LOGE(TAG, "TLS connection failed.");
-        }
-        xTicksToDelay = pdMS_TO_TICKS( CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_RETRY_DELAY );
-        vTaskDelay( xTicksToDelay );
->>>>>>> espressif/new-dev-branch
     }
 
     return xReturnStatus;

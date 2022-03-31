@@ -119,7 +119,7 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
      */
     if( xPublishHandled != true )
     {
-        xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
+        //xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
     }
 
     /* If there are no callbacks to handle the incoming publishes,
@@ -246,22 +246,18 @@ static void prvMQTTAgentTask( void * pvParameters )
             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
             portMAX_DELAY);
 
-        ESP_LOGI(TAG, "Before command loop");
         /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
          * will manage the MQTT protocol until such time that an error occurs,
          * which could be a disconnect.  If an error occurs the MQTT context on
          * which the error happened is returned so there can be an attempt to
          * clean up and reconnect however the application writer prefers. */
         xMQTTStatus = MQTTAgent_CommandLoop( &xGlobalMqttAgentContext );
-        ESP_LOGI(TAG, "after command loop: %s", MQTT_Status_strerror( xMQTTStatus ));
 
         /* Success is returned for disconnect or termination. The socket should
          * be disconnected. */
         if( xMQTTStatus == MQTTSuccess )
         {
-            /* MQTT Disconnect. Disconnect the socket. */
             ESP_LOGI(TAG, "MQTT Disconnect from broker.");
-            //xTlsDisconnect( pxNetworkContext );
         }
         /* Error. */
         else
@@ -274,11 +270,11 @@ static void prvMQTTAgentTask( void * pvParameters )
 
 void vStartCoreMqttAgent( void )
 {
-    xTaskCreate( prvMQTTAgentTask, /* Function that implements the task. */
-                 "coreMQTT-Agent-test",             /* Text name for the task - only used for debugging. */
-                 CONFIG_MQTT_AGENT_TASK_STACK_SIZE,     /* Size of stack (in words, not bytes) to allocate for the task. */
-                 NULL,                         /* Optional - task parameter - not used in this case. */
-                 tskIDLE_PRIORITY + 1,         /* Task priority, must be between 0 and configMAX_PRIORITIES - 1. */
+    xTaskCreate( prvMQTTAgentTask,
+                 "coreMQTT-Agent",
+                 CONFIG_MQTT_AGENT_TASK_STACK_SIZE,
+                 NULL,
+                 tskIDLE_PRIORITY + 1,
                  NULL );
 }
 

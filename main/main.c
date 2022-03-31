@@ -45,6 +45,7 @@ extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
 
 void app_main(void)
 {
+    ESP_LOGI(TAG, "endpoint: %s port: %d", CONFIG_NETWORK_MANAGER_HOSTNAME, CONFIG_NETWORK_MANAGER_PORT);
     /* Initialize network context */
     xNetworkContext.pcHostname = CONFIG_NETWORK_MANAGER_HOSTNAME;
     xNetworkContext.xPort = CONFIG_NETWORK_MANAGER_PORT;
@@ -89,7 +90,6 @@ void app_main(void)
      * This needs to be started before starting WiFi so it can handle WiFi
      * connection events. */
     xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
-
     /* Hardware initialisation */
     app_driver_init();
 
@@ -98,6 +98,6 @@ void app_main(void)
     app_wifi_start(POP_TYPE_MAC);
 
     vStartSimpleSubscribePublishTask(4096, 2);
-    vStartTempSubscribePublishTask(1, 4096, 2);
-    vStartOTACodeSigningDemo(4096, 2);
+    //vStartTempSubscribePublishTask(1, 4096, 2);
+    //vStartOTACodeSigningDemo(4096, 2);
 }
