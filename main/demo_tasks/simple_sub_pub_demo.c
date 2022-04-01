@@ -68,6 +68,11 @@
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
 
+#ifdef LIBRARY_LOG_NAME
+#undef LIBRARY_LOG_NAME
+#define LIBRARY_LOG_NAME "simple_pub_sub_demo"
+#endif
+
 /**
  * @brief This demo uses task notifications to signal tasks from MQTT callback
  * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
@@ -100,7 +105,7 @@
  */
 #define mqttexampleQOS_MODULUS                            ( 2UL )
 
-#define mqttexampleNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE     ( 3UL )
+#define mqttexampleNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE     ( 1UL )
 
 /*-----------------------------------------------------------*/
 
@@ -231,8 +236,6 @@ static void prvSimpleSubscribePublishTask( void * pvParameters );
 extern MQTTAgentContext_t xGlobalMqttAgentContext;
 
 /*-----------------------------------------------------------*/
-
-static TaskHandle_t xMainTask;
 
 /**
  * @brief The buffer to hold the topic filter. The topic is generated at runtime
@@ -771,7 +774,7 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
 
     /* Have different tasks use different QoS. 0 and 1. 2 can also be used
      * if supported by the broker. */
-    xQoS = ( MQTTQoS_t ) ( ulTaskNumber % mqttexampleQOS_MODULUS );
+    xQoS = 1; // ( MQTTQoS_t ) ( ulTaskNumber % mqttexampleQOS_MODULUS );
 
     /* Create a topic name for this task to publish to. */
     snprintf( pcTopicBuffer, mqttexampleSTRING_BUFFER_LENGTH, "/filter/%s", pcTaskGetName( xIncomingPublishCallbackContext.xTaskToNotify ));

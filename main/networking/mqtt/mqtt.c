@@ -36,17 +36,16 @@ static const char *TAG = "MQTT";
     configTICK_RATE_HZ )
 
 /* Buffer sizes */
-#define MQTT_AGENT_NETWORK_BUFFER_SIZE      ( 100000U )
+#define MQTT_AGENT_NETWORK_BUFFER_SIZE      ( 10000U )
 #define MQTT_AGENT_COMMAND_QUEUE_LENGTH     ( 10U )
 #define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 20U )
 #define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 5000U )
-#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 20000U )
+#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 4096U )
 
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
 
 static uint32_t ulGlobalEntryTimeMs;
-static uint16_t usPublishPacketIdentifier;
 static uint8_t ucNetworkBuffer[ MQTT_AGENT_NETWORK_BUFFER_SIZE ];
 static MQTTAgentMessageContext_t xCommandQueue;
 MQTTAgentContext_t xGlobalMqttAgentContext;
@@ -79,8 +78,10 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
     }
 }
 
+#if CONFIG_GRI_ENABLE_OTA_DEMO
 extern bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
                                  MQTTPublishInfo_t * pxPublishInfo );
+#endif
                                 
 static uint32_t prvGetTimeMs(void)
 {
@@ -114,14 +115,15 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
     xPublishHandled = handleIncomingPublishes( ( SubscriptionElement_t * ) pMqttAgentContext->pIncomingCallbackContext,
                                                pxPublishInfo );
 
+#if CONFIG_GRI_ENABLE_OTA_DEMO
     /*
      * Check if the incoming publish is for OTA agent.
      */
     if( xPublishHandled != true )
     {
-        //xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
+        xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
     }
-
+#endif
     /* If there are no callbacks to handle the incoming publishes,
      * handle it as an unsolicited publish. */
     if( xPublishHandled != true )
@@ -234,9 +236,7 @@ static MQTTStatus_t prvHandleResubscribe( void )
 
 static void prvMQTTAgentTask( void * pvParameters )
 {
-    BaseType_t xNetworkResult = pdFAIL;
-    MQTTStatus_t xMQTTStatus = MQTTSuccess, xConnectStatus = MQTTSuccess;
-    MQTTContext_t * pMqttContext = &( xGlobalMqttAgentContext.mqttContext );
+    MQTTStatus_t xMQTTStatus = MQTTSuccess;
 
     ( void ) pvParameters;
 

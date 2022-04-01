@@ -20,8 +20,6 @@
 /* Wifi provisioning/connection handler */
 #include <app_wifi.h>
 
-#include <app_driver.h>
-
 /* Logging tag */
 static const char *TAG = "main";
 
@@ -45,10 +43,26 @@ extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "endpoint: %s port: %d", CONFIG_NETWORK_MANAGER_HOSTNAME, CONFIG_NETWORK_MANAGER_PORT);
+
+    if(strlen(CONFIG_GRI_MQTT_ENDPOINT) == 0)
+    {
+        ESP_LOGE(TAG, "Empty endpoint for MQTT broker. Set endpoint by "
+            "running idf.py menuconfig, then Golden Reference Integration -> "
+            "Endpoint for MQTT Broker to use.");
+        return;
+    }
+
+    if(strlen(CONFIG_GRI_THING_NAME) == 0)
+    {
+        ESP_LOGE(TAG, "Empty thingname for MQTT broker. Set thing name by "
+            "running idf.py menuconfig, then Golden Reference Integration -> "
+            "Thing name.");
+        return;
+    }
+
     /* Initialize network context */
-    xNetworkContext.pcHostname = CONFIG_NETWORK_MANAGER_HOSTNAME;
-    xNetworkContext.xPort = CONFIG_NETWORK_MANAGER_PORT;
+    xNetworkContext.pcHostname = CONFIG_GRI_MQTT_ENDPOINT;
+    xNetworkContext.xPort = CONFIG_GRI_MQTT_PORT;
 
 #ifdef CONFIG_EXAMPLE_USE_SECURE_ELEMENT
     xNetworkContext.pcClientCertPem = NULL;
@@ -90,14 +104,21 @@ void app_main(void)
      * This needs to be started before starting WiFi so it can handle WiFi
      * connection events. */
     xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
-    /* Hardware initialisation */
-    app_driver_init();
 
     /* Start wifi */
     app_wifi_init();
     app_wifi_start(POP_TYPE_MAC);
 
-    vStartSimpleSubscribePublishTask(4096, 2);
-    //vStartTempSubscribePublishTask(1, 4096, 2);
-    //vStartOTACodeSigningDemo(4096, 2);
+#if CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO
+    vStartSimpleSubscribePublishTask(3072, 2);
+#endif
+
+#if CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO
+    vStartTempSubscribePublishTask(1, 3072, 2);
+#endif
+
+#if CONFIG_GRI_ENABLE_OTA_DEMO
+    vStartOTACodeSigningDemo(3072, 3);
+#endif
+
 }
