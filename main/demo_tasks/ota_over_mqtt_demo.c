@@ -76,6 +76,7 @@
 
 /* ESP-IDF includes */
 #include "esp_event.h"
+#include "sdkconfig.h"
 
 /* coreMQTT-Agent network manager includes */
 #include "core_mqtt_agent_events.h"
@@ -90,7 +91,7 @@ static const char *TAG = "ota_over_mqtt_demo";
 
 /*------------- Demo configurations -------------------------*/
 
-#define democonfigCLIENT_IDENTIFIER "esp32c3test"
+#define democonfigCLIENT_IDENTIFIER CONFIG_GRI_THING_NAME
 #ifndef democonfigCLIENT_IDENTIFIER
     #error "Please define the democonfigCLIENT_IDENTIFIER with the thing name for which OTA is performed"
 #endif

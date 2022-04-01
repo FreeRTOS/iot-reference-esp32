@@ -13,6 +13,7 @@
 #include "esp_event.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "sdkconfig.h"
 
 /* Backoff algorithm include */
 #include "backoff_algorithm.h"
@@ -29,15 +30,9 @@
 /* TODO - To be moved to kconfig for sdkconfig */
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_QUEUE_SIZE 5
 #define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_PRIORITY 5
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_STACK_SIZE 4096
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE 8192
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_STACK_SIZE 4096
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MANAGER_TASK_STACK_SIZE 4096
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY 1
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MQTT_TASK_PRIORITY 1
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_MANAGER_TASK_PRIORITY 2
-#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_RETRY_DELAY 5000
-#define CONFIG_THING_NAME "esp32c3test"
+#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_STACK_SIZE 3072
+#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_CONNECTION_TASK_STACK_SIZE 3072
+#define CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_CONNECTION_TASK_PRIORITY 2
 
 /**
  * @brief The maximum number of retries for network operation with server.
@@ -61,7 +56,7 @@
 #define WIFI_DISCONNECTED_BIT                (1 << 1)
 #define CORE_MQTT_AGENT_DISCONNECTED_BIT     (1 << 2)
 
-static const char *TAG = "CoreMqttAgentNetworkManager";
+static const char *TAG = "core_mqtt_agent_network_manager";
 
 static esp_event_loop_handle_t xCoreMqttAgentNetworkManagerEventLoop;
 
@@ -159,7 +154,7 @@ static void prvCoreMqttAgentConnectionTask(void* pvParameters)
 
             if(xTlsRet == TLS_TRANSPORT_SUCCESS)
             {
-                eMqttRet = eCoreMqttAgentConnect(xCleanSession, CONFIG_THING_NAME);
+                eMqttRet = eCoreMqttAgentConnect(xCleanSession, CONFIG_GRI_THING_NAME);
                 if(eMqttRet != MQTTSuccess)
                 {
                     ESP_LOGE(TAG, "MQTT_Status: %s", MQTT_Status_strerror(eMqttRet));
@@ -348,8 +343,9 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t *pxNetworkContext
     
         /* Start network establishing tasks */
         xTaskCreate(prvCoreMqttAgentConnectionTask, "CoreMqttAgentConnectionTask", 
-            CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_STACK_SIZE,
-            NULL, CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_TLS_TASK_PRIORITY, 
+            CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_CONNECTION_TASK_STACK_SIZE,
+            NULL, 
+            CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_CONNECTION_TASK_PRIORITY, 
             NULL);
 
         /* Set initial state of network connection */

@@ -22,13 +22,29 @@ menu "Golden Reference Integration"
         default 1 if APP_WIFI_PROV_TRANSPORT_SOFTAP
         default 2 if APP_WIFI_PROV_TRANSPORT_BLE
 
-    config NETWORK_MANAGER_HOSTNAME
-        string "AWS Endpoint"
-        default "abcd-ats.iot.us-east-1.amazonaws.com"
+    config GRI_MQTT_ENDPOINT
+        string "Endpoint for MQTT Broker to use"
+        default ""
 
-    config NETWORK_MANAGER_PORT
-        int "Port for MQTT Broker use"
+    config GRI_MQTT_PORT
+        int "Port for MQTT Broker to use"
         default 8883
+
+    config GRI_THING_NAME
+        string "Thing name"
+        default ""
+
+    config GRI_ENABLE_SIMPLE_PUB_SUB_DEMO
+        bool "Enable simple pub sub demo"
+        default y
+
+    config GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO
+        bool "Enable temperature sensor and LED control pub sub demo"
+        default y
+    
+    config GRI_ENABLE_OTA_DEMO
+        bool "Enable OTA demo"
+        default y
 
     choice EXAMPLE_CHOOSE_PKI_ACCESS_METHOD
     prompt "Choose PKI credentials access method"

@@ -68,7 +68,15 @@
 /* coreMQTT-Agent events */
 #include "core_mqtt_agent_events.h"
 
+/* Hardware drivers */
+#include "app_driver.h"
+
 #include "core_json.h"
+
+#ifdef LIBRARY_LOG_NAME
+#undef LIBRARY_LOG_NAME
+#define LIBRARY_LOG_NAME "temp_pub_sub_demo"
+#endif
 
 const static char *TAG = "temp_sub_pub_demo";
 
@@ -263,6 +271,9 @@ void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
     char pcTaskNameBuf[ 15 ];
     uint32_t ulTaskNumber;
 
+    /* Hardware initialisation */
+    app_driver_init();
+
     /* Each instance of prvSimpleSubscribePublishTask() generates a unique name
      * and topic filter for itself from the number passed in as the task
      * parameter. */
@@ -350,7 +361,7 @@ static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue )
     xReturn = xTaskNotifyWait( 0,
                                0,
                                pulNotifiedValue,
-                               pdMS_TO_TICKS( mqttexampleMS_TO_WAIT_FOR_NOTIFICATION ) );
+                               portMAX_DELAY );
     return xReturn;
 }
 
