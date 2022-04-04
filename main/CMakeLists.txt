@@ -28,6 +28,7 @@ set(MAIN_REQUIRES
     coreJSON
     backoffAlgorithm
     ota-for-aws-iot-embedded-sdk
+    esp_secure_cert_mgr
 )
 
 idf_component_register(
