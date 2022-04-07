@@ -1,24 +1,29 @@
-/* FreeRTOS includes */
+/* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 #include <freertos/semphr.h>
 #include <freertos/queue.h>
 
-/* ESP-IDF includes */
+/* ESP-IDF includes. */
 #include <esp_log.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
 #include <sdkconfig.h>
 
-/* Network transport */
+/* Network transport include. */
 #include <network_transport.h>
 
-/* coreMQTT-Agent network manager */
+/* coreMQTT-Agent network manager include. */
 #include <core_mqtt_agent_network_manager.h>
 
-/* Wifi provisioning/connection handler */
+/* Wifi provisioning/connection handler include. */
 #include <app_wifi.h>
+
+/* Demo includes. */
+#if CONFIG_GRI_ENABLE_OTA_DEMO
+    #include "ota_over_mqtt_demo.h"
+#endif
 
 /* Logging tag */
 static const char *TAG = "main";
@@ -33,8 +38,6 @@ extern const char pcClientKeyPem[] asm("_binary_client_key_start");
 /* TODO - Set up kconfig to enable/disable demo tasks */
 extern void vStartSimpleSubscribePublishTask( configSTACK_DEPTH_TYPE uxStackSize,
     UBaseType_t uxPriority);
-extern void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
-                                      UBaseType_t uxPriority);
 extern void vStartTempSensorRead( configSTACK_DEPTH_TYPE uxStackSize,
                        UBaseType_t uxPriority, QueueHandle_t queue);
 extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
