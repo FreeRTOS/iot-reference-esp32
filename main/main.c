@@ -25,6 +25,10 @@
     #include "ota_over_mqtt_demo.h"
 #endif
 
+#ifdef CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+    #include "esp_secure_cert_read.h"
+#endif
+
 /* Logging tag */
 static const char *TAG = "main";
 
@@ -74,9 +78,9 @@ void app_main(void)
 #elif CONFIG_EXAMPLE_USE_DS_PERIPHERAL
     xNetworkContext.pcClientCertPem = pcClientCertPem;
     xNetworkContext.pcClientKeyPem = NULL;
-#error "Populate the ds_data structure and remove this line"
-    /* xNetworkContext.ds_data = DS_DATA; */
-    /* The ds_data can be populated using the API's provided by esp_secure_cert_mgr */
+    esp_ds_data_ctx_t *ds_data = NULL;
+    ds_data = esp_secure_cert_get_ds_ctx();
+    xNetworkContext.ds_data = ds_data;
 #else
     xNetworkContext.pcClientCertPem = pcClientCertPem;
     xNetworkContext.pcClientKeyPem = pcClientKeyPem;
