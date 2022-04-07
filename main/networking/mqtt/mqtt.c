@@ -22,11 +22,14 @@
 #include "network_transport.h"
 
 /* Network manager */
-//#include "network_manager.h"
 #include "core_mqtt_agent_events.h"
 #include "core_mqtt_agent_network_manager.h"
 #include "esp_event.h"
 
+/* OTA demo include. */
+#if CONFIG_GRI_ENABLE_OTA_DEMO
+    #include "ota_over_mqtt_demo.h"
+#endif
 
 static const char *TAG = "MQTT";
 
@@ -77,11 +80,6 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
         break;
     }
 }
-
-#if CONFIG_GRI_ENABLE_OTA_DEMO
-extern bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
-                                 MQTTPublishInfo_t * pxPublishInfo );
-#endif
                                 
 static uint32_t prvGetTimeMs(void)
 {

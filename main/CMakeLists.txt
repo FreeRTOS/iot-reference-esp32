@@ -6,13 +6,15 @@ set(MAIN_SRCS
     "networking/mqtt/subscription_manager.c"
     "networking/network_manager/core_mqtt_agent_network_manager.c"
     "networking/network_manager/core_mqtt_agent_events.c"
-    "demo_tasks/simple_sub_pub_demo.c"
-    "demo_tasks/ota_over_mqtt_demo.c"
+    "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c"
+    "demo_tasks/ota/ota_over_mqtt_demo.c"
     "demo_tasks/temp_sub_pub_demo.c"
 )
 
 set(MAIN_INCLUDE_DIRS
     "."
+    "demo_tasks/ota"
+    "demo_tasks/sub_pub_unsub_demo"
     "networking/wifi"
     "networking/mqtt"
     "networking/network_manager"
