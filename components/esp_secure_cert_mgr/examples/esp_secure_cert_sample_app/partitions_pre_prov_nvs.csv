@@ -1,0 +1,7 @@
+# If your pre-provisioning partition follows earlier nomencature i.e.
+# pre_prov and is of type custflash then use this csv file
+# Name,   Type, SubType, Offset,  Size, Flags
+# Note: if you change the phy_init or app partition offset, make sure to change the offset in Kconfig.projbuild
+pre_prov,      data,       nvs,   0xD000,    0x6000,
+pre_prov_keys, data,  nvs_keys,  0x13000,    0x1000,
+factory,        app,   factory,  0x20000,        1M,
