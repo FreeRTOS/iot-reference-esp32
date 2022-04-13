@@ -8,6 +8,7 @@ set(MAIN_SRCS
     "networking/network_manager/core_mqtt_agent_events.c"
     "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c"
     "demo_tasks/temp_sub_pub_demo.c"
+    "demo_tasks/ota/ota_over_mqtt_demo.c"
 )
 
 set(MAIN_INCLUDE_DIRS
@@ -29,14 +30,8 @@ set(MAIN_REQUIRES
     coreJSON
     backoffAlgorithm
     esp_secure_cert_mgr
+    ota-for-aws-iot-embedded-sdk
 )
-
-# Demo enables
-
-if(CONFIG_GRI_ENABLE_OTA_DEMO)
-    list(APPEND MAIN_SRCS "demo_tasks/ota/ota_over_mqtt_demo.c")
-    list(APPEND MAIN_REQUIRES ota-for-aws-iot-embedded-sdk)
-endif()
 
 idf_component_register(
     SRCS
