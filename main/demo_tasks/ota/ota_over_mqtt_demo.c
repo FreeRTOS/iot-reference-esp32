@@ -49,7 +49,7 @@
 #include "freertos/semphr.h"
 
 /* OTA library configuration include. */
-#include "ota_config.h"
+#include "ota_over_mqtt_demo_config.h"
 
 /* MQTT library includes. */
 #include "core_mqtt_agent.h"

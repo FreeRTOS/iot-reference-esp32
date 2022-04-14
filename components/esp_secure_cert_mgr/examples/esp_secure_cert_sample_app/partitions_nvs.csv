@@ -1,5 +1,0 @@
-# Name,   Type, SubType, Offset,  Size, Flags
-# Note: if you change the phy_init or app partition offset, make sure to change the offset in Kconfig.projbuild
-esp_secure_cert,          data,       nvs,   0xD000,    0x6000,
-esp_secure_cert_keys,     data,  nvs_keys,  0x13000,    0x1000,
-factory,                   app,   factory,  0x20000,        1M,
