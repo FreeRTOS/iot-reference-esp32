@@ -3,10 +3,12 @@
 ## Introduction
 This repo contains an ESP-IDF project that serves as a reference example for partners looking to develop a well-architected application that is designed to connect to AWS IoT Core and make use of related services in the best possible manner.  
 
-The example shows the use of popular and important AWS IoT libraries by means of a simple example designed to run on the ESP32-C3 which periodically publishes the temperature sensor data to AWS IoT Core and allows the WS2812 LED on the ESP32-C3 DevKit to be controlled using a JSON payload that can be published over MQTT.
+The example shows the use of popular and important [AWS IoT LTS libraries](https://github.com/espressif/esp-aws-iot/tree/master/libraries) by means of a simple example designed to run on the ESP32-C3 which periodically publishes the temperature sensor data to AWS IoT Core and allows the WS2812 LED on the ESP32-C3 DevKit to be controlled using a JSON payload that can be published over MQTT.
+
+This example can be used as a boilerplate to create a production-ready application.
 
 ## Features
-1. Simplified provisioning: Provisioning can be carried out using Espressif's open source provisioning apps, available on the Google Play Store for Android, and the Apple App Store for iOS and iPadOS.  
+1. Secure and Simplified provisioning: Provisioning is based on Espressif's [Unified Provisioning API](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/provisioning/provisioning.html) and can be carried out using Espressif's open source provisioning apps, available on the Google Play Store for Android, and the Apple App Store for iOS and iPadOS.  
 [Google Play Store link](https://play.google.com/store/apps/details?id=com.espressif.provble)  
 [Apple App Store link](https://apps.apple.com/app/esp-ble-provisioning/id1473590141)  
 
@@ -28,6 +30,8 @@ Follow the hardware setup guide given [here](https://docs.espressif.com/projects
 ### Setting up the development environment
 Follow the software setup guide given [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html#software) for the ESP32-C3 to setup your development environment.
 
+> Please ensure that you are able to build and run the `hello_world` example on your board and then continue. 
+
 ## Cloning the Repository
 Run the following commands to correctly clone the repository:
 ```
@@ -43,15 +47,24 @@ To build and use this example, follow all the AWS IoT Getting Started steps from
 
 ### Authentication (Based on X.509 certificates)
 
-#### Device Authentication
-
-AWS IoT can use AWS IoT-generated certificates or certificates signed by a CA certificate for device authentication. To use a certificate that is not created by AWS IoT, you must register a CA certificate. All device certificates must be signed by the CA certificate you register. Please refer to guide at https://docs.aws.amazon.com/iot/latest/developerguide/device-certs-your-own.html for step-by-step instructions to register custom X.509 certificates.
-
 #### Server Authentication
 
 Server certificates allow devices to verify that they're communicating with AWS IoT and not another server impersonating AWS IoT. By default [Amazon Root CA 1](https://www.amazontrust.com/repository/AmazonRootCA1.pem) (signed by Amazon Trust Services Endpoints CA) is embedded in applications, for more information please refer to https://docs.aws.amazon.com/iot/latest/developerguide/managing-device-certs.html#server-authentication
 
-#### Installing Private Key & Certificate
+#### Device Authentication
+
+AWS IoT can use AWS IoT-generated certificates or certificates signed by a CA certificate for device authentication. To use a certificate that is not created by AWS IoT, you must register a CA certificate. All device certificates must be signed by the CA certificate you register. Please refer to guide at https://docs.aws.amazon.com/iot/latest/developerguide/device-certs-your-own.html for step-by-step instructions to register custom X.509 certificates.  
+
+##### Programming Certificates for Device Authentication
+
+The example provided supports two ways of accessing certificates required for device identity:  
+1. Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) on the ESP32-C3
+2. Using hardcoded certificates directly embedded in the App Binary
+
+> While use of the DS Peripheral is the recommended and most secure way for handling certificates in a production environment, the default developer-friendly workflow is the use of hardcoded certificates.  
+> Steps for configuring and using the DS Peripheral can be found in the [Security](#security) section. 
+
+#### Hardcoded Private Key & Certificate
 
 As part of creating a device certificate, you downloaded a Private Key (`xxx-private.pem.key`) and a Certificate file (`xxx-certificate.pem.crt`). These keys need to be loaded by the ESP32-C3 to identify itself.
 
@@ -59,10 +72,18 @@ As part of creating a device certificate, you downloaded a Private Key (`xxx-pri
 
 Copy the `.pem.key` and `.pem.crt` files to the `certs` directory of the example. Rename them by removing the device-specific prefix - the new names are `client.key` and `client.crt`.
 
+```
+mv path/to/xxx-private.pem.key main/certs/client.key
+mv path/to/xxx-certificate.pem.crt main/certs/client.crt
+```
+
 As these files are bound to your AWS IoT account, take care not to accidentally commit them to public source control.
 
 ### Steps to run the demo
 1. Run `idf.py menuconfig` and set the AWS IoT endpoint and Thing Name under `Golden Reference Integration`.
+
+![IDF Menuconfig Screenshot](_static/idf_menuconfig_screenshot.png "IDF Menuconfig Screenshot")
+
 2. This example supports multiple ways to securely store the PKI credentials.
 The default method is to use PKI credentials which are embedded in the binary, using the certs from the `certs/` directory. 
 3. Run `idf.py build flash monitor -p <UART port>` to build, flash and start the serial console.
@@ -89,6 +110,15 @@ The default method is to use PKI credentials which are embedded in the binary, u
 ## Security
 1. Steps to enable Flash Encryption on ESP32-C3 can be found [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html).
 2. Steps to enable Secure Boot on ESP32-C3 can be found [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html).
+3. The Digital Signature Peripheral on the ESP32-C3 can operate on encrypted private key directly, restricting software access to device identity.  
+The DS Peripheral can be provisioned using the `configure_ds.py` script available in the `components/esp_secure_cert_mgr/tools/` directory and following the steps listed in the `README.md` in the same directory.  
+Once you have configured the DS Peripheral and verified it by running the `components/esp_secure_cert_mgr/esp_secure_cert_app` application, simply choose the `Use DS peripheral` option in `idf.py menuconfig`.
+
+```
+Golden Reference Integration
+└── PKI credentials access method
+    └── Use DS peripheral
+```
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
