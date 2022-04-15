@@ -211,7 +211,7 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 ![Image](getting_started_images/image24.png)
 
-8. Download your private key, public key, and device certificate by choosing the **Download** links for each. These will be used by your device to connect to AWS IoT Core. **NOTE:** The private key and public key can only be downloaded here, so store them in a safe place.
+8. Download your **Private Key**, **Public Key**, and **Certificate** by clicking the **Download** links for each. These will be used by your device to connect to AWS IoT Core. **NOTE:** The private key and public key can only be downloaded here, so store them in a safe place.
 
 ![Image](getting_started_images/image25.png)
 
@@ -228,7 +228,7 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 ### Provisioning credentials to device
 
-If you followed the Setting up AWS IoT Core steps, as part of creating a thing, you downloaded a Private Key (`xxx-private.pem.key`) and a Certificate file (`xxx-certificate.pem.crt`). You also should have taken note of the device endpoint for your AWS account. These credentials need to be loaded onto the device so it can be identified by AWS IoT Core.
+If you followed the Setting up AWS IoT Core steps, as part of creating a thing, you downloaded a **Private Key** file (`xxx-private.pem.key`) and a **Certificate** file (`xxx-certificate.pem.crt`). You also should have taken note of the device endpoint for your AWS account. These credentials need to be loaded onto the device so it can be identified by AWS IoT Core.
 
 This project provides support for two options for provisioning device credentials required for device identity:  
 
@@ -255,8 +255,8 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 4. Set `Port for MQTT Broker to use` to `8883`.
 5. Set `Thing name` to the thing name created for the device.
 6. Set `Choose PKI credentials access method` to `Use flash storage (default)`.
-7. Copy your Private Key file to `main\certs` and rename it to `client.key`.
-8. Copy your Certificate file to `main\certs` and rename it to `client.crt`.
+7. Copy your **Private Key** file to `main\certs` and rename it to `client.key`.
+8. Copy your **Certificate** file to `main\certs` and rename it to `client.crt`.
 
 #### Option 2 - Secure method - Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
 
