@@ -141,7 +141,7 @@ Your board must be registered with AWS IoT to communicate with the AWS Cloud. To
 
 ![Image](getting_started_images/image17.png)
 
-7. Inside the **Policy document**, copy and paste the following JSON into the policy editor window. Replace `aws-region` and `aws-account` with your AWS Region and Account ID.
+7. Inside the **Policy document**, copy and paste the following JSON into the policy editor window. Replace `aws-region` and `aws-account-id` with your AWS Region and Account ID.
 
 ```
 {
