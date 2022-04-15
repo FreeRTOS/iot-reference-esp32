@@ -241,7 +241,9 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
-        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+        1. Open the ESP-IDF Terminal/Command Prompt
+        2. Set the directory to the root of this project.
+        3. Run `idf.py menuconfig`.
     2. **Visual Studio Code users**
         1. Open this project in Visual Studio Code with the Espressif IDF extension.
         2. Click **View** at the top.
@@ -260,7 +262,9 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
-        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+        1. Open the ESP-IDF Terminal/Command Prompt
+        2. Set the directory to the root of this project.
+        3. Run `idf.py menuconfig`.
     2. **Visual Studio Code users**
         1. Open this project in Visual Studio Code with the Espressif IDF extension.
         2. Click **View** at the top.
@@ -274,7 +278,7 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 6. Set `Choose PKI credentials access method` to `Use DS peripheral`.
 7. /* TODO */
 
-## Running the demos
+### Configuring demos
 
 This repository currently supports 3 demos implemented as FreeRTOS tasks, each of which utilize the same MQTT connection managed by the coreMQTT-Agent library for thread-safety. The demos are the following:
 * **Over-The-Air update demo:** This demo has the user create an OTA job on AWS IoT for their device and watch as it downloads the updated firmware, and reboot with the updated firmware.
@@ -283,11 +287,11 @@ This repository currently supports 3 demos implemented as FreeRTOS tasks, each o
 
 By default, all 3 demos are enabled and will run concurrently with each other.
 
-### Configuring demos
-
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
-        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+        1. Open the ESP-IDF Terminal/Command Prompt
+        2. Set the directory to the root of this project.
+        3. Run `idf.py menuconfig`.
     2. **Visual Studio Code users**
         1. Open this project in Visual Studio Code with the Espressif IDF extension.
         2. Click **View** at the top.
@@ -321,7 +325,34 @@ From the `Golden Reference Integration` menu, follow the below guides to configu
 
 /* TODO */
 
-### Steps to run the demo
+## Building, flashing, and monitoring the project
+
+### Terminal/Command Prompt users
+
+1. Open an ESP-IDF Terminal/Command Prompt.
+2. Set the directory to the root of this project.
+3. Run `idf.py -p <PORT> flash monitor` where `<PORT>` is the serial port of the board.
+
+### Visual Studio Code users
+
+1. Open this project in Visual Studio Code with the Espressif IDF extension.
+2. Click **View** at the top.
+3. Click **Command Palette** in the dropdown menu.
+4. Search for `ESP-IDF: Build, Flash and start a monitor on your device` and select the command.
+
+## Interacting with the demos
+
+### Over-The-Air update demo
+
+/* TODO */
+
+### SubPubUnsub demo
+
+/* TODO */
+
+### TempPubSub and LED control demo
+
+/* TODO */
 1. Run `idf.py menuconfig` and set the AWS IoT endpoint and Thing Name under `Golden Reference Integration`.
 
 ![IDF Menuconfig Screenshot](_static/idf_menuconfig_screenshot.png "IDF Menuconfig Screenshot")
