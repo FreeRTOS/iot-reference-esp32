@@ -230,14 +230,14 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 If you followed the Setting up AWS IoT Core steps, as part of creating a thing, you downloaded a Private Key (`xxx-private.pem.key`) and a Certificate file (`xxx-certificate.pem.crt`). You also should have taken note of the device endpoint for your AWS account. These credentials need to be loaded onto the device so it can be identified by AWS IoT Core.
 
-This project provides support for two ways of provisioning device credentials required for device identity:  
+This project provides support for two options for provisioning device credentials required for device identity:  
 
 1. Hardcoding credentials directly into the binary.
 2. Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html).
 
-#### Hardcoding credentials directly into the binary
-
 While use of the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) is the recommended and most secure way for handling device credentials in a production environment, the default developer-friendly workflow is the use of hardcoded certificates.
+
+#### Option 1 - Hardcoding credentials directly into the binary
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
@@ -258,7 +258,7 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 7. Copy your Private Key file to `main\certs` and rename it to `client.key`.
 8. Copy your Certificate file to `main\certs` and rename it to `client.crt`.
 
-#### Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
+#### Option 2 - Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
