@@ -226,46 +226,100 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 ![Image](getting_started_images/image27.png)
 
-## Running the demo
+### Provisioning credentials to device
 
-### Provisioning/Configuration
-There are some additional steps that need to be run before you can build this example.
-The [Getting Started section of the AWS IoT Developer Guide](http://docs.aws.amazon.com/iot/latest/developerguide/iot-gs.html) lays out the steps to get started with AWS IoT.
-To build and use this example, follow all the AWS IoT Getting Started steps from the beginning ("Sign in to the AWS Iot Console") up until "Configuring Your Device". For configuring the device, these are the steps:
+If you followed the Setting up AWS IoT Core steps, as part of creating a thing, you downloaded a Private Key (`xxx-private.pem.key`) and a Certificate file (`xxx-certificate.pem.crt`). You also should have taken note of the device endpoint for your AWS account. These credentials need to be loaded onto the device so it can be identified by AWS IoT Core.
 
-### Authentication (Based on X.509 certificates)
+This project provides support for two ways of provisioning device credentials required for device identity:  
 
-#### Server Authentication
+1. Hardcoding credentials directly into the binary.
+2. Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html).
 
-Server certificates allow devices to verify that they're communicating with AWS IoT and not another server impersonating AWS IoT. By default [Amazon Root CA 1](https://www.amazontrust.com/repository/AmazonRootCA1.pem) (signed by Amazon Trust Services Endpoints CA) is embedded in applications, for more information please refer to https://docs.aws.amazon.com/iot/latest/developerguide/managing-device-certs.html#server-authentication
+#### Hardcoding credentials directly into the binary
 
-#### Device Authentication
+While use of the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) is the recommended and most secure way for handling device credentials in a production environment, the default developer-friendly workflow is the use of hardcoded certificates.
 
-AWS IoT can use AWS IoT-generated certificates or certificates signed by a CA certificate for device authentication. To use a certificate that is not created by AWS IoT, you must register a CA certificate. All device certificates must be signed by the CA certificate you register. Please refer to guide at https://docs.aws.amazon.com/iot/latest/developerguide/device-certs-your-own.html for step-by-step instructions to register custom X.509 certificates.  
+1. Open the ESP-IDF menuconfig.
+    1. **Terminal/Command Prompt users**
+        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+    2. **Visual Studio Code users**
+        1. Open this project in Visual Studio Code with the Espressif IDF extension.
+        2. Click **View** at the top.
+        3. Click **Command Palette** in the dropdown menu.
+        4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
+        5. The `SDK Configuration editor` window should pop up after a moment.
+2. Select `Golden Reference Integration` from the menu.
+3. Set `Endpoint for MQTT Broker to use` to your AWS endpoint.
+4. Set `Port for MQTT Broker to use` to `8883`.
+5. Set `Thing name` to the thing name created for the device.
+6. Set `Choose PKI credentials access method` to `Use flash storage (default)`.
+7. Copy your Private Key file to `main\certs` and rename it to `client.key`.
+8. Copy your Certificate file to `main\certs` and rename it to `client.crt`.
 
-##### Programming Certificates for Device Authentication
+#### Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
 
-The example provided supports two ways of accessing certificates required for device identity:  
-1. Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) on the ESP32-C3
-2. Using hardcoded certificates directly embedded in the App Binary
+1. Open the ESP-IDF menuconfig.
+    1. **Terminal/Command Prompt users**
+        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+    2. **Visual Studio Code users**
+        1. Open this project in Visual Studio Code with the Espressif IDF extension.
+        2. Click **View** at the top.
+        3. Click **Command Palette** in the dropdown menu.
+        4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
+        5. The `SDK Configuration editor` window should pop up after a moment.
+2. Select `Golden Reference Integration` from the menu.
+3. Set `Endpoint for MQTT Broker to use` to your AWS endpoint.
+4. Set `Port for MQTT Broker to use` to `8883`.
+5. Set `Thing name` to the thing name created for the device.
+6. Set `Choose PKI credentials access method` to `Use DS peripheral`.
+7. /* TODO */
 
-> While use of the DS Peripheral is the recommended and most secure way for handling certificates in a production environment, the default developer-friendly workflow is the use of hardcoded certificates.  
-> Steps for configuring and using the DS Peripheral can be found in the [Security](#security) section. 
+## Running the demos
 
-#### Hardcoded Private Key & Certificate
+This repository currently supports 3 demos implemented as FreeRTOS tasks, each of which utilize the same MQTT connection managed by the coreMQTT-Agent library for thread-safety. The demos are the following:
+* **Over-The-Air update demo:** This demo has the user create an OTA job on AWS IoT for their device and watch as it downloads the updated firmware, and reboot with the updated firmware.
+* **SubPubUnsub demo:** This demo creates tasks which Subscribe to a topic on AWS IoT Core, Publish to the same topic, receive their own publish since the device is subscribed to the topic it published to, then Unsubscribe from the topic in a loop.
+* **TempPubSub and LED control demo:** This demo utilizes the temperature sensor to send temperature readings to IoT Core, and allows the user to send JSON payloads back to the device to control it's LED.
 
-As part of creating a device certificate, you downloaded a Private Key (`xxx-private.pem.key`) and a Certificate file (`xxx-certificate.pem.crt`). These keys need to be loaded by the ESP32-C3 to identify itself.
+By default, all 3 demos are enabled and will run concurrently with each other.
 
-#### Embedded Key & Cert into App Binary
+### Configuring demos
 
-Copy the `.pem.key` and `.pem.crt` files to the `certs` directory of the example. Rename them by removing the device-specific prefix - the new names are `client.key` and `client.crt`.
+1. Open the ESP-IDF menuconfig.
+    1. **Terminal/Command Prompt users**
+        1. Open the ESP-IDF Terminal/Command Prompt and run `idf.py menuconfig`.
+    2. **Visual Studio Code users**
+        1. Open this project in Visual Studio Code with the Espressif IDF extension.
+        2. Click **View** at the top.
+        3. Click **Command Palette** in the dropdown menu.
+        4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
+        5. The `SDK Configuration editor` window should pop up after a moment.
+2. Select `Golden Reference Integration` from the menu.
 
-```
-mv path/to/xxx-private.pem.key main/certs/client.key
-mv path/to/xxx-certificate.pem.crt main/certs/client.crt
-```
+From the `Golden Reference Integration` menu, follow the below guides to configure each demo.
 
-As these files are bound to your AWS IoT account, take care not to accidentally commit them to public source control.
+#### Over-The-Air demo configurations
+
+1. Set `Enable OTA demo` to true.
+2. With `Enable OTA demo` set to true, an `OTA demo configurations` menu is revealed.
+3. From the `OTA demo configurations` menu, the following options can be set:
+    * `Max file path size.`: The maximum size of the file paths used in the demo.
+    * `Max stream name size.`: The maximum size of the stream name required for downloading update file from streaming service.
+    * `OTA statistic output delay milliseconds.`: The delay used in the OTA demo task to periodically output the OTA statistics like number of packets received, dropped, processed and queued per connection.
+    * `MQTT operation timeout milliseconds.`: The maximum time for which OTA demo waits for an MQTT operation to be complete. This involves receiving an acknowledgment for broker for SUBSCRIBE, UNSUBSCRIBE and non QOS0 publishes.
+    * `OTA agent task stack priority.`: The priority of the OTA agent task that runs within the AWS OTA library.
+    * `OTA agent task stack size.`: The task size of the OTA agent task that runs within the AWS OTA library.
+    * `Application version major.`: The major number of the application version.
+    * `Application version minor.`: The minor number of the application version.
+    * `Application version build.`: The build number of the application version.
+
+#### SubPubUnsub demo configurations
+
+/* TODO */
+
+#### TempPubSub and LED control demo configurations
+
+/* TODO */
 
 ### Steps to run the demo
 1. Run `idf.py menuconfig` and set the AWS IoT endpoint and Thing Name under `Golden Reference Integration`.
