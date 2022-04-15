@@ -237,7 +237,7 @@ This project provides support for two options for provisioning device credential
 
 While use of the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) is the recommended and most secure way for handling device credentials in a production environment, the default developer-friendly workflow is the use of hardcoded certificates.
 
-#### Option 1 - Hardcoding credentials directly into the binary
+#### Option 1 - Non-secure method - Hardcoding credentials directly into the binary
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
@@ -258,7 +258,7 @@ While use of the [Digital Signature Peripheral](https://docs.espressif.com/proje
 7. Copy your Private Key file to `main\certs` and rename it to `client.key`.
 8. Copy your Certificate file to `main\certs` and rename it to `client.crt`.
 
-#### Option 2 - Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
+#### Option 2 - Secure method - Using the [Digital Signature Peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html)
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
@@ -286,6 +286,8 @@ This repository currently supports 3 demos implemented as FreeRTOS tasks, each o
 * **TempPubSub and LED control demo:** This demo utilizes the temperature sensor to send temperature readings to IoT Core, and allows the user to send JSON payloads back to the device to control it's LED.
 
 By default, all 3 demos are enabled and will run concurrently with each other.
+
+To configure the demos:
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt users**
