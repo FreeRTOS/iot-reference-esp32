@@ -77,26 +77,40 @@ void app_main(void)
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
-    if (esp_secure_cert_get_dev_cert_addr((const void **)&xNetworkContext.pcClientCertPem, &ulBufferLen) == ESP_OK) 
+    xEspErrRet = esp_secure_cert_get_dev_cert_addr(
+        (const void **)&xNetworkContext.pcClientCertPem, &ulBufferLen);
+
+    if (xEspErrRet == ESP_OK) 
     {
-        ESP_LOGI(TAG, "Device Cert: \nLength: %d\n%s", strlen(xNetworkContext.pcClientCertPem), xNetworkContext.pcClientCertPem);
+#if CONFIG_GRI_OUTPUT_CERTS_KEYS
+        ESP_LOGI(TAG, "\nDevice Cert: \nLength: %d\n%s", 
+            strlen(xNetworkContext.pcClientCertPem), 
+            xNetworkContext.pcClientCertPem);
+#endif
     } 
     else 
     {
-        ESP_LOGE(TAG, "Error getting device certificate from esp_secure_crt_mgr.");
-        return;
+        ESP_LOGE(TAG, "Error in getting device certificate. Error: %s", 
+            esp_err_to_name(xEspErrRet));
     }
 
     /* Get the root CA certificate from esp_secure_crt_mgr and put into network
      * context. */
-    if (esp_secure_cert_get_ca_cert_addr((const void **)&xNetworkContext.pcServerRootCAPem, &ulBufferLen) == ESP_OK) 
+    xEspErrRet = esp_secure_cert_get_ca_cert_addr(
+        (const void **)&xNetworkContext.pcServerRootCAPem, &ulBufferLen);
+
+    if (xEspErrRet == ESP_OK) 
     {
-        ESP_LOGI(TAG, "CA Cert: \nLength: %d\n%s", strlen(xNetworkContext.pcServerRootCAPem), xNetworkContext.pcServerRootCAPem);
+#if CONFIG_GRI_OUTPUT_CERTS_KEYS
+        ESP_LOGI(TAG, "\nCA Cert: \nLength: %d\n%s", 
+            strlen(xNetworkContext.pcServerRootCAPem), 
+            xNetworkContext.pcServerRootCAPem);
+#endif
     } 
     else 
     {
-        ESP_LOGE(TAG, "Error in getting root CA.");
-        return;
+        ESP_LOGE(TAG, "Error in getting CA certificate. Error: %s", 
+            esp_err_to_name(xEspErrRet));
     }
 
 #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
@@ -104,20 +118,36 @@ void app_main(void)
     /* If the digital signature peripheral is being used, get the digital
      * signature peripheral context from esp_secure_crt_mgr and put into
      * network context. */
+
     xNetworkContext.ds_data = esp_secure_cert_get_ds_ctx();
+
+    if(xNetworkContext.ds_data == NULL)
+    {
+        ESP_LOGE(TAG, "Error in getting digital signature peripheral data.");
+    }
 
 #else
 
     /* If the DS peripheral is not being used, get the device private key from 
      * esp_secure_crt_mgr and put into network context. */
-    if (esp_secure_cert_get_priv_key_addr((const void **)&xNetworkContext.pcClientKeyPem, &ulBufferLen) == ESP_OK) 
+
+    xEspErrRet = esp_secure_cert_get_priv_key_addr(
+        (const void **)&xNetworkContext.pcClientKeyPem, &ulBufferLen);
+
+    if (xEspErrRet == ESP_OK) 
     {
-        ESP_LOGI(TAG, "Private key: \nLength: %d\n%s", strlen(xNetworkContext.pcClientKeyPem), xNetworkContext.pcClientKeyPem);
+
+#if CONFIG_GRI_OUTPUT_CERTS_KEYS
+        ESP_LOGI(TAG, "\nPrivate Key: \nLength: %d\n%s", 
+            strlen(xNetworkContext.pcClientKeyPem), 
+            xNetworkContext.pcClientKeyPem);
+#endif
+
     } 
-    else
+    else 
     {
-        ESP_LOGE(TAG, "Error in getting device private key.");
-        return;
+        ESP_LOGE(TAG, "Error in getting private key. Error: %s", 
+            esp_err_to_name(xEspErrRet));
     }
 
 #endif
@@ -129,7 +159,9 @@ void app_main(void)
      * WiFi. */
     xEspErrRet = nvs_flash_init();
 
-    if (xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES || xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    if (xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES 
+        || xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND) 
+    {
         /* NVS partition was truncated
          * and needs to be erased */
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -150,11 +182,11 @@ void app_main(void)
     xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
 
 #if CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO
-    vStartSimpleSubscribePublishTask(3072, 2);
+    vStartSimpleSubscribePublishTask(3072, 1);
 #endif
 
 #if CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO
-    vStartTempSubscribePublishTask(1, 3072, 2);
+    vStartTempSubscribePublishTask(1, 3072, 1);
 #endif
 
 #if CONFIG_GRI_ENABLE_OTA_DEMO
@@ -164,29 +196,31 @@ void app_main(void)
     /* Get the code signing certificate from esp_secure_crt_mgr and give to 
      * OTA PAL. */
 
-    xEspErrRet = esp_secure_cert_get_cs_cert_addr((const void **)&pcCodeSigningCertificatePEM, &ulBufferLen);
-
-    if (xEspErrRet == ESP_OK) 
-    {
-        ESP_LOGI(TAG, "CS Cert: \nLength: %d\n%s", strlen(pcCodeSigningCertificatePEM), pcCodeSigningCertificatePEM);
-    } 
-    else 
-    {
-        ESP_LOGE(TAG, "Error in getting code signing certificate.");
-    }
+    xEspErrRet = esp_secure_cert_get_cs_cert_addr(
+        (const void **)&pcCodeSigningCertificatePEM, &ulBufferLen);
 
     if(xEspErrRet == ESP_OK)
     {
+#if CONFIG_GRI_OUTPUT_CERTS_KEYS
+        ESP_LOGI(TAG, "\nCS Cert: \nLength: %d\n%s", 
+            strlen(pcCodeSigningCertificatePEM), 
+            pcCodeSigningCertificatePEM);
+#endif
         if(otaPal_SetCodeSigningCertificate(pcCodeSigningCertificatePEM))
         {
-            vStartOTACodeSigningDemo(3072, 3);
+            vStartOTACodeSigningDemo(3072, 1);
         }
         else
         {
             ESP_LOGE(TAG, 
                 "Failed to set the code signing certificate for the AWS OTA "
-                "library.");
+                "library. OTA demo will not be started.");
         }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Error in getting code signing certificate. Error: %s ."
+            "OTA demo will not be started.", esp_err_to_name(xEspErrRet));
     }
     
 
