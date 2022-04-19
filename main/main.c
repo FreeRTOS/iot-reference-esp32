@@ -6,6 +6,7 @@
 #include <freertos/queue.h>
 
 /* ESP-IDF includes. */
+#include <esp_err.h>
 #include <esp_log.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
@@ -22,22 +23,16 @@
 
 /* Demo includes. */
 #if CONFIG_GRI_ENABLE_OTA_DEMO
+    #include "ota_pal.h"
     #include "ota_over_mqtt_demo.h"
 #endif
 
-#ifdef CONFIG_EXAMPLE_USE_DS_PERIPHERAL
-    #include "esp_secure_cert_read.h"
-#endif
+#include "esp_secure_cert_read.h"
 
 /* Logging tag */
 static const char *TAG = "main";
 
 static NetworkContext_t xNetworkContext;
-
-/* Network credentials */
-extern const char pcServerRootCAPem[] asm("_binary_root_cert_auth_pem_start");
-extern const char pcClientCertPem[] asm("_binary_client_crt_start");
-extern const char pcClientKeyPem[] asm("_binary_client_key_start");
 
 /* TODO - Set up kconfig to enable/disable demo tasks */
 extern void vStartSimpleSubscribePublishTask( configSTACK_DEPTH_TYPE uxStackSize,
@@ -50,7 +45,15 @@ extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
 
 void app_main(void)
 {
+    /* These is used to store the required buffer length when retrieving data
+     * from flash. */
+    uint32_t ulBufferLen;
 
+    /* This is used to store the error return of ESP-IDF functions. */
+    esp_err_t xEspErrRet;
+
+    /* Verify that the MQTT endpoint and thing name have been configured by the
+     * user. */
     if(strlen(CONFIG_GRI_MQTT_ENDPOINT) == 0)
     {
         ESP_LOGE(TAG, "Empty endpoint for MQTT broker. Set endpoint by "
@@ -67,32 +70,66 @@ void app_main(void)
         return;
     }
 
-    /* Initialize network context */
+    /* Initialize network context. */
+
     xNetworkContext.pcHostname = CONFIG_GRI_MQTT_ENDPOINT;
     xNetworkContext.xPort = CONFIG_GRI_MQTT_PORT;
 
-#ifdef CONFIG_EXAMPLE_USE_SECURE_ELEMENT
-    xNetworkContext.pcClientCertPem = NULL;
-    xNetworkContext.pcClientKeyPem = NULL;
-    xNetworkContext.use_secure_element = true;
-#elif CONFIG_EXAMPLE_USE_DS_PERIPHERAL
-    xNetworkContext.pcClientCertPem = pcClientCertPem;
-    xNetworkContext.pcClientKeyPem = NULL;
-    esp_ds_data_ctx_t *ds_data = NULL;
-    ds_data = esp_secure_cert_get_ds_ctx();
-    xNetworkContext.ds_data = ds_data;
+    /* Get the device certificate from esp_secure_crt_mgr and put into network
+     * context. */
+    if (esp_secure_cert_get_dev_cert_addr((const void **)&xNetworkContext.pcClientCertPem, &ulBufferLen) == ESP_OK) 
+    {
+        ESP_LOGI(TAG, "Device Cert: \nLength: %d\n%s", strlen(xNetworkContext.pcClientCertPem), xNetworkContext.pcClientCertPem);
+    } 
+    else 
+    {
+        ESP_LOGE(TAG, "Error getting device certificate from esp_secure_crt_mgr.");
+        return;
+    }
+
+    /* Get the root CA certificate from esp_secure_crt_mgr and put into network
+     * context. */
+    if (esp_secure_cert_get_ca_cert_addr((const void **)&xNetworkContext.pcServerRootCAPem, &ulBufferLen) == ESP_OK) 
+    {
+        ESP_LOGI(TAG, "CA Cert: \nLength: %d\n%s", strlen(xNetworkContext.pcServerRootCAPem), xNetworkContext.pcServerRootCAPem);
+    } 
+    else 
+    {
+        ESP_LOGE(TAG, "Error in getting root CA.");
+        return;
+    }
+
+#if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+
+    /* If the digital signature peripheral is being used, get the digital
+     * signature peripheral context from esp_secure_crt_mgr and put into
+     * network context. */
+    xNetworkContext.ds_data = esp_secure_cert_get_ds_ctx();
+
 #else
-    xNetworkContext.pcClientCertPem = pcClientCertPem;
-    xNetworkContext.pcClientKeyPem = pcClientKeyPem;
+
+    /* If the DS peripheral is not being used, get the device private key from 
+     * esp_secure_crt_mgr and put into network context. */
+    if (esp_secure_cert_get_priv_key_addr((const void **)&xNetworkContext.pcClientKeyPem, &ulBufferLen) == ESP_OK) 
+    {
+        ESP_LOGI(TAG, "Private key: \nLength: %d\n%s", strlen(xNetworkContext.pcClientKeyPem), xNetworkContext.pcClientKeyPem);
+    } 
+    else
+    {
+        ESP_LOGE(TAG, "Error in getting device private key.");
+        return;
+    }
+
 #endif
-    xNetworkContext.pcServerRootCAPem = pcServerRootCAPem;
 
     xNetworkContext.pxTls = NULL;
     xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
 
-    /* Initialize NVS partition */
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    /* Initialize NVS partition. This needs to be done before initializing 
+     * WiFi. */
+    xEspErrRet = nvs_flash_init();
+
+    if (xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES || xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         /* NVS partition was truncated
          * and needs to be erased */
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -112,10 +149,6 @@ void app_main(void)
      * connection events. */
     xCoreMqttAgentNetworkManagerStart(&xNetworkContext);
 
-    /* Start wifi */
-    app_wifi_init();
-    app_wifi_start(POP_TYPE_MAC);
-
 #if CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO
     vStartSimpleSubscribePublishTask(3072, 2);
 #endif
@@ -125,7 +158,42 @@ void app_main(void)
 #endif
 
 #if CONFIG_GRI_ENABLE_OTA_DEMO
-    vStartOTACodeSigningDemo(3072, 3);
-#endif
+
+    const char * pcCodeSigningCertificatePEM = NULL;
+
+    /* Get the code signing certificate from esp_secure_crt_mgr and give to 
+     * OTA PAL. */
+
+    xEspErrRet = esp_secure_cert_get_cs_cert_addr((const void **)&pcCodeSigningCertificatePEM, &ulBufferLen);
+
+    if (xEspErrRet == ESP_OK) 
+    {
+        ESP_LOGI(TAG, "CS Cert: \nLength: %d\n%s", strlen(pcCodeSigningCertificatePEM), pcCodeSigningCertificatePEM);
+    } 
+    else 
+    {
+        ESP_LOGE(TAG, "Error in getting code signing certificate.");
+    }
+
+    if(xEspErrRet == ESP_OK)
+    {
+        if(otaPal_SetCodeSigningCertificate(pcCodeSigningCertificatePEM))
+        {
+            vStartOTACodeSigningDemo(3072, 3);
+        }
+        else
+        {
+            ESP_LOGE(TAG, 
+                "Failed to set the code signing certificate for the AWS OTA "
+                "library.");
+        }
+    }
+    
+
+#endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
+
+    /* Start wifi */
+    app_wifi_init();
+    app_wifi_start(POP_TYPE_MAC);
 
 }
