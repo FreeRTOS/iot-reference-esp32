@@ -1074,6 +1074,7 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
 }
 
 /* Public function definitions ************************************************/
+
 void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
                                UBaseType_t uxPriority )
 {

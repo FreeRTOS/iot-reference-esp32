@@ -41,7 +41,3 @@ idf_component_register(
     REQUIRES
         ${MAIN_REQUIRES}
 )
-
-target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.pem" TEXT)
-target_add_binary_data(${COMPONENT_TARGET} "certs/client.crt" TEXT)
-target_add_binary_data(${COMPONENT_TARGET} "certs/client.key" TEXT)
