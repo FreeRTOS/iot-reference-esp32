@@ -46,7 +46,7 @@ To provision the ESP32-C3 for this project, you must have:
 
 Additionally, if you plan on using OTA, you must have:
 
-* A **PEM-encoded code signing certificate**: This is the code signing certifcate the OTA demo will use to verify the signature of an OTA update.
+* A **PEM-encoded code signing certificate**: This is the code signing certificate the OTA demo will use to verify the signature of an OTA update.
 
 #### 2.2.1 Provisioning Thing Name and AWS Device Endpoint
 
@@ -102,7 +102,7 @@ Replace:
 
 4. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
 ```
-esptool.py --no-stub --port *PORT* write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
+esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
 ```
 Replace:
 * **PORT** with the serial port of the ESP32-C3.
