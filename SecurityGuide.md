@@ -42,10 +42,11 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
         5. The `SDK Configuration editor` window should pop up after a moment.
 2. Select `Component config`.
 3. Select `ESP-TLS`.
-4. Go back to the `Component config` menu.
-5. Select `ESP Secure Cert Manager`.
-6. Set `Enable DS peripheral support` to true.
-7. Save these settings.
+4. Set `Use Digital Signature (DS) Peripheral with ESP-TLS` to true.
+5. Go back to the `Component config` menu.
+6. Select `ESP Secure Cert Manager`.
+7. Set `Enable DS peripheral support` to true.
+8. Save these settings.
 
 **NOTE**: The project must be rebuilt and flashed after the project has been configured.
 
