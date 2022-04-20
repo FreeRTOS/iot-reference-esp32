@@ -64,11 +64,11 @@ Additionally, if you plan on using OTA, you must have:
 2. Select `Golden Reference Integration` from the menu.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
-5. Set `Thing name` to the **Thing name**.
+5. Set `Thing name` to the **thing name**.
 
 #### 2.2.2 Provisioning Keys and Certificates
 
-For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). To configure this, follow the following steps:
+For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that a partition on the ESP32-C3 be written to with these credentials. To generate and write this partition, follow these steps:
 
 1. Open the ESP-IDF Terminal/Command Prompt
     1. **Visual Studio Code users**
@@ -77,7 +77,8 @@ For provisioning keys and certificates, this project utilizes the [ESP Secure Ce
         3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
         4. The `ESP-IDF Terminal` will open at the bottom.
 2. Set the directory to the root of this project.
-3. Create the 'esp_secure_crt` partition binary.
+3. Create the `esp_secure_crt` partition binary.
+
     1. If provisioning without the **PEM-encoded code signing certificate**, run the following command:
 ```
 python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
@@ -87,6 +88,7 @@ Replace:
 * **CA_CERT_FILEPATH** with the file path to the **PEM-encoded root CA certificate**.
 * **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
 * **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
+
     2. If provisioning with the **PEM-encoded code signing certificate**, run the following command:
 ```
 python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --cs-cert CS_CERT_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
@@ -97,6 +99,7 @@ Replace:
 * **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
 * **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
 * **CS_CERT_FILEPATH** with the file path to the **PEM-encoded code signing certificate**.
+
 4. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
 ```
 esptool.py --no-stub --port *PORT* write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
