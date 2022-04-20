@@ -40,7 +40,7 @@ Follow the hardware and development environment setup guides given [here](https:
 
 ### Setting up AWS IoT Core
 
-Follow the AWS IoT Core setup guide [here](doc/AWSSetup.md)
+Follow the AWS IoT Core setup guide [here](AWSSetup.md)
 
 ### Provisioning credentials to device
 
