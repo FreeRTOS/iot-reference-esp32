@@ -109,7 +109,7 @@ Replace:
 
 **NOTE:** These steps do **NOT** provision the ESP32-C3 in a secure way. For increasing the security of this project, see the [Security Guide](SecurityGuide.md), though it is recommended that you only follow these steps when you are ready for production.
 
-### 3 Configuring Demos
+## 3 Configuring Demos
 
 This repository currently supports 3 demos implemented as FreeRTOS tasks, each of which utilize the same MQTT connection managed by the coreMQTT-Agent library for thread-safety. The demos are the following:
 
@@ -136,7 +136,7 @@ To configure the demos:
 
 From the `Golden Reference Integration` menu, follow the below guides to configure each demo.
 
-#### 3.1 Over-The-Air Update Demo Configurations
+### 3.1 Over-The-Air Update Demo Configurations
 
 1. Set `Enable OTA demo` to true.
 2. With `Enable OTA demo` set to true, an `OTA demo configurations` menu is revealed.
@@ -151,11 +151,11 @@ From the `Golden Reference Integration` menu, follow the below guides to configu
     * `Application version minor.`: The minor number of the application version.
     * `Application version build.`: The build number of the application version.
 
-#### 3.2 SubPubUnsub Demo Configurations
+### 3.2 SubPubUnsub Demo Configurations
 
 /* TODO */
 
-#### 3.3 Temperature PubSub and LED Control Demo Configurations
+### 3.3 Temperature PubSub and LED Control Demo Configurations
 
 /* TODO */
 
