@@ -38,7 +38,7 @@ To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). This 
 
 To provision the ESP32-C3 for this project, you must have:
 
-* A **AWS device endpoint**: This is the device endpoint for your AWS account.
+* An **AWS device endpoint**: This is the device endpoint for your AWS account.
 * A **thing name:** This is the name of the device thing registered on your AWS account.
 * A **PEM-encoded device certificate:** This is a certificate signed by the Amazon Root CA attached to the thing.
 * A **PEM-encoded private key:** This is the private key corresponding to the device certificate.
