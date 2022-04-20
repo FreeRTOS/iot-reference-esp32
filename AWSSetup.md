@@ -1,12 +1,12 @@
 # AWS IoT Core Setup
 
-## Sign up for an AWS account
+## 1 Sign up for an AWS account
 
 1. Open https://portal.aws.amazon.com/billing/signup.
 2. Follow the online instructions. **NOTE:** Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad. 
 3. Make a note of your AWS account number as it will be needed for following steps.
 
-## Create an Administrator IAM user and grant it permissions
+## 2 Create an Administrator IAM user and grant it permissions
 
 It’s strongly recommended that you adhere to the best practice of using the `Administrator` IAM user that the following steps show you how to create and securely lock away the root user credentials. One should only sign in as the root user to perform a few [account and service management tasks](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root). 
 
@@ -72,7 +72,7 @@ It’s strongly recommended that you adhere to the best practice of using the `A
 
 24. You are now signed in as your **Administrator** IAM user. This IAM user will be used for following steps.
 
-## Registering your board with AWS IoT
+## 3 Registering your board with AWS IoT
 
 Your board must be registered with AWS IoT to communicate with the AWS Cloud. To register your board with AWS IoT, you must have:
 
@@ -81,7 +81,7 @@ Your board must be registered with AWS IoT to communicate with the AWS Cloud. To
 * **A private key and X.509 certificate:** A private key and certificate allow your device to authenticate with AWS IoT.
 * **An AWS endpoint:** An AWS endpoint is the endpoint your devices connect to.
 
-### Creating an AWS IoT policy
+### 3.1 Creating an AWS IoT policy
 
 1. Go to the [AWS IoT console](https://console.aws.amazon.com/iotv2/).
 2. In the navigation pane, click **Secure**, then click **Policies** in the drop-down menu.
@@ -144,7 +144,7 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 8. Click **Create**.
 
-### Creating an IoT thing, private key, and device certificate
+### 3.2 Creating an IoT thing, private key, and device certificate
 
 1. Go to the [AWS IoT console](https://console.aws.amazon.com/iotv2/).
 2. In the navigation pane, choose **Manage**, and then choose **Things**.
@@ -175,7 +175,7 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 ![Image](getting_started_images/image25.png)
 
-### Obtaining your AWS endpoint
+### 3.3 Obtaining your AWS endpoint
 
 1. Go to [AWS IoT console](https://console.aws.amazon.com/iotv2/).
 2. In the navigation pane, click **Settings**.
