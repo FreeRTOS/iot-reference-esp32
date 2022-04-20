@@ -51,11 +51,11 @@ Additionally, if you plan on using OTA, you must have:
 #### 2.2.1 Provisioning Thing Name and AWS Device Endpoint
 
 1. Open the ESP-IDF menuconfig.
-    1. **Terminal/Command Prompt users**
+    1. **Terminal/Command Prompt Users**
         1. Open the ESP-IDF Terminal/Command Prompt
         2. Set the directory to the root of this project.
         3. Run `idf.py menuconfig`.
-    2. **Visual Studio Code users**
+    2. **Visual Studio Code Users**
         1. Open this project in Visual Studio Code with the Espressif IDF extension.
         2. Click **View** at the top.
         3. Click **Command Palette** in the dropdown menu.
@@ -68,10 +68,10 @@ Additionally, if you plan on using OTA, you must have:
 
 #### 2.2.2 Provisioning Keys and Certificates
 
-For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that a partition on the ESP32-C3 be written to with these credentials. To generate and write this partition, follow these steps:
+For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that the `esp_secure_cert` partition on the ESP32-C3 be written. To generate and write this partition, follow these steps:
 
 1. Open the ESP-IDF Terminal/Command Prompt
-    1. **Visual Studio Code users**
+    1. **Visual Studio Code Users**
         1. Click **View** at the top.
         2. Click **Command Palette** in the dropdown menu.
         3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
@@ -113,9 +113,9 @@ Replace:
 
 This repository currently supports 3 demos implemented as FreeRTOS tasks, each of which utilize the same MQTT connection managed by the coreMQTT-Agent library for thread-safety. The demos are the following:
 
-* **Over-The-Air update demo:** This demo has the user create an OTA job on AWS IoT for their device and watch as it downloads the updated firmware, and reboot with the updated firmware.
-* **SubPubUnsub demo:** This demo creates tasks which Subscribe to a topic on AWS IoT Core, Publish to the same topic, receive their own publish since the device is subscribed to the topic it published to, then Unsubscribe from the topic in a loop.
-* **TempPubSub and LED control demo:** This demo utilizes the temperature sensor to send temperature readings to IoT Core, and allows the user to send JSON payloads back to the device to control it's LED.
+* **Over-The-Air Update:** This demo has the user create an OTA job on AWS IoT for their device and watch as it downloads the updated firmware, and reboot with the updated firmware.
+* **SubPubUnsub:** This demo creates tasks which Subscribe to a topic on AWS IoT Core, Publish to the same topic, receive their own publish since the device is subscribed to the topic it published to, then Unsubscribe from the topic in a loop.
+* **Temperature PubSub and LED Control:** This demo utilizes the temperature sensor to send temperature readings to IoT Core, and allows the user to send JSON payloads back to the device to control it's LED.
 
 **NOTE:** By default, all 3 demos are enabled and will run concurrently with each other, and, thus, these configurations are optional.
 
@@ -136,7 +136,7 @@ To configure the demos:
 
 From the `Golden Reference Integration` menu, follow the below guides to configure each demo.
 
-#### 3.1 Over-The-Air demo configurations
+#### 3.1 Over-The-Air Update Demo Configurations
 
 1. Set `Enable OTA demo` to true.
 2. With `Enable OTA demo` set to true, an `OTA demo configurations` menu is revealed.
@@ -151,17 +151,17 @@ From the `Golden Reference Integration` menu, follow the below guides to configu
     * `Application version minor.`: The minor number of the application version.
     * `Application version build.`: The build number of the application version.
 
-#### 3.2 SubPubUnsub demo configurations
+#### 3.2 SubPubUnsub Demo Configurations
 
 /* TODO */
 
-#### 3.3 TempPubSub and LED control demo configurations
+#### 3.3 Temperature PubSub and LED Control Demo Configurations
 
 /* TODO */
 
-## 4 Building, flashing, and monitoring the project
+## 4 Building, Flashing, and Monitoring the Project
 
-### 4.1 Terminal/Command Prompt users
+### 4.1 Terminal/Command Prompt Users
 
 1. Open an ESP-IDF Terminal/Command Prompt.
 2. Set the directory to the root of this project.
@@ -172,7 +172,7 @@ idf.py -p PORT flash monitor
 Replace:
 * **PORT** with the serial port of the ESP32-C3.
 
-### 4.2 Visual Studio Code users
+### 4.2 Visual Studio Code Users
 
 1. Open this project in Visual Studio Code with the Espressif IDF extension.
 2. Click **View** at the top.
@@ -181,15 +181,15 @@ Replace:
 
 ## 5 Interacting with the Demos
 
-### 5.1 Over-The-Air update demo
+### 5.1 Over-The-Air Update Demo
 
 /* TODO */
 
-### 5.2 SubPubUnsub demo
+### 5.2 SubPubUnsub Demo
 
 /* TODO */
 
-### 5.3 TempPubSub and LED control demo
+### 5.3 Temperature PubSub and LED Control Demo
 
 1. Run `idf.py menuconfig` and set the AWS IoT endpoint and Thing Name under `Golden Reference Integration`.
 
