@@ -50,7 +50,7 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
 
 **NOTE**: The project must be rebuilt and flashed after the project has been configured.
 
-#### 1.2 Provisioning Keys and Certificates Using the Digital Signature Peripheral
+### 1.2 Provisioning Keys and Certificates Using the Digital Signature Peripheral
 
 For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that the `esp_secure_cert` partition on the ESP32-C3 be written. To generate and write this partition for use with the Digital Signature Peripheral, follow these steps:
 
