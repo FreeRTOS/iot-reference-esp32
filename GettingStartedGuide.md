@@ -138,7 +138,7 @@ From the `Golden Reference Integration` menu, follow the below guides to configu
 
 ### 3.1 Over-The-Air Update Demo Configurations
 
-1. Set `Enable OTA demo` to true.
+1. Set `Enable OTA demo` to true. Setting this option to false will disable this demo.
 2. With `Enable OTA demo` set to true, an `OTA demo configurations` menu is revealed.
 3. From the `OTA demo configurations` menu, the following options can be set:
     * `Max file path size.`: The maximum size of the file paths used in the demo.
