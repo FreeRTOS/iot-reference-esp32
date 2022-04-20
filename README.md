@@ -34,7 +34,7 @@ Run the following commands to correctly clone the repository:
 
 ## Getting Started
 
-To get started, follow the [Getting Started Guide](GettingStartedGuide.md)
+To get started, follow the [Getting Started Guide](GettingStartedGuide.md).
 
 ## Security
 1. Steps to enable Flash Encryption on ESP32-C3 can be found [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html).
