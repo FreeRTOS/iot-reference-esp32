@@ -181,7 +181,7 @@ KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                 
 
 #### 3.1.2 Recommendations
 
-* The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of Secure Boot V2 and all options available.
+* The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of all options available.
 
 * Enable **Secure Boot** as a last step before production because after **Secure Boot** is enabled:
     * No further eFuses can be read protected. It is best practice to read protect any keys stored in the eFuse (e.g. Digital Signature Peripheral HMAC key) before enabling Secure Boot.
