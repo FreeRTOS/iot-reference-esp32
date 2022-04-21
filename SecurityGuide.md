@@ -1,10 +1,10 @@
 # Security Guide
 
-## 1 Provisioning the Device Using the Digital Signature Peripheral
+## 1 Prerequisites
 
-### 1.1 Prerequisites
+Before using this guide, determine what security features you want to use as this guide only provides steps for configuring and flashing these security features at the same time.
 
-In order to use the **Digital Signature Peripheral**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the HMAC key associated with the **Digital Signature Peripheral**.
+For each security feature (**Digital Signature Peripheral**, **Secure Boot**, **Flash Encryption**), at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write to.
 
 To check this, follow these steps:
 
@@ -33,9 +33,9 @@ KEY_PURPOSE_3 (BLOCK0)                             KEY3 purpose                 
 KEY_PURPOSE_4 (BLOCK0)                             KEY4 purpose                                       = USER R/W (0x0)
 KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                                       = USER R/W (0x0)
 ```
-5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right.
+5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right for each security feature you intend to use.
 
-**NOTE**: If you plan on using the **Digital Signature Peripheral**, **Flash Encryption**, and/or **Secure Boot**, there must be a `BLOCK_KEY_N` available for each of these.
+### 1.1 Digital Signature Peripheral
 
 To provision the Digital Signature Peripheral for this project, you must also have:
 
@@ -62,7 +62,34 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
 
 **NOTE**: `ecdsasigner.crt` will only work for as many days as the integer given to the `-days` argument of the second command.
 
-### 1.2 Configuring the Project to Use the Digital Signature Peripheral
+### 1.2 Secure Boot
+
+If planning to use **Secure Boot**, an RSA 3072 private key must be generated. This can be generated with the following command:
+```
+openssl genrsa -out secure_boot_signing_key.pem 3072
+```
+This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for signing binaries in the future.
+
+## 2 Recommendations
+
+* Enable security features as a last step before production because:
+    * All security features **permanently** burn the eFuses of the ESP32-C3.
+    * After **Secure Boot** is enabled:
+        * No further eFuses can be read protected. It is best practice to read protect any keys stored in the eFuse (e.g. Digital Signature Peripheral HMAC key) before enabling Secure Boot.
+        * All code flashed or sent to the board over OTA must be signed by the same private key used to enable **Secure Boot**. When **Secure Boot** is enabled in project configuration, ESP-IDF will automatically sign builds with the private key provided by default.
+        * The first stage bootloader cannot be changed.
+    * After **Flash Encryption** is enabled:
+        * Anything flashed to the ESP32-C3 must be encrypted with the **Flash Encryption** key used, unless you are flashing a partition not marked `encrypted`.
+
+* The instructions laid out here to enable and use **Secure Boot** do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of all options available.
+
+* The instructions laid out here to enable and use **Flash Encryption** do not go through all options for **Flash Encryption**. Therefore, you should read Espressif's documentation on [**Flash Encryption**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html) if you want a more comprehensive understanding of all options available.
+
+## 3 Using Security Features on Development Boards
+
+### 3.1 Configuring the Project to Use Security Features in Development Mode
+
+The project can be configured to use security features in **Development** mode with the following steps.
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt Users**
@@ -75,19 +102,44 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
         3. Click **Command Palette** in the dropdown menu.
         4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
         5. The `SDK Configuration editor` window should pop up after a moment.
+
+If you do not plan on using the **Digital Signature Peripheral**, skip steps 2-9.
+
 2. Select `Component config`.
 3. Select `ESP-TLS`.
 4. Set `Use Digital Signature (DS) Peripheral with ESP-TLS` to true.
 5. Go back to the `Component config` menu.
 6. Select `ESP Secure Cert Manager`.
 7. Set `Enable DS peripheral support` to true.
-8. Save these settings.
+8. Go back to the `Component config` menu.
+9. Go back to the main menu.
 
-**NOTE**: The project must be rebuilt and flashed after the project has been configured.
+If you do not plan on using **Secure Boot**, skip steps 10-17.
 
-### 1.3 Provisioning Keys and Certificates Using the Digital Signature Peripheral
+10. Select `Security features`.
+11. Set `Enable hardware Secure Boot in bootloader (READ DOCS FIRST)` to true.
+12. Set `Sign binaries during build` to true.
+13. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in Section 3.1.1.
+14. Go back to main menu.
+15. Select `Bootloader config`.
+16. Be sure to set desired options here now as they cannot be changed after **Secure Boot** bootloader is flashed to the ESP32-C3.
+17. Go back to main menu.
 
-For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that the `esp_secure_cert` partition on the ESP32-C3 be written. To generate and write this partition for use with the Digital Signature Peripheral, follow these steps:
+If you do not plan on using **Flash Encryption**, skip steps 18-23.
+
+18. Select `Security features`.
+19. Set `Enable flash encryption on boot (READ DOCS FIRST)` to true.
+20. Select `Enable usage mode`.
+21. Set `Development (NOT SECURE)` to true.
+22. Go back to `Security features`.
+23. Go back to main menu.
+24. Save these settings.
+
+### 3.2 Flashing the Project with Security Features in Development Mode
+
+After configuring security features, the ESP32-C3 can be flashed with the following steps.
+
+**NOTE**: It is important you follow these steps in order, especially if you have **Flash Encryption** and **Secure Boot** enabled in the project configuration.
 
 1. Open the ESP-IDF Terminal/Command Prompt
     1. **Visual Studio Code Users**
@@ -96,6 +148,9 @@ For provisioning keys and certificates, this project utilizes the [ESP Secure Ce
         3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
         4. The `ESP-IDF Terminal` will open at the bottom.
 2. Set the directory to the root of this project.
+
+If you skipped the configuration steps for the **Digital Signature Peripheral**, skip steps 3-4.
+
 3. Create the `esp_secure_crt` partition binary.
 
     1. If provisioning without the **PEM-encoded code signing certificate**, run the following command **NOTE**: If this is the first time running this command, a block in the ESP32-C3's will be burnt and this **CANNOT** be reverse:
@@ -126,79 +181,60 @@ esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.
 Replace:
 * **PORT** with the serial port of the ESP32-C3.
 
-**NOTE**: The project does not have to rebuilt if it's currently flashed with a build with the configurations of Section 1.1.
-
-## 2 Using Flash Encryption
-
-### 2.1 Prerequisites
-
-### 2.2 Recommendations
-
-### 2.3 Enabling Flash Encryption in Development Mode
-
-### 2.4 Enabling Flash Encryption in Release Mode
-
-## 3 Using Secure Boot
-
-### 3.1 Prerequisites 
-
-In order to enable **Secure Boot**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the public key associated with the **Secure Boot** private key.
-
-To check this, follow these steps:
-
-1. Open the ESP-IDF Terminal/Command Prompt
-    1. **Visual Studio Code Users**
-        1. Click **View** at the top.
-        2. Click **Command Palette** in the dropdown menu.
-        3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
-        4. The `ESP-IDF Terminal` will open at the bottom.
-2. Set the directory to the root of this project.
-3. Output the summary of the eFuses on the ESP32-C3 by running the following command:
+5. Build and flash the project by running the following command:
 ```
-espefuse.py -p PORT summary
+idf.py -p PORT flash
+```
+**NOTE**: If **Secure Boot** is enabled, this will not flash the bootloader.
+
+If you skipped the configuration steps for **Secure Boot**, skip steps 6-9
+
+6. Run the following command:
+```
+idf.py fullclean
+```
+8. Build the **Secure Boot** enabled bootloader by running the following command:
+```
+idf.py bootloader
+```
+This command should output something similar to the following:
+```
+==============================================================================
+Bootloader built. Secure boot enabled, so bootloader not flashed automatically.
+To sign the bootloader with additional private keys.
+        C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/espsecure.py sign_data -k secure_boot_signing_key2.pem -v 2 --append_signatures -o signed_bootloader.bin build/bootloader/bootloader.bin
+Secure boot enabled, so bootloader not flashed automatically.
+        C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
+==============================================================================
+```
+9. Flash the bootloader by copy and pasting the command under "Secure boot enabled, so bootloader not flashed automatically," replacing:
+
+    * **PORT** with the serial port of the ESP32-C3.
+    * **BAUD** with 460800.
+
+At this point, you can monitor the serial output by running the following command:
+```
+idf.py monitor
+```
+
+If **Flash Encryption** is enabled: 
+* The bootloader will generate the private key used to encrypt flash and store it in the ESP32-C3's efuse. It will then encrypt the bootloader, the partition table, all `app` partitions, and all partitions marked `encrypted` in the partition table. **NOTE**: Do not mark the default NVS partition `nvs` as `encrypted` as it is not designed to be encrypted in this way. The `nvs` partition is instead encrypted with the use of the `nvs_keys` partition, which will be encrypted.
+* In order to flash and monitor new application binaries, you must use the following command:
+```
+idf.py -p PORT encrypted-flash monitor
 ```
 Replace:
 
-* **PORT** with the serial port of the ESP32-C3
+* **PORT** with the serial port of the ESP32-C3.
 
-4. Look for the following lines in the summary:
+If **Secure Boot** is enabled:
+* In order to flash a new application binary, the application binary must be signed. With the configurations set in this document, this is automatically done any time a new application binary is built.
 
-```
-KEY_PURPOSE_0 (BLOCK0)                             KEY0 purpose                                       = USER R/W (0x0)
-KEY_PURPOSE_1 (BLOCK0)                             KEY1 purpose                                       = USER R/W (0x0)
-KEY_PURPOSE_2 (BLOCK0)                             KEY2 purpose                                       = USER R/W (0x0)
-KEY_PURPOSE_3 (BLOCK0)                             KEY3 purpose                                       = USER R/W (0x0)
-KEY_PURPOSE_4 (BLOCK0)                             KEY4 purpose                                       = USER R/W (0x0)
-KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                                       = USER R/W (0x0)
-```
-5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right.
+## 3 Using Security Features on Production Boards
 
-**NOTE**: If you plan on using the **Digital Signature Peripheral**, **Flash Encryption**, and/or **Secure Boot**, there must be a `BLOCK_KEY_N` available for each of these.
+### 3.1 Configuring the Project to Use Security Features in Release Mode
 
-### 3.2 Recommendations
-
-* The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of all options available.
-
-* Enable **Secure Boot** as a last step before production because after **Secure Boot** is enabled:
-    * No further eFuses can be read protected. It is best practice to read protect any keys stored in the eFuse (e.g. Digital Signature Peripheral HMAC key) before enabling Secure Boot.
-    * All code flashed or sent to the board over OTA must be signed by the same private key used to enable Secure Boot. When **Secure Boot** is enabled in project configuration, ESP-IDF will automatically sign builds with the private key provided by default.
-    * The first stage bootloader cannot be changed.
-
-* If you plan on using **Flash Encryption** with **Secure Boot**, you should either:
-    * Enable these features at the same time. If **Flash Encryption** is enabled before **Secure Boot**, the **Secure Boot** bootloader must be encrypted with the **Flash Encryption** key before being flashed to the board.
-    * Enable **Flash Encryption** first, as the **Flash Encryption** key **can not be read protected** in the eFuse after **Secure Boot** is enabled.
-
-### 3.3 Enabling Secure Boot
-
-#### 3.3.1 Generating the Secure Boot Private Key
-
-The **Secure Boot** private key must be an RSA 3072 private key. This can be generated with the following command:
-```
-openssl genrsa -out secure_boot_signing_key.pem 3072
-```
-This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for signing binaries in the future.
-
-#### 3.3.2 Configuring the Project to Use Secure Boot
+The project can be configured to use security features in **Release** mode with the following steps.
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt Users**
@@ -211,16 +247,47 @@ This will output `secure_boot_signing_key.pem`, which can be renamed as you see 
         3. Click **Command Palette** in the dropdown menu.
         4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
         5. The `SDK Configuration editor` window should pop up after a moment.
-2. Select `Security features`.
-3. Set `Enable hardware Secure Boot in bootloader (READ DOCS FIRST)` to true.
-4. Set `Sign binaries during build` to true.
-5. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in Section 3.2.1.
-6. Go back to first menu.
-7. Select `Bootloader config`.
-9. Be sure to set desired options here now as they cannot be changed after **Secure Boot** bootloader is flashed to the ESP32-C3.
-10. Save settings.
 
-#### 3.3.3 Building and Flashing the Secure Boot Bootloader
+If you do not plan on using the **Digital Signature Peripheral**, skip steps 2-9.
+
+2. Select `Component config`.
+3. Select `ESP-TLS`.
+4. Set `Use Digital Signature (DS) Peripheral with ESP-TLS` to true.
+5. Go back to the `Component config` menu.
+6. Select `ESP Secure Cert Manager`.
+7. Set `Enable DS peripheral support` to true.
+8. Go back to the `Component config` menu.
+9. Go back to the main menu.
+
+If you do not plan on using **Secure Boot**, skip steps 10-17.
+
+10. Select `Security features`.
+11. Set `Enable hardware Secure Boot in bootloader (READ DOCS FIRST)` to true.
+12. Set `Sign binaries during build` to true.
+13. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in Section 3.1.1.
+14. Go back to main menu.
+15. Select `Bootloader config`.
+16. Be sure to set desired options here now as they cannot be changed after **Secure Boot** bootloader is flashed to the ESP32-C3.
+17. Go back to main menu.
+
+If you do not plan on using **Flash Encryption**, skip steps 18-26.
+
+18. Select `Security features`.
+19. Set `Enable flash encryption on boot (READ DOCS FIRST)` to true.
+20. Select `Enable usage mode`.
+21. Set `Release` to true.
+22. Go back to `Security features`.
+23. Select `UART ROM download mode`.
+24. Set one of the options here to true. Refer to the [UART ROM download mode documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/kconfig.html#config-secure-uart-rom-dl-mode).
+25. Go back to `Security features`.
+26. Go back to main menu.
+27. Save these settings.
+
+### 3.2 Flashing the Project with Security Features in Release Mode
+
+After configuring security features, the ESP32-C3 can be flashed with the following steps.
+
+**NOTE**: It is important you follow these steps in order, especially if you have **Flash Encryption** and **Secure Boot** enabled in the project configuration.
 
 1. Open the ESP-IDF Terminal/Command Prompt
     1. **Visual Studio Code Users**
@@ -229,11 +296,56 @@ This will output `secure_boot_signing_key.pem`, which can be renamed as you see 
         3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
         4. The `ESP-IDF Terminal` will open at the bottom.
 2. Set the directory to the root of this project.
-3. Run the following command to build the *Secure Boot* bootloader.
+
+If you skipped the configuration steps for the **Digital Signature Peripheral**, skip steps 3-4.
+
+3. Create the `esp_secure_crt` partition binary.
+
+    1. If provisioning without the **PEM-encoded code signing certificate**, run the following command **NOTE**: If this is the first time running this command, a block in the ESP32-C3's will be burnt and this **CANNOT** be reverse:
+```
+python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
+```
+Replace:
+* **PORT** with the serial port of the ESP32-C3.
+* **CA_CERT_FILEPATH** with the file path to the **PEM-encoded root CA certificate**.
+* **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
+* **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
+
+    2. If provisioning with the **PEM-encoded code signing certificate**, run the following command:
+```
+python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --cs-cert CS_CERT_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
+```
+Replace:
+* **PORT** with the serial port of the ESP32-C3.
+* **CA_CERT_FILEPATH** with the file path to the **PEM-encoded root CA certificate**.
+* **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
+* **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
+* **CS_CERT_FILEPATH** with the file path to the **PEM-encoded code signing certificate**.
+
+4. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
+```
+esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
+```
+Replace:
+* **PORT** with the serial port of the ESP32-C3.
+
+5. Build and flash the project by running the following command:
+```
+idf.py -p PORT flash
+```
+**NOTE**: If **Secure Boot** is enabled, this will not flash the bootloader.
+
+If you skipped the configuration steps for **Secure Boot**, skip steps 6-9
+
+6. Run the following command:
+```
+idf.py fullclean
+```
+8. Build the **Secure Boot** enabled bootloader by running the following command:
 ```
 idf.py bootloader
 ```
-4. This command should output something similar to the following:
+This command should output something similar to the following:
 ```
 ==============================================================================
 Bootloader built. Secure boot enabled, so bootloader not flashed automatically.
@@ -243,20 +355,18 @@ Secure boot enabled, so bootloader not flashed automatically.
         C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
 ==============================================================================
 ```
-If this does not show up, run:
-```
-idf.py fullclean
-```
-Then run:
-```
-idf.py bootloader
-```
-5. Flash the bootloader by copy and pasting the command under "Secure boot enabled, so bootloader not flashed automatically," replacing:
+9. Flash the bootloader by copy and pasting the command under "Secure boot enabled, so bootloader not flashed automatically," replacing:
 
     * **PORT** with the serial port of the ESP32-C3.
     * **BAUD** with 460800.
 
-**NOTE**:  If **Flash Encryption** has already been enabled on the ESP32-C3, `bootloader.bin` must be encrypted using the **Flash Encryption** key before running the above command.
+At this point, you can monitor the serial output by running the following command:
+```
+idf.py monitor
+```
 
-6. The device will boot and generate a public key corresponding to the private key and burn it to an available eFuse block.
+If **Flash Encryption** is enabled: 
+* The bootloader will generate the private key used to encrypt flash and store it in the ESP32-C3's efuse. It will then encrypt the bootloader, the partition table, all `app` partitions, and all partitions marked `encrypted` in the partition table. **NOTE**: Do not mark the default NVS partition `nvs` as `encrypted` as it is not designed to be encrypted in this way. The `nvs` partition is instead encrypted with the use of the `nvs_keys` partition, which will be encrypted.
 
+If **Secure Boot** is enabled:
+* In order to flash a new application binary, the application binary must be signed. With the configurations set in this document, this is automatically done any time a new application binary is built.
