@@ -242,9 +242,9 @@ idf.py bootloader
 ==============================================================================
 Bootloader built. Secure boot enabled, so bootloader not flashed automatically.
 To sign the bootloader with additional private keys.
-        C:/Users/czjaso/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe C:/Users/czjaso/Desktop/esp-idf-6/components/esptool_py/esptool/espsecure.py sign_data -k secure_boot_signing_key2.pem -v 2 --append_signatures -o signed_bootloader.bin build/bootloader/bootloader.bin
+        C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/espsecure.py sign_data -k secure_boot_signing_key2.pem -v 2 --append_signatures -o signed_bootloader.bin build/bootloader/bootloader.bin
 Secure boot enabled, so bootloader not flashed automatically.
-        C:/Users/czjaso/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/czjaso/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
+        C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
 ==============================================================================
 ```
 If this does not show up, run:
