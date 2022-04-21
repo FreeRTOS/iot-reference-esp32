@@ -95,12 +95,128 @@ Replace:
 
 ## 2 Enabling Flash Encryption
 
-### 2.1 Enabling Flash Encryption in Development Mode
 
-### 2.2 Enabling Flash Encryption in Release Mode
+
+### 2.1 Enabling Flash Encryption in Development Mode (Recommended for Development)
+
+### 2.2 Enabling Flash Encryption in Release Mode (Recommended for Production)
 
 ## 3 Enabling Secure Boot
 
-### 2.1 Enabling Secure Boot in Development Mode
+### 3.1 Notes Before Enabling Secure Boot
 
-### 2.2 Enabling Secure Boot in Release Mode
+#### 3.1.1 Prerequisites 
+In order to enable **Secure Boot**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the public key associated with the **Secure Boot* private key.
+
+To check this, follow these steps:
+
+1. Open the ESP-IDF Terminal/Command Prompt
+    1. **Visual Studio Code Users**
+        1. Click **View** at the top.
+        2. Click **Command Palette** in the dropdown menu.
+        3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
+        4. The `ESP-IDF Terminal` will open at the bottom.
+2. Set the directory to the root of this project.
+3. Output the summary of the eFuses on the ESP32-C3 by running the following command:
+```
+espefuse.py -p PORT summary
+```
+Replace:
+
+* **PORT** with the serial port of the ESP32-C3
+
+4. Look for the following lines in the summary:
+
+```
+KEY_PURPOSE_0 (BLOCK0)                             KEY0 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_1 (BLOCK0)                             KEY1 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_2 (BLOCK0)                             KEY2 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_3 (BLOCK0)                             KEY3 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_4 (BLOCK0)                             KEY4 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                                       = USER R/W (0x0)
+```
+5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right.
+
+#### 3.1.2 Recommendations
+
+* The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of Secure Boot V2 and all options available.
+* Enable **Secure Boot** as a last step before production because after **Secure Boot** is enabled:
+    * No further eFuses can be read protected. It is best practice to read protect any keys stored in the eFuse (e.g. Digital Signature Peripheral HMAC key) before enabling Secure Boot.
+    * All code flashed or sent to the board over OTA must be signed by the same private key used to enable Secure Boot. When **Secure Boot** is enabled in project configuration, ESP-IDF will automatically sign builds with the private key provided by default.
+    * The first stage bootloader cannot be changed.
+* If you plan on using **Flash Encryption** with **Secure Boot**, you should either:
+    * Enable these features at the same time. If **Flash Encryption** is enabled before **Secure Boot**, the **Secure Boot** bootloader must be encrypted with the **Flash Encryption** key before being flashed to the board.
+    * Enable **Flash Encryption** first, as the **Flash Encryption** key **can not be read protected** in the eFuse after **Secure Boot** is enabled.
+
+### 3.2 How to Enable Secure Boot
+
+#### 3.2.1 Generating the Secure Boot Private Key
+
+The **Secure Boot** private key must be an RSA 3072 private key. This can be generated with the following command:
+```
+openssl genrsa -out secure_boot_signing_key.pem 3072
+```
+This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for updating firmware in the future.
+
+#### 3.2.2 Configuring the Project to Use Secure Boot
+
+1. Open the ESP-IDF menuconfig.
+    1. **Terminal/Command Prompt Users**
+        1. Open the ESP-IDF Terminal/Command Prompt
+        2. Set the directory to the root of this project.
+        3. Run `idf.py menuconfig`.
+    2. **Visual Studio Code Users**
+        1. Open this project in Visual Studio Code with the Espressif IDF extension.
+        2. Click **View** at the top.
+        3. Click **Command Palette** in the dropdown menu.
+        4. Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command.
+        5. The `SDK Configuration editor` window should pop up after a moment.
+2. Select `Security features`.
+3. Set `Enable hardware Secure Boot in bootloader (READ DOCS FIRST)` to true.
+4. Set `Sign binaries during build` to true.
+5. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in Section 3.2.1.
+6. Go back to first menu.
+7. Select `Bootloader config`.
+9. Be sure to set desired options here now as they cannot be changed after **Secure Boot** bootloader is flashed to the ESP32-C3.
+10. Save settings.
+
+#### 3.2.3 Building and Flashing the Secure Boot Bootloader
+
+1. Open the ESP-IDF Terminal/Command Prompt
+    1. **Visual Studio Code Users**
+        1. Click **View** at the top.
+        2. Click **Command Palette** in the dropdown menu.
+        3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
+        4. The `ESP-IDF Terminal` will open at the bottom.
+2. Set the directory to the root of this project.
+3. Run the following command to build the *Secure Boot* bootloader.
+```
+idf.py bootloader
+```
+4. This command should output something similar to the following:
+```
+==============================================================================
+Bootloader built. Secure boot enabled, so bootloader not flashed automatically.
+To sign the bootloader with additional private keys.
+        C:/Users/czjaso/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe C:/Users/czjaso/Desktop/esp-idf-6/components/esptool_py/esptool/espsecure.py sign_data -k secure_boot_signing_key2.pem -v 2 --append_signatures -o signed_bootloader.bin build/bootloader/bootloader.bin
+Secure boot enabled, so bootloader not flashed automatically.
+        C:/Users/czjaso/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/czjaso/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
+==============================================================================
+```
+If this does not show up, run:
+```
+idf.py fullclean
+```
+Then run:
+```
+idf.py bootloader
+```
+5. Flash the bootloader by copy and pasting the command under "Secure boot enabled, so bootloader not flashed automatically," replacing:
+
+    * **PORT** with the serial port of the ESP32-C3.
+    * **BAUD** with 460800.
+
+**NOTE**:  If **Flash Encryption** has already been enabled on the ESP32-C3, `bootloader.bin` must be encrypted using the **Flash Encryption** key before running the above command.
+
+6. The device will boot and generate a public key corresponding to the private key and burn it to an available eFuse block.
+
