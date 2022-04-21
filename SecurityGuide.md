@@ -2,7 +2,42 @@
 
 ## 1 Provisioning the Device Using the Digital Signature Peripheral
 
-To provision the Digital Signature Peripheral for this project, you must have:
+### 1.1 Prerequisites
+
+In order to use the **Digital Signature Peripheral**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the HMAC key associated with the **Digital Signature Peripheral**.
+
+To check this, follow these steps:
+
+1. Open the ESP-IDF Terminal/Command Prompt
+    1. **Visual Studio Code Users**
+        1. Click **View** at the top.
+        2. Click **Command Palette** in the dropdown menu.
+        3. Search for `ESP-IDF: Open ESP-IDF Terminal` and select the command.
+        4. The `ESP-IDF Terminal` will open at the bottom.
+2. Set the directory to the root of this project.
+3. Output the summary of the eFuses on the ESP32-C3 by running the following command:
+```
+espefuse.py -p PORT summary
+```
+Replace:
+
+* **PORT** with the serial port of the ESP32-C3
+
+4. Look for the following lines in the summary:
+
+```
+KEY_PURPOSE_0 (BLOCK0)                             KEY0 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_1 (BLOCK0)                             KEY1 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_2 (BLOCK0)                             KEY2 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_3 (BLOCK0)                             KEY3 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_4 (BLOCK0)                             KEY4 purpose                                       = USER R/W (0x0)
+KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                                       = USER R/W (0x0)
+```
+5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right.
+
+**NOTE**: If you plan on using the **Digital Signature Peripheral**, **Flash Encryption**, and/or **Secure Boot**, there must be a `BLOCK_KEY_N` available for each of these.
+
+To provision the Digital Signature Peripheral for this project, you must also have:
 
 * A **PEM-encoded device certificate:** This is a certificate signed by the Amazon Root CA attached to the thing.
 * A **PEM-encoded private key:** This is the private key corresponding to the device certificate.
@@ -27,7 +62,7 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
 
 **NOTE**: `ecdsasigner.crt` will only work for as many days as the integer given to the `-days` argument of the second command.
 
-### 1.1 Configuring the Project to Use the Digital Signature Peripheral
+### 1.2 Configuring the Project to Use the Digital Signature Peripheral
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt Users**
@@ -50,7 +85,7 @@ The **PEM-encoded code signing private key** will be output as `ecdsasigner.key`
 
 **NOTE**: The project must be rebuilt and flashed after the project has been configured.
 
-### 1.2 Provisioning Keys and Certificates Using the Digital Signature Peripheral
+### 1.3 Provisioning Keys and Certificates Using the Digital Signature Peripheral
 
 For provisioning keys and certificates, this project utilizes the [ESP Secure Certificate Manager](https://github.com/espressif/esp_secure_cert_mgr). This requires that the `esp_secure_cert` partition on the ESP32-C3 be written. To generate and write this partition for use with the Digital Signature Peripheral, follow these steps:
 
@@ -93,20 +128,25 @@ Replace:
 
 **NOTE**: The project does not have to rebuilt if it's currently flashed with a build with the configurations of Section 1.1.
 
-## 2 Enabling Flash Encryption
+## 2 Using Flash Encryption
 
+### 2.1 Notes before Enabling Flash Encryption
 
+#### 2.1.1 Prerequisites
 
-### 2.1 Enabling Flash Encryption in Development Mode (Recommended for Development)
+#### 2.1.2 Recommendations
 
-### 2.2 Enabling Flash Encryption in Release Mode (Recommended for Production)
+### 2.3 Enabling Flash Encryption in Development Mode
 
-## 3 Enabling Secure Boot
+### 2.4 Enabling Flash Encryption in Release Mode
+
+## 3 Using Secure Boot
 
 ### 3.1 Notes Before Enabling Secure Boot
 
 #### 3.1.1 Prerequisites 
-In order to enable **Secure Boot**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the public key associated with the **Secure Boot* private key.
+
+In order to enable **Secure Boot**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the public key associated with the **Secure Boot** private key.
 
 To check this, follow these steps:
 
@@ -137,18 +177,22 @@ KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                 
 ```
 5. Verify that at least one `KEY_PURPOSE_N`, where N is 0-5, has `= USER R/W (0x0)` on the right.
 
+**NOTE**: If you plan on using the **Digital Signature Peripheral**, **Flash Encryption**, and/or **Secure Boot**, there must be a `BLOCK_KEY_N` available for each of these.
+
 #### 3.1.2 Recommendations
 
 * The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of Secure Boot V2 and all options available.
+
 * Enable **Secure Boot** as a last step before production because after **Secure Boot** is enabled:
     * No further eFuses can be read protected. It is best practice to read protect any keys stored in the eFuse (e.g. Digital Signature Peripheral HMAC key) before enabling Secure Boot.
     * All code flashed or sent to the board over OTA must be signed by the same private key used to enable Secure Boot. When **Secure Boot** is enabled in project configuration, ESP-IDF will automatically sign builds with the private key provided by default.
     * The first stage bootloader cannot be changed.
+
 * If you plan on using **Flash Encryption** with **Secure Boot**, you should either:
     * Enable these features at the same time. If **Flash Encryption** is enabled before **Secure Boot**, the **Secure Boot** bootloader must be encrypted with the **Flash Encryption** key before being flashed to the board.
     * Enable **Flash Encryption** first, as the **Flash Encryption** key **can not be read protected** in the eFuse after **Secure Boot** is enabled.
 
-### 3.2 How to Enable Secure Boot
+### 3.2 Enabling Secure Boot
 
 #### 3.2.1 Generating the Secure Boot Private Key
 
@@ -156,7 +200,7 @@ The **Secure Boot** private key must be an RSA 3072 private key. This can be gen
 ```
 openssl genrsa -out secure_boot_signing_key.pem 3072
 ```
-This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for updating firmware in the future.
+This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for signing binaries in the future.
 
 #### 3.2.2 Configuring the Project to Use Secure Boot
 
