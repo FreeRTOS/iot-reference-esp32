@@ -130,11 +130,9 @@ Replace:
 
 ## 2 Using Flash Encryption
 
-### 2.1 Notes before Enabling Flash Encryption
+### 2.1 Prerequisites
 
-#### 2.1.1 Prerequisites
-
-#### 2.1.2 Recommendations
+### 2.2 Recommendations
 
 ### 2.3 Enabling Flash Encryption in Development Mode
 
@@ -142,9 +140,7 @@ Replace:
 
 ## 3 Using Secure Boot
 
-### 3.1 Notes Before Enabling Secure Boot
-
-#### 3.1.1 Prerequisites 
+### 3.1 Prerequisites 
 
 In order to enable **Secure Boot**, at least one `BLOCK_KEYN`, where N is 0-5, in the ESP32-C3's eFuses must be available to write the public key associated with the **Secure Boot** private key.
 
@@ -179,7 +175,7 @@ KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                 
 
 **NOTE**: If you plan on using the **Digital Signature Peripheral**, **Flash Encryption**, and/or **Secure Boot**, there must be a `BLOCK_KEY_N` available for each of these.
 
-#### 3.1.2 Recommendations
+### 3.2 Recommendations
 
 * The instructions laid out here illustrate how to enable and use **Secure Boot** using a single private key and do not go through all options for **Secure Boot**. Therefore, you should read Espressif's documentation on [**Secure Boot V2**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) if you want a more comprehensive understanding of all options available.
 
@@ -192,9 +188,9 @@ KEY_PURPOSE_5 (BLOCK0)                             KEY5 purpose                 
     * Enable these features at the same time. If **Flash Encryption** is enabled before **Secure Boot**, the **Secure Boot** bootloader must be encrypted with the **Flash Encryption** key before being flashed to the board.
     * Enable **Flash Encryption** first, as the **Flash Encryption** key **can not be read protected** in the eFuse after **Secure Boot** is enabled.
 
-### 3.2 Enabling Secure Boot
+### 3.3 Enabling Secure Boot
 
-#### 3.2.1 Generating the Secure Boot Private Key
+#### 3.3.1 Generating the Secure Boot Private Key
 
 The **Secure Boot** private key must be an RSA 3072 private key. This can be generated with the following command:
 ```
@@ -202,7 +198,7 @@ openssl genrsa -out secure_boot_signing_key.pem 3072
 ```
 This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for signing binaries in the future.
 
-#### 3.2.2 Configuring the Project to Use Secure Boot
+#### 3.3.2 Configuring the Project to Use Secure Boot
 
 1. Open the ESP-IDF menuconfig.
     1. **Terminal/Command Prompt Users**
@@ -224,7 +220,7 @@ This will output `secure_boot_signing_key.pem`, which can be renamed as you see 
 9. Be sure to set desired options here now as they cannot be changed after **Secure Boot** bootloader is flashed to the ESP32-C3.
 10. Save settings.
 
-#### 3.2.3 Building and Flashing the Secure Boot Bootloader
+#### 3.3.3 Building and Flashing the Secure Boot Bootloader
 
 1. Open the ESP-IDF Terminal/Command Prompt
     1. **Visual Studio Code Users**
