@@ -37,13 +37,15 @@
  * of presigned firmware image from the MQTT broker.
  */
 
+/* Includes *******************************************************************/
+
 /* Standard includes. */
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-/* Kernel includes. */
+/* FreeRTOS includes. */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -75,9 +77,6 @@
 #include "esp_event.h"
 #include "sdkconfig.h"
 
-/* Demo task configurations include. */
-#include "ota_over_mqtt_demo_config.h"
-
 /* coreMQTT-Agent network manager includes. */
 #include "core_mqtt_agent_events.h"
 #include "core_mqtt_agent_network_manager.h"
@@ -85,7 +84,10 @@
 /* Public function include. */
 #include "ota_over_mqtt_demo.h"
 
-/* Definitions ****************************************************************/
+/* Demo task configurations include. */
+#include "ota_over_mqtt_demo_config.h"
+
+/* Preprocessor definitions ****************************************************/
 
 /**
  * @brief The common prefix for all OTA topics.
@@ -157,6 +159,90 @@ struct MQTTAgentCommandContext
     MQTTStatus_t xReturnStatus;
     TaskHandle_t xTaskToNotify;
     void * pArgs;
+};
+
+/* Global variables ***********************************************************/
+
+/**
+ * @brief Logging tag for ESP-IDF logging functions.
+ */
+static const char * TAG = "ota_over_mqtt_demo";
+
+/**
+ * @brief Buffer used to store the firmware image file path.
+ * Buffer is passed to the OTA agent during initialization.
+ */
+static uint8_t updateFilePath[ otademoconfigMAX_FILE_PATH_SIZE ];
+
+/**
+ * @brief Buffer used to store the code signing certificate file path.
+ * Buffer is passed to the OTA agent during initialization.
+ */
+static uint8_t certFilePath[ otademoconfigMAX_FILE_PATH_SIZE ];
+
+/**
+ * @brief Buffer used to store the name of the data stream.
+ * Buffer is passed to the OTA agent during initialization.
+ */
+static uint8_t streamName[ otademoconfigMAX_STREAM_NAME_SIZE ];
+
+/**
+ * @brief Buffer used decode the CBOR message from the MQTT payload.
+ * Buffer is passed to the OTA agent during initialization.
+ */
+static uint8_t decodeMem[ ( 1U << otaconfigLOG2_FILE_BLOCK_SIZE ) ];
+
+/**
+ * @brief Application buffer used to store the bitmap for requesting firmware image
+ * chunks from MQTT broker. Buffer is passed to the OTA agent during initialization.
+ */
+static uint8_t bitmap[ OTA_MAX_BLOCK_BITMAP_SIZE ];
+
+/**
+ * @brief A statically allocated array of event buffers used by the OTA agent.
+ * Maximum number of buffers are determined by how many chunks are requested
+ * by OTA agent at a time along with an extra buffer to handle control message.
+ * The size of each buffer is determined by the maximum size of firmware image
+ * chunk, and other metadata send along with the chunk.
+ */
+static OtaEventData_t eventBuffer[ otaconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
+
+/**
+ * @brief Mutex used to manage thread safe access of OTA event buffers.
+ */
+static SemaphoreHandle_t xBufferSemaphore;
+
+/**
+ * @brief Static handle used for MQTT agent context.
+ */
+extern MQTTAgentContext_t xGlobalMqttAgentContext;
+
+/**
+ * @brief Structure containing all application allocated buffers used by the OTA agent.
+ * Structure is passed to the OTA agent during initialization.
+ */
+static OtaAppBuffer_t otaBuffer =
+{
+    .pUpdateFilePath    = updateFilePath,
+    .updateFilePathsize = otademoconfigMAX_FILE_PATH_SIZE,
+    .pCertFilePath      = certFilePath,
+    .certFilePathSize   = otademoconfigMAX_FILE_PATH_SIZE,
+    .pStreamName        = streamName,
+    .streamNameSize     = otademoconfigMAX_STREAM_NAME_SIZE,
+    .pDecodeMemory      = decodeMem,
+    .decodeMemorySize   = ( 1U << otaconfigLOG2_FILE_BLOCK_SIZE ),
+    .pFileBitmap        = bitmap,
+    .fileBitmapSize     = OTA_MAX_BLOCK_BITMAP_SIZE
+};
+
+/**
+ * @brief Structure used for encoding firmware version.
+ */
+const AppVersion32_t appFirmwareVersion =
+{
+    .u.x.major = APP_VERSION_MAJOR,
+    .u.x.minor = APP_VERSION_MINOR,
+    .u.x.build = APP_VERSION_BUILD,
 };
 
 /* Static function declarations ***********************************************/
@@ -356,92 +442,9 @@ static void prvCoreMqttAgentEventHandler(void* pvHandlerArg,
                                          esp_event_base_t xEventBase, 
                                          int32_t lEventId, 
                                          void* pvEventData);
-
-/* Global variables ***********************************************************/
-
-/**
- * @brief Logging tag for ESP-IDF logging functions.
- */
-static const char * TAG = "ota_over_mqtt_demo";
-
-/**
- * @brief Buffer used to store the firmware image file path.
- * Buffer is passed to the OTA agent during initialization.
- */
-static uint8_t updateFilePath[ otademoconfigMAX_FILE_PATH_SIZE ];
-
-/**
- * @brief Buffer used to store the code signing certificate file path.
- * Buffer is passed to the OTA agent during initialization.
- */
-static uint8_t certFilePath[ otademoconfigMAX_FILE_PATH_SIZE ];
-
-/**
- * @brief Buffer used to store the name of the data stream.
- * Buffer is passed to the OTA agent during initialization.
- */
-static uint8_t streamName[ otademoconfigMAX_STREAM_NAME_SIZE ];
-
-/**
- * @brief Buffer used decode the CBOR message from the MQTT payload.
- * Buffer is passed to the OTA agent during initialization.
- */
-static uint8_t decodeMem[ ( 1U << otaconfigLOG2_FILE_BLOCK_SIZE ) ];
-
-/**
- * @brief Application buffer used to store the bitmap for requesting firmware image
- * chunks from MQTT broker. Buffer is passed to the OTA agent during initialization.
- */
-static uint8_t bitmap[ OTA_MAX_BLOCK_BITMAP_SIZE ];
-
-/**
- * @brief A statically allocated array of event buffers used by the OTA agent.
- * Maximum number of buffers are determined by how many chunks are requested
- * by OTA agent at a time along with an extra buffer to handle control message.
- * The size of each buffer is determined by the maximum size of firmware image
- * chunk, and other metadata send along with the chunk.
- */
-static OtaEventData_t eventBuffer[ otaconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
-
-/*
- * @brief Mutex used to manage thread safe access of OTA event buffers.
- */
-static SemaphoreHandle_t xBufferSemaphore;
-
-/**
- * @brief Static handle used for MQTT agent context.
- */
-extern MQTTAgentContext_t xGlobalMqttAgentContext;
-
-/**
- * @brief Structure containing all application allocated buffers used by the OTA agent.
- * Structure is passed to the OTA agent during initialization.
- */
-static OtaAppBuffer_t otaBuffer =
-{
-    .pUpdateFilePath    = updateFilePath,
-    .updateFilePathsize = otademoconfigMAX_FILE_PATH_SIZE,
-    .pCertFilePath      = certFilePath,
-    .certFilePathSize   = otademoconfigMAX_FILE_PATH_SIZE,
-    .pStreamName        = streamName,
-    .streamNameSize     = otademoconfigMAX_STREAM_NAME_SIZE,
-    .pDecodeMemory      = decodeMem,
-    .decodeMemorySize   = ( 1U << otaconfigLOG2_FILE_BLOCK_SIZE ),
-    .pFileBitmap        = bitmap,
-    .fileBitmapSize     = OTA_MAX_BLOCK_BITMAP_SIZE
-};
-
-/**
- * @brief Structure used for encoding firmware version.
- */
-const AppVersion32_t appFirmwareVersion =
-{
-    .u.x.major = APP_VERSION_MAJOR,
-    .u.x.minor = APP_VERSION_MINOR,
-    .u.x.build = APP_VERSION_BUILD,
-};
-
+                                         
 /* Static function definitions ************************************************/
+
 static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
 {
     if( xSemaphoreTake( xBufferSemaphore, portMAX_DELAY ) == pdTRUE )

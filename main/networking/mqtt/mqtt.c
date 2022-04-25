@@ -44,6 +44,7 @@ static const char *TAG = "MQTT";
 #define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 20U )
 #define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 5000U )
 #define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 4096U )
+#define CONFIG_MQTT_AGENT_TASK_PRIORITY     ( 1 )
 
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
@@ -266,14 +267,22 @@ static void prvMQTTAgentTask( void * pvParameters )
     } while( xMQTTStatus != MQTTSuccess );
 }
 
-void vStartCoreMqttAgent( void )
+BaseType_t xStartCoreMqttAgent( void )
 {
-    xTaskCreate( prvMQTTAgentTask,
-                 "coreMQTT-Agent",
-                 CONFIG_MQTT_AGENT_TASK_STACK_SIZE,
-                 NULL,
-                 tskIDLE_PRIORITY + 1,
-                 NULL );
+    BaseType_t xRet = pdPASS;
+
+    if( xTaskCreate( prvMQTTAgentTask,
+                     "coreMQTT-Agent",
+                     CONFIG_MQTT_AGENT_TASK_STACK_SIZE,
+                     NULL,
+                     CONFIG_MQTT_AGENT_TASK_PRIORITY,
+                     NULL ) != pdPASS )
+    {
+        ESP_LOGE(TAG, "Failed to create coreMQTT-Agent task.");
+        xRet = pdFAIL;
+    }
+
+    return xRet;
 }
 
 MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext )
@@ -316,7 +325,6 @@ MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext )
                               &xTransport,
                               prvGetTimeMs,
                               prvIncomingPublishCallback,
-                              /* Context to pass into the callback. Passing the pointer to subscription array. */
                               xGlobalSubscriptionList );
 
     xCoreMqttAgentEventGroup = xEventGroupCreate();
@@ -352,29 +360,6 @@ MQTTStatus_t eCoreMqttAgentConnect( bool xCleanSession, const char *pcClientIden
      * Packets, the Client MUST send a PINGREQ Packet.  This responsibility will
      * be moved inside the agent. */
     xConnectInfo.keepAliveSeconds = CONFIG_KEEP_ALIVE_INTERVAL_SECONDS;
-
-    /* Append metrics when connecting to the AWS IoT Core broker. */
-    #ifdef democonfigUSE_AWS_IOT_CORE_BROKER
-        #ifdef democonfigCLIENT_USERNAME
-            xConnectInfo.pUserName = CLIENT_USERNAME_WITH_METRICS;
-            xConnectInfo.userNameLength = ( uint16_t ) strlen( CLIENT_USERNAME_WITH_METRICS );
-            xConnectInfo.pPassword = democonfigCLIENT_PASSWORD;
-            xConnectInfo.passwordLength = ( uint16_t ) strlen( democonfigCLIENT_PASSWORD );
-        #else
-            xConnectInfo.pUserName = AWS_IOT_METRICS_STRING;
-            xConnectInfo.userNameLength = AWS_IOT_METRICS_STRING_LENGTH;
-            /* Password for authentication is not used. */
-            xConnectInfo.pPassword = NULL;
-            xConnectInfo.passwordLength = 0U;
-        #endif
-    #else /* ifdef democonfigUSE_AWS_IOT_CORE_BROKER */
-        #ifdef democonfigCLIENT_USERNAME
-            xConnectInfo.pUserName = democonfigCLIENT_USERNAME;
-            xConnectInfo.userNameLength = ( uint16_t ) strlen( democonfigCLIENT_USERNAME );
-            xConnectInfo.pPassword = democonfigCLIENT_PASSWORD;
-            xConnectInfo.passwordLength = ( uint16_t ) strlen( democonfigCLIENT_PASSWORD );
-        #endif /* ifdef democonfigCLIENT_USERNAME */
-    #endif /* ifdef democonfigUSE_AWS_IOT_CORE_BROKER */
 
     /* Send MQTT CONNECT packet to broker. MQTT's Last Will and Testament feature
      * is not used in this demo, so it is passed as NULL. */
