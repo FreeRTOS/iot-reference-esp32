@@ -6,10 +6,21 @@ set(MAIN_SRCS
     "networking/mqtt/subscription_manager.c"
     "networking/network_manager/core_mqtt_agent_network_manager.c"
     "networking/network_manager/core_mqtt_agent_events.c"
-    "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c"
     "demo_tasks/temp_sub_pub_demo.c"
-    "demo_tasks/ota/ota_over_mqtt_demo.c"
 )
+
+# Demo enables
+
+# Sub Pub Unsub demo
+
+if(CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO)
+    list(APPEND MAIN_SRCS "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c")
+endif()
+
+# OTA demo
+if(CONFIG_GRI_ENABLE_OTA_DEMO)
+    list(APPEND MAIN_SRCS "demo_tasks/ota/ota_over_mqtt_demo.c")
+endif()
 
 set(MAIN_INCLUDE_DIRS
     "."

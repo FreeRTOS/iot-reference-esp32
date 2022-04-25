@@ -2,11 +2,12 @@
 #define MQTT_H
 
 #include "core_mqtt.h"
+#include "freertos/FreeRTOS.h"
 
 MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext );
 
 MQTTStatus_t eCoreMqttAgentConnect( bool xCleanSession, const char *pcClientIdentifier );
 
-void vStartCoreMqttAgent( void );
+BaseType_t xStartCoreMqttAgent( void );
 
 #endif /* MQTT_H */
