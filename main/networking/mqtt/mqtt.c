@@ -31,23 +31,24 @@
     #include "ota_over_mqtt_demo.h"
 #endif
 
-static const char *TAG = "MQTT";
+static const char * TAG = "MQTT";
 
 /* Timing definitions */
-#define MILLISECONDS_PER_SECOND      ( 1000U )
-#define MILLISECONDS_PER_TICK        ( MILLISECONDS_PER_SECOND / \
-    configTICK_RATE_HZ )
+#define MILLISECONDS_PER_SECOND    ( 1000U )
+#define MILLISECONDS_PER_TICK   \
+    ( MILLISECONDS_PER_SECOND / \
+      configTICK_RATE_HZ )
 
 /* Buffer sizes */
-#define MQTT_AGENT_NETWORK_BUFFER_SIZE      ( 10000U )
-#define MQTT_AGENT_COMMAND_QUEUE_LENGTH     ( 10U )
-#define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS  ( 20U )
-#define CONFIG_CONNACK_RECV_TIMEOUT_MS      ( 5000U )
-#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE   ( 4096U )
-#define CONFIG_MQTT_AGENT_TASK_PRIORITY     ( 1 )
+#define MQTT_AGENT_NETWORK_BUFFER_SIZE          ( 10000U )
+#define MQTT_AGENT_COMMAND_QUEUE_LENGTH         ( 10U )
+#define CONFIG_KEEP_ALIVE_INTERVAL_SECONDS      ( 20U )
+#define CONFIG_CONNACK_RECV_TIMEOUT_MS          ( 5000U )
+#define CONFIG_MQTT_AGENT_TASK_STACK_SIZE       ( 4096U )
+#define CONFIG_MQTT_AGENT_TASK_PRIORITY         ( 1 )
 
 /* coreMQTT-Agent event group bit definitions */
-#define CORE_MQTT_AGENT_NETWORKING_READY_BIT (1 << 0)
+#define CORE_MQTT_AGENT_NETWORKING_READY_BIT    ( 1 << 0 )
 
 static uint32_t ulGlobalEntryTimeMs;
 static uint8_t ucNetworkBuffer[ MQTT_AGENT_NETWORK_BUFFER_SIZE ];
@@ -57,32 +58,42 @@ SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIP
 
 static EventGroupHandle_t xCoreMqttAgentEventGroup;
 
-static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
-                                         esp_event_base_t xEventBase, 
-                                         int32_t lEventId, 
-                                         void* pvEventData)
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData )
 {
-    (void)pvHandlerArg;
-    (void)xEventBase;
-    (void)pvEventData;
+    ( void ) pvHandlerArg;
+    ( void ) xEventBase;
+    ( void ) pvEventData;
 
-    switch (lEventId)
+    switch( lEventId )
     {
-    case CORE_MQTT_AGENT_CONNECTED_EVENT:
-        ESP_LOGI(TAG, "coreMQTT-Agent connected.");
-        xEventGroupSetBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
-        break;
-    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-        ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
-        break;
-    default:
-        ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
-                 lEventId);
-        break;
+        case CORE_MQTT_AGENT_CONNECTED_EVENT:
+            ESP_LOGI( TAG, "coreMQTT-Agent connected." );
+            xEventGroupSetBits( xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+            ESP_LOGI( TAG, "coreMQTT-Agent disconnected." );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
+            ESP_LOGI( TAG, "OTA started." );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
+            ESP_LOGI( TAG, "OTA stopped." );
+            break;
+
+        default:
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %d",
+                      lEventId );
+            break;
     }
 }
-                                
-static uint32_t prvGetTimeMs(void)
+
+static uint32_t prvGetTimeMs( void )
 {
     TickType_t xTickCount = 0;
     uint32_t ulTimeMs = 0UL;
@@ -91,11 +102,11 @@ static uint32_t prvGetTimeMs(void)
     xTickCount = xTaskGetTickCount();
 
     /* Convert the ticks to milliseconds. */
-    ulTimeMs = (uint32_t)xTickCount * MILLISECONDS_PER_TICK;
+    ulTimeMs = ( uint32_t ) xTickCount * MILLISECONDS_PER_TICK;
 
     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
      * elapsed time in the application. */
-    ulTimeMs = (uint32_t)(ulTimeMs - ulGlobalEntryTimeMs);
+    ulTimeMs = ( uint32_t ) ( ulTimeMs - ulGlobalEntryTimeMs );
 
     return ulTimeMs;
 }
@@ -114,15 +125,16 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
     xPublishHandled = handleIncomingPublishes( ( SubscriptionElement_t * ) pMqttAgentContext->pIncomingCallbackContext,
                                                pxPublishInfo );
 
-#if CONFIG_GRI_ENABLE_OTA_DEMO
-    /*
-     * Check if the incoming publish is for OTA agent.
-     */
-    if( xPublishHandled != true )
-    {
-        xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
-    }
-#endif
+    #if CONFIG_GRI_ENABLE_OTA_DEMO
+        /*
+         * Check if the incoming publish is for OTA agent.
+         */
+        if( xPublishHandled != true )
+        {
+            xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
+        }
+    #endif
+
     /* If there are no callbacks to handle the incoming publishes,
      * handle it as an unsolicited publish. */
     if( xPublishHandled != true )
@@ -241,9 +253,9 @@ static void prvMQTTAgentTask( void * pvParameters )
 
     do
     {
-        xEventGroupWaitBits(xCoreMqttAgentEventGroup,
-            CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE, 
-            portMAX_DELAY);
+        xEventGroupWaitBits( xCoreMqttAgentEventGroup,
+                             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE,
+                             portMAX_DELAY );
 
         /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
          * will manage the MQTT protocol until such time that an error occurs,
@@ -256,13 +268,13 @@ static void prvMQTTAgentTask( void * pvParameters )
          * be disconnected. */
         if( xMQTTStatus == MQTTSuccess )
         {
-            ESP_LOGI(TAG, "MQTT Disconnect from broker.");
+            ESP_LOGI( TAG, "MQTT Disconnect from broker." );
         }
         /* Error. */
         else
         {
-            xEventGroupClearBits(xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT);
-            xCoreMqttAgentNetworkManagerPost(CORE_MQTT_AGENT_DISCONNECTED_EVENT);
+            xEventGroupClearBits( xCoreMqttAgentEventGroup, CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            xCoreMqttAgentNetworkManagerPost( CORE_MQTT_AGENT_DISCONNECTED_EVENT );
         }
     } while( xMQTTStatus != MQTTSuccess );
 }
@@ -278,14 +290,14 @@ BaseType_t xStartCoreMqttAgent( void )
                      CONFIG_MQTT_AGENT_TASK_PRIORITY,
                      NULL ) != pdPASS )
     {
-        ESP_LOGE(TAG, "Failed to create coreMQTT-Agent task.");
+        ESP_LOGE( TAG, "Failed to create coreMQTT-Agent task." );
         xRet = pdFAIL;
     }
 
     return xRet;
 }
 
-MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext )
+MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t * pxNetworkContext )
 {
     TransportInterface_t xTransport;
     MQTTStatus_t xReturn;
@@ -328,12 +340,13 @@ MQTTStatus_t eCoreMqttAgentInit( NetworkContext_t *pxNetworkContext )
                               xGlobalSubscriptionList );
 
     xCoreMqttAgentEventGroup = xEventGroupCreate();
-    xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
+    xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
     return xReturn;
 }
 
-MQTTStatus_t eCoreMqttAgentConnect( bool xCleanSession, const char *pcClientIdentifier )
+MQTTStatus_t eCoreMqttAgentConnect( bool xCleanSession,
+                                    const char * pcClientIdentifier )
 {
     MQTTStatus_t xResult;
     MQTTConnectInfo_t xConnectInfo;
