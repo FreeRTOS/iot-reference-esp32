@@ -65,13 +65,19 @@
 /* Network manager */
 #include "core_mqtt_agent_network_manager.h"
 
-/* coreMQTT-Agent events */
+/* coreMQTT-Agent events include. */
 #include "core_mqtt_agent_events.h"
 
-/* Hardware drivers */
+/* Hardware drivers include. */
 #include "app_driver.h"
 
 #include "core_json.h"
+
+/* Public functions include. */
+#include "temp_sub_pub_and_led_control_demo.h"
+
+/* Demo task configurations include. */
+#include "temp_sub_pub_and_led_control_demo_config.h"
 
 #ifdef LIBRARY_LOG_NAME
 #undef LIBRARY_LOG_NAME
@@ -105,31 +111,6 @@ static void prvMTTAgentConnectedHandler (void* pvHandlerArg,
         break;
     }
 }
-
-/**
- * @brief This demo uses task notifications to signal tasks from MQTT callback
- * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
- * to wait for such a callback.
- */
-#define mqttexampleMS_TO_WAIT_FOR_NOTIFICATION            ( 10000 )
-
-/**
- * @brief Size of statically allocated buffers for holding topic names and
- * payloads.
- */
-#define mqttexampleSTRING_BUFFER_LENGTH                   ( 100 )
-
-/**
- * @brief Delay for the synchronous publisher task between publishes.
- */
-#define mqttexampleDELAY_BETWEEN_PUBLISH_OPERATIONS_MS    ( 3000U )
-
-/**
- * @brief The maximum amount of time in milliseconds to wait for the commands
- * to be posted to the MQTT agent should the MQTT agent's command queue be full.
- * Tasks wait in the Blocked state, so don't use any CPU time.
- */
-#define mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS         ( 500 )
 
 /*-----------------------------------------------------------*/
 
@@ -244,9 +225,9 @@ extern MQTTAgentContext_t xGlobalMqttAgentContext;
  * @note The topic strings must persist until unsubscribed.
  */
 #if democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE > 0
-    static char topicBuf[ democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE ][ mqttexampleSTRING_BUFFER_LENGTH ];
+    static char topicBuf[ democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE ][ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
 #else
-    static char topicBuf[ 1U ][ mqttexampleSTRING_BUFFER_LENGTH ];
+    static char topicBuf[ 1U ][ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
 #endif
 
 /**
@@ -418,21 +399,21 @@ static void parseIncomingPublish( char* publishPayload, size_t publishPayloadLen
 static void prvIncomingPublishCallback( void * pvIncomingPublishCallbackContext,
                                         MQTTPublishInfo_t * pxPublishInfo )
 {
-    static char cTerminatedString[ mqttexampleSTRING_BUFFER_LENGTH ];
+    static char cTerminatedString[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
 
     ( void ) pvIncomingPublishCallbackContext;
 
     /* Create a message that contains the incoming MQTT payload to the logger,
      * terminating the string first. */
-    if( pxPublishInfo->payloadLength < mqttexampleSTRING_BUFFER_LENGTH )
+    if( pxPublishInfo->payloadLength < temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH )
     {
         memcpy( ( void * ) cTerminatedString, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
         cTerminatedString[ pxPublishInfo->payloadLength ] = 0x00;
     }
     else
     {
-        memcpy( ( void * ) cTerminatedString, pxPublishInfo->pPayload, mqttexampleSTRING_BUFFER_LENGTH );
-        cTerminatedString[ mqttexampleSTRING_BUFFER_LENGTH - 1 ] = 0x00;
+        memcpy( ( void * ) cTerminatedString, pxPublishInfo->pPayload, temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH );
+        cTerminatedString[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH - 1 ] = 0x00;
     }
 
     LogInfo( ( "Received incoming publish message %s", cTerminatedString ) );
@@ -479,7 +460,7 @@ static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
     xApplicationDefinedContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
     xApplicationDefinedContext.pArgs = ( void * ) &xSubscribeArgs;
 
-    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
+    xCommandParams.blockTimeMs = temppubsubandledcontrolconfigMAX_COMMAND_SEND_BLOCK_TIME_MS;
     xCommandParams.cmdCompleteCallback = prvSubscribeCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xApplicationDefinedContext;
 
@@ -527,8 +508,8 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
 {
     // extern UBaseType_t uxRand( void );
     MQTTPublishInfo_t xPublishInfo = { 0UL };
-    char payloadBuf[ mqttexampleSTRING_BUFFER_LENGTH ];
-    char taskName[ mqttexampleSTRING_BUFFER_LENGTH ];
+    char payloadBuf[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
+    char taskName[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
     MQTTAgentCommandContext_t xCommandContext;
     uint32_t ulNotification = 0U, ulValueToNotify = 0UL;
     MQTTStatus_t xCommandAdded;
@@ -549,10 +530,10 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
 
     /* Create a unique name for this task from the task number that is passed into
      * the task using the task's parameter. */
-    snprintf( taskName, mqttexampleSTRING_BUFFER_LENGTH, "Publisher%d", ( int ) ulTaskNumber );
+    snprintf( taskName, temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH, "Publisher%d", ( int ) ulTaskNumber );
 
     /* Create a topic name for this task to publish to. */
-    snprintf( pcTopicBuffer, mqttexampleSTRING_BUFFER_LENGTH, "/filter/%s", taskName );
+    snprintf( pcTopicBuffer, temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH, "/filter/%s", taskName );
 
     /* Subscribe to the same topic to which this task will publish.  That will
      * result in each published message being published from the server back to
@@ -572,7 +553,7 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
     memset( ( void * ) &xCommandContext, 0x00, sizeof( xCommandContext ) );
     xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
 
-    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
+    xCommandParams.blockTimeMs = temppubsubandledcontrolconfigMAX_COMMAND_SEND_BLOCK_TIME_MS;
     xCommandParams.cmdCompleteCallback = prvPublishCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = &xCommandContext;
 
@@ -589,7 +570,7 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
             temperatureValue = app_driver_temp_sensor_read_celsius();
 
             snprintf( payloadBuf,
-                      mqttexampleSTRING_BUFFER_LENGTH,
+                      temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH,
                       "{"                          \
                       "\"temperatureSensor\":"     \
                       "{"                          \
@@ -656,7 +637,7 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
         }
         /* Add a little randomness into the delay so the tasks don't remain
          * in lockstep. */
-        xTicksToDelay = pdMS_TO_TICKS( mqttexampleDELAY_BETWEEN_PUBLISH_OPERATIONS_MS ) +
+        xTicksToDelay = pdMS_TO_TICKS( temppubsubandledcontrolconfigDELAY_BETWEEN_PUBLISH_OPERATIONS_MS ) +
                         ( rand() % 0xff );
         vTaskDelay( xTicksToDelay );
     }
