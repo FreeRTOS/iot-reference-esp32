@@ -146,7 +146,7 @@
 /**
  * @brief Used to clear bits in a task's notification value.
  */
-#define MAX_UINT32                     ( 0xffffffff )
+#define MAX_UINT32                               ( 0xffffffff )
 
 /* Struct definitions *********************************************************/
 
@@ -435,14 +435,14 @@ static void prvResumeOTACodeSigningDemo( void );
 
 /**
  * @brief ESP Event Loop library handler for coreMQTT-Agent events.
- * 
+ *
  * This handles events defined in core_mqtt_agent_events.h.
  */
-static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
-                                         esp_event_base_t xEventBase, 
-                                         int32_t lEventId, 
-                                         void* pvEventData);
-                                         
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData );
+
 /* Static function definitions ************************************************/
 
 static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
@@ -479,7 +479,7 @@ static OtaEventData_t * prvOTAEventBufferGet( void )
     }
     else
     {
-        ESP_LOGE(TAG, "Failed to get buffer semaphore.");
+        ESP_LOGE( TAG, "Failed to get buffer semaphore." );
     }
 
     return pFreeBuffer;
@@ -499,7 +499,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
     switch( event )
     {
         case OtaJobEventActivate:
-            ESP_LOGI(TAG, "Received OtaJobEventActivate callback from OTA Agent.");
+            ESP_LOGI( TAG, "Received OtaJobEventActivate callback from OTA Agent." );
 
             /**
              * Activate the new firmware image immediately. Applications can choose to postpone
@@ -512,7 +512,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
              * up through manual activation by resetting the device. The demo reports the error
              * and shuts down the OTA agent.
              */
-            ESP_LOGE(TAG, "New image activation failed.");
+            ESP_LOGE( TAG, "New image activation failed." );
 
             /* Shutdown OTA Agent, if it is required that the unsubscribe operations are not
              * performed while shutting down please set the second parameter to 0 instead of 1. */
@@ -526,7 +526,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             /**
              * No user action is needed here. OTA agent handles the job failure event.
              */
-            ESP_LOGI(TAG, "Received an OtaJobEventFail notification from OTA Agent.");
+            ESP_LOGI( TAG, "Received an OtaJobEventFail notification from OTA Agent." );
 
             break;
 
@@ -538,35 +538,35 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
              * image, this would be the place to kick off those tests before calling
              * OTA_SetImageState() with the final result of either accepted or rejected. */
 
-            ESP_LOGI(TAG, "Received OtaJobEventStartTest callback from OTA Agent.");
+            ESP_LOGI( TAG, "Received OtaJobEventStartTest callback from OTA Agent." );
 
             err = OTA_SetImageState( OtaImageStateAccepted );
 
             if( err == OtaErrNone )
             {
-                ESP_LOGI(TAG, "New image validation succeeded in self test mode.");
+                ESP_LOGI( TAG, "New image validation succeeded in self test mode." );
             }
             else
             {
-                ESP_LOGE(TAG, "Failed to set image state as accepted with error %d.", err);
+                ESP_LOGE( TAG, "Failed to set image state as accepted with error %d.", err );
             }
 
             break;
 
         case OtaJobEventProcessed:
 
-            ESP_LOGD(TAG, "OTA Event processing completed. Freeing the event buffer to pool.");
+            ESP_LOGD( TAG, "OTA Event processing completed. Freeing the event buffer to pool." );
             configASSERT( pData != NULL );
             prvOTAEventBufferFree( ( OtaEventData_t * ) pData );
 
             break;
 
         case OtaJobEventSelfTestFailed:
-            ESP_LOGD(TAG, "Received OtaJobEventSelfTestFailed callback from OTA Agent.");
+            ESP_LOGD( TAG, "Received OtaJobEventSelfTestFailed callback from OTA Agent." );
 
             /* Requires manual activation of previous image as self-test for
              * new image downloaded failed.*/
-            ESP_LOGE(TAG, "OTA Self-test failed for new image. shutting down OTA Agent.");
+            ESP_LOGE( TAG, "OTA Self-test failed for new image. shutting down OTA Agent." );
 
             /* Shutdown OTA Agent, if it is required that the unsubscribe operations are not
              * performed while shutting down please set the second parameter to 0 instead of 1. */
@@ -575,8 +575,8 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             break;
 
         default:
-            ESP_LOGW(TAG, "Received an unhandled callback event from OTA Agent, "
-            "event = %d", event);
+            ESP_LOGW( TAG, "Received an unhandled callback event from OTA Agent, "
+                           "event = %d", event );
 
             break;
     }
@@ -592,7 +592,7 @@ static void prvProcessIncomingData( void * pxSubscriptionContext,
     OtaEventData_t * pData;
     OtaEventMsg_t eventMsg = { 0 };
 
-    ESP_LOGD(TAG, "Received OTA image block, size %d.\n\n", pPublishInfo->payloadLength);
+    ESP_LOGD( TAG, "Received OTA image block, size %d.\n\n", pPublishInfo->payloadLength );
 
     configASSERT( pPublishInfo->payloadLength <= OTA_DATA_BLOCK_SIZE );
 
@@ -610,7 +610,7 @@ static void prvProcessIncomingData( void * pxSubscriptionContext,
     }
     else
     {
-        ESP_LOGE(TAG, "Error: No OTA data buffers available.\r\n");
+        ESP_LOGE( TAG, "Error: No OTA data buffers available.\r\n" );
     }
 }
 
@@ -624,7 +624,7 @@ static void prvProcessIncomingJobMessage( void * pxSubscriptionContext,
 
     configASSERT( pPublishInfo != NULL );
 
-    ESP_LOGI(TAG, "Received job message callback, size %d.\n\n", pPublishInfo->payloadLength);
+    ESP_LOGI( TAG, "Received job message callback, size %d.\n\n", pPublishInfo->payloadLength );
 
     configASSERT( pPublishInfo->payloadLength <= OTA_DATA_BLOCK_SIZE );
 
@@ -642,7 +642,7 @@ static void prvProcessIncomingJobMessage( void * pxSubscriptionContext,
     }
     else
     {
-        ESP_LOGE(TAG, "Error: No OTA data buffers available.\r\n");
+        ESP_LOGE( TAG, "Error: No OTA data buffers available.\r\n" );
     }
 }
 
@@ -742,16 +742,16 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
 
     if( mqttStatus != MQTTSuccess )
     {
-        ESP_LOGE(TAG, "Failed to SUBSCRIBE to topic with error = %u.", 
-            mqttStatus);
+        ESP_LOGE( TAG, "Failed to SUBSCRIBE to topic with error = %u.",
+                  mqttStatus );
 
         otaRet = OtaMqttSubscribeFailed;
     }
     else
     {
-        ESP_LOGI(TAG, "Subscribed to topic %.*s.\n\n",
-            topicFilterLength,
-            pTopicFilter);
+        ESP_LOGI( TAG, "Subscribed to topic %.*s.\n\n",
+                  topicFilterLength,
+                  pTopicFilter );
 
         otaRet = OtaMqttSuccess;
     }
@@ -807,16 +807,16 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
 
     if( mqttStatus != MQTTSuccess )
     {
-        ESP_LOGE(TAG, "Failed to send PUBLISH packet to broker with error = %u.", 
-            mqttStatus);
+        ESP_LOGE( TAG, "Failed to send PUBLISH packet to broker with error = %u.",
+                  mqttStatus );
 
         otaRet = OtaMqttPublishFailed;
     }
     else
     {
-        ESP_LOGI(TAG, "Sent PUBLISH packet to broker %.*s to broker.\n\n",
-            topicLen,
-            pacTopic);
+        ESP_LOGI( TAG, "Sent PUBLISH packet to broker %.*s to broker.\n\n",
+                  topicLen,
+                  pacTopic );
 
         otaRet = OtaMqttSuccess;
     }
@@ -853,7 +853,7 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
     xCommandParams.cmdCompleteCallback = prvCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xApplicationDefinedContext;
 
-    ESP_LOGI(TAG, " Unsubscribing to topic filter: %s", pTopicFilter);
+    ESP_LOGI( TAG, " Unsubscribing to topic filter: %s", pTopicFilter );
     xTaskNotifyStateClear( NULL );
 
 
@@ -879,18 +879,18 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
 
     if( mqttStatus != MQTTSuccess )
     {
-        ESP_LOGE(TAG, "Failed to UNSUBSCRIBE from topic %.*s with error = %u.",
-            topicFilterLength,
-            pTopicFilter,
-            mqttStatus);
+        ESP_LOGE( TAG, "Failed to UNSUBSCRIBE from topic %.*s with error = %u.",
+                  topicFilterLength,
+                  pTopicFilter,
+                  mqttStatus );
 
         otaRet = OtaMqttUnsubscribeFailed;
     }
     else
     {
-        ESP_LOGI(TAG, "UNSUBSCRIBED from topic %.*s.\n\n",
-            topicFilterLength,
-            pTopicFilter);
+        ESP_LOGI( TAG, "UNSUBSCRIBED from topic %.*s.\n\n",
+                  topicFilterLength,
+                  pTopicFilter );
 
         otaRet = OtaMqttSuccess;
     }
@@ -953,10 +953,10 @@ static void prvOTADemoTask( void * pvParam )
     /* Set OTA Library interfaces.*/
     setOtaInterfaces( &otaInterfaces );
 
-    ESP_LOGI(TAG, "OTA over MQTT demo, Application version %u.%u.%u",
-        appFirmwareVersion.u.x.major,
-        appFirmwareVersion.u.x.minor,
-        appFirmwareVersion.u.x.build);
+    ESP_LOGI( TAG, "OTA over MQTT demo, Application version %u.%u.%u",
+              appFirmwareVersion.u.x.major,
+              appFirmwareVersion.u.x.minor,
+              appFirmwareVersion.u.x.build );
 
     /****************************** Init OTA Library. ******************************/
 
@@ -976,8 +976,8 @@ static void prvOTADemoTask( void * pvParam )
                                  ( const uint8_t * ) ( otademoconfigCLIENT_IDENTIFIER ),
                                  prvOtaAppCallback ) ) != OtaErrNone )
         {
-            ESP_LOGE(TAG, "Failed to initialize OTA Agent, exiting = %u.",
-                otaRet);
+            ESP_LOGE( TAG, "Failed to initialize OTA Agent, exiting = %u.",
+                      otaRet );
             xResult = pdFAIL;
         }
     }
@@ -991,8 +991,8 @@ static void prvOTADemoTask( void * pvParam )
                                      otademoconfigAGENT_TASK_PRIORITY,
                                      NULL ) ) != pdPASS )
         {
-            ESP_LOGE(TAG, "Failed to start OTA Agent task: errno=%d",
-                xResult);
+            ESP_LOGE( TAG, "Failed to start OTA Agent task: errno=%d",
+                      xResult );
         }
     }
 
@@ -1008,17 +1008,17 @@ static void prvOTADemoTask( void * pvParam )
         {
             /* Get OTA statistics for currently executing job. */
             OTA_GetStatistics( &otaStatistics );
-            ESP_LOGI(TAG, " Received: %u   Queued: %u   Processed: %u   Dropped: %u",
-                otaStatistics.otaPacketsReceived,
-                otaStatistics.otaPacketsQueued,
-                otaStatistics.otaPacketsProcessed,
-                otaStatistics.otaPacketsDropped);
+            ESP_LOGI( TAG, " Received: %u   Queued: %u   Processed: %u   Dropped: %u",
+                      otaStatistics.otaPacketsReceived,
+                      otaStatistics.otaPacketsQueued,
+                      otaStatistics.otaPacketsProcessed,
+                      otaStatistics.otaPacketsDropped );
 
             vTaskDelay( pdMS_TO_TICKS( otademoconfigTASK_DELAY_MS ) );
         }
     }
 
-    ESP_LOGI(TAG, "OTA agent task stopped. Exiting OTA demo.");
+    ESP_LOGI( TAG, "OTA agent task stopped. Exiting OTA demo." );
 
     vTaskDelete( NULL );
 }
@@ -1050,29 +1050,31 @@ static void prvResumeOTACodeSigningDemo( void )
     }
 }
 
-static void prvCoreMqttAgentEventHandler(void* pvHandlerArg, 
-                                         esp_event_base_t xEventBase, 
-                                         int32_t lEventId, 
-                                         void* pvEventData)
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData )
 {
-    (void)pvHandlerArg;
-    (void)xEventBase;
-    (void)pvEventData;
+    ( void ) pvHandlerArg;
+    ( void ) xEventBase;
+    ( void ) pvEventData;
 
-    switch (lEventId)
+    switch( lEventId )
     {
-    case CORE_MQTT_AGENT_CONNECTED_EVENT:
-        ESP_LOGI(TAG, "coreMQTT-Agent connected. Resuming OTA agent.");
-        prvResumeOTACodeSigningDemo();
-        break;
-    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-        ESP_LOGW(TAG, "coreMQTT-Agent disconnected. Suspending OTA agent.");
-        prvSuspendOTACodeSigningDemo();
-        break;
-    default:
-        ESP_LOGE(TAG, "coreMQTT-Agent event handler received unexpected event: %d", 
-                 lEventId);
-        break;
+        case CORE_MQTT_AGENT_CONNECTED_EVENT:
+            ESP_LOGI( TAG, "coreMQTT-Agent connected. Resuming OTA agent." );
+            prvResumeOTACodeSigningDemo();
+            break;
+
+        case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+            ESP_LOGW( TAG, "coreMQTT-Agent disconnected. Suspending OTA agent." );
+            prvSuspendOTACodeSigningDemo();
+            break;
+
+        default:
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %d",
+                      lEventId );
+            break;
     }
 }
 
@@ -1083,7 +1085,7 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
 {
     BaseType_t xResult;
 
-    xCoreMqttAgentNetworkManagerRegisterHandler(prvCoreMqttAgentEventHandler);
+    xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
     if( ( xResult = xTaskCreate( prvOTADemoTask,
                                  "OTADemoTask",
@@ -1092,7 +1094,7 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
                                  uxPriority,
                                  NULL ) ) != pdPASS )
     {
-        ESP_LOGE(TAG, "Failed to start OTA task: errno=%d", xResult);
+        ESP_LOGE( TAG, "Failed to start OTA task: errno=%d", xResult );
     }
 
     configASSERT( xResult == pdPASS );

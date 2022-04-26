@@ -25,30 +25,29 @@
 #include "app_wifi.h"
 
 /* Demo includes. */
-
 #if CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO
     #include "sub_pub_unsub_demo.h"
 #endif /* CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO */
+
+#if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+    #include "temp_sub_pub_and_led_control_demo.h"
+#endif /* CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO */
 
 #if CONFIG_GRI_ENABLE_OTA_DEMO
     #include "ota_pal.h"
     #include "ota_over_mqtt_demo.h"
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
+
 /* Logging tag */
 static const char * TAG = "main";
 
 static NetworkContext_t xNetworkContext;
 
-/* TODO - Set up kconfig to enable/disable demo tasks */
+#if CONFIG_GRI_ENABLE_OTA_DEMO
+    extern const char pcAwsCodeSigningCertPem[] asm("_binary_aws_codesign_crt_start");
+#endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
-extern void vStartTempSensorRead( configSTACK_DEPTH_TYPE uxStackSize,
-                                  UBaseType_t uxPriority,
-                                  QueueHandle_t queue );
-
-extern void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
-                                            configSTACK_DEPTH_TYPE uxStackSize,
-                                            UBaseType_t uxPriority );
 
 static BaseType_t prvInitializeNetworkContext( void );
 static void prvStartEnabledDemos( void );
@@ -103,9 +102,9 @@ void app_main( void )
         return;
     }
 
-    /* Start demo tasks. This needs to be done before starting WiFi and 
-     * and after starting the coreMQTT-Agent network manager so demos can register
-     * their coreMQTT-Agent event handlers. */
+    /* Start demo tasks. This needs to be done before starting WiFi and
+     * and after starting the coreMQTT-Agent network manager so demos can
+     * register their coreMQTT-Agent event handlers. */
     prvStartEnabledDemos();
 
     /* Start wifi */
@@ -150,8 +149,8 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
-    xEspErrRet = esp_secure_cert_get_dev_cert_addr(
-        ( const void ** ) &xNetworkContext.pcClientCertPem, &ulBufferLen );
+    xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &xNetworkContext.pcClientCertPem,
+                                                    &ulBufferLen );
 
     if( xEspErrRet == ESP_OK )
     {
@@ -171,8 +170,8 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     /* Get the root CA certificate from esp_secure_crt_mgr and put into network
      * context. */
-    xEspErrRet = esp_secure_cert_get_ca_cert_addr(
-        ( const void ** ) &xNetworkContext.pcServerRootCAPem, &ulBufferLen );
+    xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &xNetworkContext.pcServerRootCAPem,
+                                                   &ulBufferLen );
 
     if( xEspErrRet == ESP_OK )
     {
@@ -206,8 +205,8 @@ static BaseType_t prvInitializeNetworkContext( void )
         /* If the DS peripheral is not being used, get the device private key from
          * esp_secure_crt_mgr and put into network context. */
 
-        xEspErrRet = esp_secure_cert_get_priv_key_addr(
-            ( const void ** ) &xNetworkContext.pcClientKeyPem, &ulBufferLen );
+        xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &xNetworkContext.pcClientKeyPem,
+                                                        &ulBufferLen );
 
         if( xEspErrRet == ESP_OK )
         {
@@ -246,52 +245,28 @@ static void prvStartEnabledDemos( void )
         vStartSubscribePublishUnsubscribeDemo();
     #endif /* CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO */
 
-    #if CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO
+    #if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
         vStartTempSubscribePublishTask( 1, 3072, 1 );
     #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
 
     #if CONFIG_GRI_ENABLE_OTA_DEMO
-        /* This is used to store the required buffer length when retrieving data
-         * from flash. */
-        uint32_t ulBufferLen;
 
-        /* This is used to store the error return of ESP-IDF functions. */
-        esp_err_t xEspErrRet;
+        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+            ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
+                      strlen( pcAwsCodeSigningCertPem ),
+                      pcAwsCodeSigningCertPem );
+        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
 
-        /* This is used to store the address of the memory-mapped code signing
-         * certificate in flash. */
-
-        const char * pcCodeSigningCertificatePEM = NULL;
-
-        /* Get the code signing certificate from esp_secure_crt_mgr and give to
-         * OTA PAL. */
-
-        xEspErrRet = esp_secure_cert_get_cs_cert_addr(
-            ( const void ** ) &pcCodeSigningCertificatePEM, &ulBufferLen );
-
-        if( xEspErrRet == ESP_OK )
+        if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
         {
-            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                          strlen( pcCodeSigningCertificatePEM ),
-                          pcCodeSigningCertificatePEM );
-            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-
-            if( otaPal_SetCodeSigningCertificate( pcCodeSigningCertificatePEM ) )
-            {
-                vStartOTACodeSigningDemo( 3072, 1 );
-            }
-            else
-            {
-                ESP_LOGE( TAG,
-                          "Failed to set the code signing certificate for the AWS OTA "
-                          "library. OTA demo will not be started." );
-            }
+            vStartOTACodeSigningDemo( 3072, 1 );
         }
         else
         {
-            ESP_LOGE( TAG, "Error in getting code signing certificate. Error: %s ."
-                           "OTA demo will not be started.", esp_err_to_name( xEspErrRet ) );
+            ESP_LOGE( TAG,
+                      "Failed to set the code signing certificate for the AWS OTA "
+                      "library. OTA demo will not be started." );
         }
+        
     #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 }

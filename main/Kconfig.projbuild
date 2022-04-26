@@ -90,10 +90,45 @@ menu "Golden Reference Integration"
     
     endmenu # Sub pub unsub demo configurations
     
-    config GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO
-        bool "Enable temperature sensor and LED control pub sub demo"
+    config GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+        bool "Enable temperature sensor pub sub and LED control demo"
         default y
-    
+
+    menu "Temperature pub sub and LED control demo configurations"
+        depends on GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_STRING_BUFFER_LENGTH
+            int "Topic name and payload buffer length"
+            default 100
+            help
+                Size of statically allocated buffers for holding topic names and payloads.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_DELAY_BETWEEN_PUBLISH_OPERATIONS_MS
+            int "Delay between publishes in milliseconds"
+            default 3000
+            help
+                Delay for the synchronous publisher task between publishes.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_MAX_COMMAND_SEND_BLOCK_TIME_MS
+            int "coreMQTT-Agent command post block time in milliseconds."
+            default 500
+            help
+                The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_PRIORITY
+            int "Temperature sensor publishing task priority."
+            default 1
+            help
+                The task priority of the temperature sensor publishing task.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_STACK_SIZE
+            int "Temperature sensor publishing task stack size."
+            default 3072
+            help
+                The task stack size of the temperature sensor publishing task.
+
+    endmenu # Temperature pub sub and LED control demo configurations
+
     config GRI_ENABLE_OTA_DEMO
         bool "Enable OTA demo"
         default y
