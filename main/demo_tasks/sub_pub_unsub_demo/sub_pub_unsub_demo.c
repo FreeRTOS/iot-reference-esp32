@@ -7,9 +7,9 @@
  * prvSubscribePublishUnsubscribeTask().  prvSubscribePublishUnsubscribeTask()
  * subscribes to a topic, publishes a message to the same
  * topic, receives the message, then unsubscribes from the topic in a loop.
- * The command context sent to MQTTAgent_Publish(), MQTTAgent_Subscribe(), and 
- * MQTTAgent_Unsubscribe contains a unique number that is sent back to the task 
- * as a task notification from the callback function that executes when the 
+ * The command context sent to MQTTAgent_Publish(), MQTTAgent_Subscribe(), and
+ * MQTTAgent_Unsubscribe contains a unique number that is sent back to the task
+ * as a task notification from the callback function that executes when the
  * operations are acknowledged (or just sent in the case of QoS 0).  The
  * task checks the number it receives from the callback equals the number it
  * previously set in the command context before printing out either a success
@@ -50,7 +50,8 @@
 /* Preprocessor definitions ***************************************************/
 
 /* coreMQTT-Agent event group bit definitions */
-#define CORE_MQTT_AGENT_NETWORKING_READY_BIT    ( 1 << 0 )
+#define CORE_MQTT_AGENT_NETWORKING_READY_BIT       ( 1 << 0 )
+#define CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT    ( 1 << 1 )
 
 /* Struct definitions *********************************************************/
 
@@ -245,9 +246,26 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
         case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
             ESP_LOGI( TAG,
-                      "coreMQTT-Agent disconnected." );
+                      "coreMQTT-Agent disconnected. Preventing coreMQTT-Agent "
+                      "commands from being enqueued." );
             xEventGroupClearBits( xCoreMqttAgentEventGroup,
                                   CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
+            ESP_LOGI( TAG,
+                      "OTA started. Preventing coreMQTT-Agent commands from "
+                      "being enqueued." );
+            xEventGroupClearBits( xCoreMqttAgentEventGroup,
+                                  CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
+            ESP_LOGI( TAG,
+                      "OTA stopped. No longer preventing coreMQTT-Agent "
+                      "commands from being enqueued." );
+            xEventGroupSetBits( xCoreMqttAgentEventGroup,
+                                CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
             break;
 
         default:
@@ -432,9 +450,12 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
 
     do
     {
-        /* Wait for coreMQTT-Agent task to have working network connection. */
+        /* Wait for coreMQTT-Agent task to have working network connection and
+         * not be performing an OTA update. */
         xEventGroupWaitBits( xCoreMqttAgentEventGroup,
-                             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE,
+                             CORE_MQTT_AGENT_NETWORKING_READY_BIT | CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT,
+                             pdFALSE,
+                             pdTRUE,
                              portMAX_DELAY );
 
         ESP_LOGI( TAG,
@@ -548,9 +569,12 @@ static void prvSubscribeToTopic( IncomingPublishCallbackContext_t * pxIncomingPu
 
     do
     {
-        /* Wait for coreMQTT-Agent task to have working network connection. */
+        /* Wait for coreMQTT-Agent task to have working network connection and
+         * not be performing an OTA update. */
         xEventGroupWaitBits( xCoreMqttAgentEventGroup,
-                             CORE_MQTT_AGENT_NETWORKING_READY_BIT, pdFALSE, pdTRUE,
+                             CORE_MQTT_AGENT_NETWORKING_READY_BIT | CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT,
+                             pdFALSE,
+                             pdTRUE,
                              portMAX_DELAY );
 
         ESP_LOGI( TAG,
@@ -653,13 +677,13 @@ static void prvUnsubscribeToTopic( MQTTQoS_t xQoS,
 
     do
     {
-        /* Wait for coreMQTT-Agent task to have working network connection. */
+        /* Wait for coreMQTT-Agent task to have working network connection and
+         * not be performing an OTA update. */
         xEventGroupWaitBits( xCoreMqttAgentEventGroup,
-                             CORE_MQTT_AGENT_NETWORKING_READY_BIT,
+                             CORE_MQTT_AGENT_NETWORKING_READY_BIT | CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT,
                              pdFALSE,
                              pdTRUE,
                              portMAX_DELAY );
-
         ESP_LOGI( TAG,
                   "Task \"%s\" sending unsubscribe request to coreMQTT-Agent for topic filter: %s with id %ld",
                   pcTaskGetName( xCommandContext.xTaskToNotify ),
@@ -780,7 +804,11 @@ void vStartSubscribePublishUnsubscribeDemo( void )
     xCoreMqttAgentEventGroup = xEventGroupCreate();
     xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
-    /* Each instance of prvSubscribePublishUnsubscribeTask() generates a unique 
+    /* Initialize the coreMQTT-Agent event group. */
+    xEventGroupSetBits( xCoreMqttAgentEventGroup,
+                        CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
+
+    /* Each instance of prvSubscribePublishUnsubscribeTask() generates a unique
      * name and topic filter for itself from the number passed in as the task
      * parameter. */
     /* Create a few instances of prvSubscribePublishUnsubscribeTask(). */

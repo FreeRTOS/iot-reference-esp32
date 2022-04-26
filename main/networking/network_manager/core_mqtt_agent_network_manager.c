@@ -258,6 +258,14 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
                                 CORE_MQTT_AGENT_DISCONNECTED_BIT );
             break;
 
+        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
+            ESP_LOGI( TAG, "OTA started." );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
+            ESP_LOGI( TAG, "OTA stopped." );
+            break;
+
         default:
             ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %d",
                       lEventId );

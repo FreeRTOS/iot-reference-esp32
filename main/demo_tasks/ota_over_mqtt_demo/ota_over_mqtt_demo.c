@@ -236,6 +236,12 @@ static OtaAppBuffer_t otaBuffer =
 };
 
 /**
+ * @brief This boolean is set by the coreMQTT-Agent event handler and signals
+ * the OTA demo task to suspend the OTA Agent.
+ */
+BaseType_t xSuspendOta = pdFALSE;
+
+/**
  * @brief Structure used for encoding firmware version.
  */
 const AppVersion32_t appFirmwareVersion =
@@ -522,12 +528,10 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             break;
 
         case OtaJobEventFail:
-
-            /**
-             * No user action is needed here. OTA agent handles the job failure event.
-             */
             ESP_LOGI( TAG, "Received an OtaJobEventFail notification from OTA Agent." );
 
+            /* Signal coreMQTT-Agent network manager that an OTA job has stopped. */
+            xCoreMqttAgentNetworkManagerPost( CORE_MQTT_AGENT_OTA_STOPPED_EVENT );
             break;
 
         case OtaJobEventStartTest:
@@ -555,14 +559,14 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
 
         case OtaJobEventProcessed:
 
-            ESP_LOGD( TAG, "OTA Event processing completed. Freeing the event buffer to pool." );
+            ESP_LOGI( TAG, "OTA Event processing completed. Freeing the event buffer to pool." );
             configASSERT( pData != NULL );
             prvOTAEventBufferFree( ( OtaEventData_t * ) pData );
 
             break;
 
         case OtaJobEventSelfTestFailed:
-            ESP_LOGD( TAG, "Received OtaJobEventSelfTestFailed callback from OTA Agent." );
+            ESP_LOGI( TAG, "Received OtaJobEventSelfTestFailed callback from OTA Agent." );
 
             /* Requires manual activation of previous image as self-test for
              * new image downloaded failed.*/
@@ -572,6 +576,12 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
              * performed while shutting down please set the second parameter to 0 instead of 1. */
             OTA_Shutdown( 0, 1 );
 
+            break;
+
+        case OtaJobEventReceivedJob:
+            ESP_LOGI( TAG, "Received OtaJobEventReceivedJob callback from OTA Agent." );
+            /* Signal coreMQTT-Agent network manager that an OTA job has started. */
+            xCoreMqttAgentNetworkManagerPost( CORE_MQTT_AGENT_OTA_STARTED_EVENT );
             break;
 
         default:
@@ -1004,15 +1014,27 @@ static void prvOTADemoTask( void * pvParam )
         eventMsg.eventId = OtaAgentEventStart;
         OTA_SignalEvent( &eventMsg );
 
-        while( ( ( state = OTA_GetState() ) != OtaAgentStateStopped ) )
+        while( ( state = OTA_GetState() ) != OtaAgentStateStopped )
         {
+            if( ( state != OtaAgentStateSuspended ) && ( xSuspendOta == pdTRUE ) )
+            {
+                prvSuspendOTACodeSigningDemo();
+            }
+            else if( ( state == OtaAgentStateSuspended ) && ( xSuspendOta == pdFALSE ) )
+            {
+                prvResumeOTACodeSigningDemo();
+            }
+
             /* Get OTA statistics for currently executing job. */
             OTA_GetStatistics( &otaStatistics );
-            ESP_LOGI( TAG, " Received: %u   Queued: %u   Processed: %u   Dropped: %u",
+
+            ESP_LOGI( TAG,
+                      " Received: %u   Queued: %u   Processed: %u   Dropped: %u",
                       otaStatistics.otaPacketsReceived,
                       otaStatistics.otaPacketsQueued,
                       otaStatistics.otaPacketsProcessed,
                       otaStatistics.otaPacketsDropped );
+
 
             vTaskDelay( pdMS_TO_TICKS( otademoconfigTASK_DELAY_MS ) );
         }
@@ -1063,12 +1085,18 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
     {
         case CORE_MQTT_AGENT_CONNECTED_EVENT:
             ESP_LOGI( TAG, "coreMQTT-Agent connected. Resuming OTA agent." );
-            prvResumeOTACodeSigningDemo();
+            xSuspendOta = pdFALSE;
             break;
 
         case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-            ESP_LOGW( TAG, "coreMQTT-Agent disconnected. Suspending OTA agent." );
-            prvSuspendOTACodeSigningDemo();
+            ESP_LOGI( TAG, "coreMQTT-Agent disconnected. Suspending OTA agent." );
+            xSuspendOta = pdTRUE;
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
             break;
 
         default:
