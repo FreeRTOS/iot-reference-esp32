@@ -863,7 +863,7 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
     xCommandParams.cmdCompleteCallback = prvCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xApplicationDefinedContext;
 
-    ESP_LOGI( TAG, " Unsubscribing to topic filter: %s", pTopicFilter );
+    ESP_LOGI( TAG, "Unsubscribing to topic filter: %s", pTopicFilter );
     xTaskNotifyStateClear( NULL );
 
 
