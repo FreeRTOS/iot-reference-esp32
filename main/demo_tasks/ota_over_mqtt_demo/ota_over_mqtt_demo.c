@@ -1108,8 +1108,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
 /* Public function definitions ************************************************/
 
-void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
-                               UBaseType_t uxPriority )
+void vStartOTACodeSigningDemo( void )
 {
     BaseType_t xResult;
 
@@ -1117,9 +1116,9 @@ void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
 
     if( ( xResult = xTaskCreate( prvOTADemoTask,
                                  "OTADemoTask",
-                                 uxStackSize,
+                                 otademoconfigDEMO_TASK_STACK_SIZE,
                                  NULL,
-                                 uxPriority,
+                                 otademoconfigDEMO_TASK_PRIORITY,
                                  NULL ) ) != pdPASS )
     {
         ESP_LOGE( TAG, "Failed to start OTA task: errno=%d", xResult );
