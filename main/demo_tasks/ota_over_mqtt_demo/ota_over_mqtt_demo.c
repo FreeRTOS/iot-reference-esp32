@@ -875,7 +875,7 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
      * duration of the command. */
     if( mqttStatus == MQTTSuccess )
     {
-        result = xTaskNotifyWait( 0, MAX_UINT32, &ulNotifiedValue, pdMS_TO_TICKS( otademoconfigMQTT_TIMEOUT_MS ) );
+        result = xTaskNotifyWait( 0, MAX_UINT32, &ulNotifiedValue, portMAX_DELAY );
 
         if( result == pdTRUE )
         {
