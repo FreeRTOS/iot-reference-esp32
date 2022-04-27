@@ -59,8 +59,6 @@
 
 static const char * TAG = "core_mqtt_agent_network_manager";
 
-static esp_event_loop_handle_t xCoreMqttAgentNetworkManagerEventLoop;
-
 static NetworkContext_t * pxNetworkContext;
 static EventGroupHandle_t xNetworkEventGroup;
 
@@ -101,12 +99,11 @@ BaseType_t xCoreMqttAgentNetworkManagerPost( int32_t lEventId )
     esp_err_t xEspErrRet;
     BaseType_t xRet = pdPASS;
 
-    xEspErrRet = esp_event_post_to( xCoreMqttAgentNetworkManagerEventLoop,
-                                    CORE_MQTT_AGENT_EVENT,
-                                    lEventId,
-                                    NULL,
-                                    0,
-                                    portMAX_DELAY );
+    xEspErrRet = esp_event_post( CORE_MQTT_AGENT_EVENT,
+                                 lEventId,
+                                 NULL,
+                                 0,
+                                 portMAX_DELAY );
 
     if( xEspErrRet != ESP_OK )
     {
@@ -143,12 +140,7 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
         /* If a connection was previously established, close it to free memory. */
         if( ( pxNetworkContext != NULL ) && ( pxNetworkContext->pxTls != NULL ) )
         {
-            if( xTlsDisconnect( pxNetworkContext ) != pdTRUE )
-            {
-                ESP_LOGE( TAG, "Something went wrong closing an existing TLS "
-                               "connection." );
-            }
-
+            xTlsDisconnect( pxNetworkContext );
             ESP_LOGI( TAG, "TLS connection was disconnected." );
         }
 
@@ -163,11 +155,14 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
             if( xTlsRet == TLS_TRANSPORT_SUCCESS )
             {
-                eMqttRet = eCoreMqttAgentConnect( xCleanSession, CONFIG_GRI_THING_NAME );
+                eMqttRet = eCoreMqttAgentConnect( xCleanSession,
+                                                  CONFIG_GRI_THING_NAME );
 
                 if( eMqttRet != MQTTSuccess )
                 {
-                    ESP_LOGE( TAG, "MQTT_Status: %s", MQTT_Status_strerror( eMqttRet ) );
+                    ESP_LOGE( TAG,
+                              "MQTT_Status: %s",
+                              MQTT_Status_strerror( eMqttRet ) );
                 }
             }
 
@@ -206,8 +201,7 @@ static void prvWifiEventHandler( void * pvHandlerArg,
             case WIFI_EVENT_STA_DISCONNECTED:
                 ESP_LOGI( TAG, "WiFi disconnected." );
 
-                /* Notify networking tasks that WiFi, TLS, and MQTT
-                 * are disconnected. */
+                /* Notify networking tasks that WiFi is disconnected. */
                 xEventGroupClearBits( xNetworkEventGroup,
                                       WIFI_CONNECTED_BIT );
                 break;
@@ -223,7 +217,8 @@ static void prvWifiEventHandler( void * pvHandlerArg,
             case IP_EVENT_STA_GOT_IP:
                 ESP_LOGI( TAG, "WiFi connected." );
                 /* Notify networking tasks that WiFi is connected. */
-                xEventGroupSetBits( xNetworkEventGroup, WIFI_CONNECTED_BIT );
+                xEventGroupSetBits( xNetworkEventGroup,
+                                    WIFI_CONNECTED_BIT );
                 break;
 
             default:
@@ -248,11 +243,13 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
     switch( lEventId )
     {
         case CORE_MQTT_AGENT_CONNECTED_EVENT:
-            ESP_LOGI( TAG, "coreMQTT-Agent connected." );
+            ESP_LOGI( TAG,
+                      "coreMQTT-Agent connected." );
             break;
 
         case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-            ESP_LOGI( TAG, "coreMQTT-Agent disconnected." );
+            ESP_LOGI( TAG,
+                      "coreMQTT-Agent disconnected." );
             /* Notify networking tasks of TLS and MQTT disconnection. */
             xEventGroupSetBits( xNetworkEventGroup,
                                 CORE_MQTT_AGENT_DISCONNECTED_BIT );
@@ -278,10 +275,11 @@ BaseType_t xCoreMqttAgentNetworkManagerRegisterHandler( esp_event_handler_t xEve
     esp_err_t xEspErrRet;
     BaseType_t xRet = pdPASS;
 
-    xEspErrRet = esp_event_handler_register_with(
-        xCoreMqttAgentNetworkManagerEventLoop,
-        CORE_MQTT_AGENT_EVENT, ESP_EVENT_ANY_ID,
-        xEventHandler, NULL );
+    xEspErrRet = esp_event_handler_instance_register( CORE_MQTT_AGENT_EVENT,
+                                                      ESP_EVENT_ANY_ID,
+                                                      xEventHandler,
+                                                      NULL,
+                                                      NULL );
 
     if( xEspErrRet != ESP_OK )
     {
@@ -297,26 +295,16 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t * pxNetworkContex
     MQTTStatus_t eMqttRet;
     BaseType_t xRet = pdPASS;
 
-    esp_event_loop_args_t xCoreMqttAgentNetworkManagerEventLoopArgs =
+    if( pxNetworkContextIn == NULL )
     {
-        .queue_size      = CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_QUEUE_SIZE,
-        .task_name       = "coreMQTTAgentNetworkManagerEventLoop",
-        .task_priority   = CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_PRIORITY,
-        .task_stack_size = CONFIG_CORE_MQTT_AGENT_NETWORK_MANAGER_EVENT_LOOP_TASK_STACK_SIZE,
-        .task_core_id    = tskNO_AFFINITY
-    };
+        ESP_LOGE( TAG,
+                  "Passed in network context pointer is null." );
 
-    pxNetworkContext = pxNetworkContextIn;
-
-    xEspErrRet = esp_event_loop_create(
-        &xCoreMqttAgentNetworkManagerEventLoopArgs,
-        &xCoreMqttAgentNetworkManagerEventLoop );
-
-    if( xEspErrRet != ESP_OK )
-    {
-        ESP_LOGE( TAG, "Failed to create coreMQTT-Agent network manager event "
-                       "loop." );
         xRet = pdFAIL;
+    }
+    else
+    {
+        pxNetworkContext = pxNetworkContextIn;
     }
 
     if( xRet != pdFAIL )
@@ -325,48 +313,56 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t * pxNetworkContex
 
         if( xNetworkEventGroup == NULL )
         {
-            ESP_LOGE( TAG, "Failed to create coreMQTT-Agent network manager "
-                           "event group." );
+            ESP_LOGE( TAG,
+                      "Failed to create coreMQTT-Agent network manager event group." );
+
             xRet = pdFAIL;
         }
     }
 
     if( xRet != pdFAIL )
     {
-        xRet = xCoreMqttAgentNetworkManagerRegisterHandler(
-            prvCoreMqttAgentEventHandler );
+        xRet = xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
         if( xRet != pdPASS )
         {
-            ESP_LOGE( TAG, "Failed to register coreMQTT-Agent event handler." );
+            ESP_LOGE( TAG,
+                      "Failed to register coreMQTT-Agent event handler." );
+
             xRet = pdFAIL;
         }
     }
 
     if( xRet != pdFAIL )
     {
-        xEspErrRet = esp_event_handler_register(
-            IP_EVENT, ESP_EVENT_ANY_ID,
-            prvWifiEventHandler, NULL );
+        xEspErrRet = esp_event_handler_instance_register( IP_EVENT,
+                                                          ESP_EVENT_ANY_ID,
+                                                          prvWifiEventHandler,
+                                                          NULL,
+                                                          NULL );
 
         if( xEspErrRet != ESP_OK )
         {
-            ESP_LOGE( TAG, "Failed to register WiFi event handler with IP "
-                           "events." );
+            ESP_LOGE( TAG,
+                      "Failed to register WiFi event handler with IP events." );
+
             xRet = pdFAIL;
         }
     }
 
     if( xRet != pdFAIL )
     {
-        xEspErrRet = esp_event_handler_register(
-            WIFI_EVENT, ESP_EVENT_ANY_ID,
-            prvWifiEventHandler, NULL );
+        xEspErrRet = esp_event_handler_instance_register( WIFI_EVENT,
+                                                          ESP_EVENT_ANY_ID,
+                                                          prvWifiEventHandler,
+                                                          NULL,
+                                                          NULL );
 
         if( xEspErrRet != ESP_OK )
         {
-            ESP_LOGE( TAG, "Failed to register WiFi event handler with WiFi "
-                           "events." );
+            ESP_LOGE( TAG,
+                      "Failed to register WiFi event handler with WiFi events." );
+
             xRet = pdFAIL;
         }
     }
@@ -378,7 +374,9 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t * pxNetworkContex
 
         if( eMqttRet != MQTTSuccess )
         {
-            ESP_LOGE( TAG, "Failed to initialize coreMQTT-Agent." );
+            ESP_LOGE( TAG,
+                      "Failed to initialize coreMQTT-Agent." );
+
             xRet = pdFAIL;
         }
     }
@@ -390,7 +388,9 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t * pxNetworkContex
 
         if( xRet != pdPASS )
         {
-            ESP_LOGE( TAG, "Failed to start coreMQTT-Agent." );
+            ESP_LOGE( TAG,
+                      "Failed to start coreMQTT-Agent." );
+
             xRet = pdFAIL;
         }
     }
@@ -407,7 +407,9 @@ BaseType_t xCoreMqttAgentNetworkManagerStart( NetworkContext_t * pxNetworkContex
 
         if( xRet != pdPASS )
         {
-            ESP_LOGE( TAG, "Failed to create network management task." );
+            ESP_LOGE( TAG,
+                      "Failed to create network management task." );
+
             xRet = pdFAIL;
         }
     }

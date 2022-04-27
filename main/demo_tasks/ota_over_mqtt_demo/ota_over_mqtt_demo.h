@@ -6,12 +6,8 @@
 
 /**
  * @brief Starts the OTA codesigning demo.
- * 
- * @param[in] uxStackSize OTA demo task stack size.
- * @param[in] uxPriority OTA demo task priority.
  */
-void vStartOTACodeSigningDemo( configSTACK_DEPTH_TYPE uxStackSize,
-                               UBaseType_t uxPriority );
+void vStartOTACodeSigningDemo( void );
 
 /**
  * @brief Default callback used to receive default messages for OTA.

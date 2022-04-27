@@ -99,7 +99,7 @@ menu "Golden Reference Integration"
 
         config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_STRING_BUFFER_LENGTH
             int "Topic name and payload buffer length"
-            default 100
+            default 150
             help
                 Size of statically allocated buffers for holding topic names and payloads.
 
@@ -114,6 +114,13 @@ menu "Golden Reference Integration"
             default 500
             help
                 The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
+        
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_QOS_LEVEL
+            int "QoS level of MQTT operations"
+            default 1
+            range 0 2
+            help
+                The QoS level of MQTT messages sent by this demo. This must be 0 or 1 if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker, that supports QoS level 2, this can be set to 2.
 
         config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_PRIORITY
             int "Temperature sensor publishing task priority."
@@ -162,11 +169,19 @@ menu "Golden Reference Integration"
 
         config GRI_OTA_DEMO_AGENT_TASK_PRIORITY
             int "OTA agent task priority."
-            default 3
+            default 4
 
         config GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE
             int "OTA agent task stack size."
             default 4096
+
+        config GRI_OTA_DEMO_DEMO_TASK_PRIORITY
+            int "OTA demo task priority."
+            default 1
+    
+        config GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE
+            int "OTA demo task stack size."
+            default 3072
 
         config GRI_OTA_DEMO_APP_VERSION_MAJOR
             int "Application version major."

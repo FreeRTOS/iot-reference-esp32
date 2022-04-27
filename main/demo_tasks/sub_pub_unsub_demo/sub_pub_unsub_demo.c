@@ -34,7 +34,7 @@
 /* coreMQTT-Agent include. */
 #include "core_mqtt_agent.h"
 
-/* coreMQTT-Agent network manager include */
+/* coreMQTT-Agent network manager include. */
 #include "core_mqtt_agent_network_manager.h"
 #include "core_mqtt_agent_events.h"
 
@@ -125,6 +125,16 @@ static SemaphoreHandle_t xMessageIdSemaphore;
 static uint32_t ulMessageId = 0;
 
 /* Static function declarations ***********************************************/
+
+/**
+ * @brief ESP Event Loop library handler for coreMQTT-Agent events.
+ *
+ * This handles events defined in core_mqtt_agent_events.h.
+ */
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData );
 
 /**
  * @brief Passed into MQTTAgent_Subscribe() as the callback to execute when the

@@ -23,6 +23,13 @@
 #define temppubsubandledcontrolconfigMAX_COMMAND_SEND_BLOCK_TIME_MS         ( ( unsigned int ) ( CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_MAX_COMMAND_SEND_BLOCK_TIME_MS ) )
 
 /**
+ * @brief The QoS level of MQTT messages sent by this demo. This must be 0 or 1
+ * if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker
+ * that supports QoS level 2, this can be set to 2.
+ */
+#define temppubsubandledcontrolconfigQOS_LEVEL                              ( ( unsigned long ) ( CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_QOS_LEVEL ) )
+
+/**
  * @brief The task priority of temperature pub sub and LED control task.
  */
 #define temppubsubandledcontrolconfigTASK_PRIORITY                          ( ( unsigned int ) ( CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_PRIORITY ) )

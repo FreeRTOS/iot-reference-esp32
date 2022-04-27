@@ -44,6 +44,16 @@
 #define otademoconfigAGENT_TASK_STACK_SIZE    ( CONFIG_GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE )
 
 /**
+ * @brief The task priority of the OTA demo task.
+ */
+#define otademoconfigDEMO_TASK_PRIORITY       ( CONFIG_GRI_OTA_DEMO_DEMO_TASK_PRIORITY )
+
+/**
+ * @brief The task stack size of the OTA demo task.
+ */
+#define otademoconfigDEMO_TASK_STACK_SIZE     ( CONFIG_GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE )
+
+/**
  * @brief The version for the firmware which is running. OTA agent uses this
  * version number to perform anti-rollback validation. The firmware version for the
  * download image should be higher than the current version, otherwise the new image is

@@ -89,6 +89,11 @@ void app_main( void )
      * starting WiFi and the coreMQTT-Agent network manager. */
     ESP_ERROR_CHECK( esp_event_loop_create_default() );
 
+    /* Start demo tasks. This needs to be done before starting WiFi and
+     * and the coreMQTT-Agent network manager so demos can
+     * register their coreMQTT-Agent event handlers before events happen. */
+    prvStartEnabledDemos();
+
     /* Initialize and start the coreMQTT-Agent network manager. This handles
      * establishing a TLS connection and MQTT connection to the MQTT broker.
      * This needs to be started before starting WiFi so it can handle WiFi
@@ -102,12 +107,7 @@ void app_main( void )
         return;
     }
 
-    /* Start demo tasks. This needs to be done before starting WiFi and
-     * and after starting the coreMQTT-Agent network manager so demos can
-     * register their coreMQTT-Agent event handlers. */
-    prvStartEnabledDemos();
-
-    /* Start wifi */
+    /* Start WiFi. */
     app_wifi_init();
     app_wifi_start( POP_TYPE_MAC );
 }
@@ -246,7 +246,7 @@ static void prvStartEnabledDemos( void )
     #endif /* CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO */
 
     #if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
-        vStartTempSubscribePublishTask( 1, 3072, 1 );
+        vStartTempSubPubAndLEDControlDemo();
     #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
 
     #if CONFIG_GRI_ENABLE_OTA_DEMO
@@ -259,7 +259,7 @@ static void prvStartEnabledDemos( void )
 
         if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
         {
-            vStartOTACodeSigningDemo( 3072, 1 );
+            vStartOTACodeSigningDemo();
         }
         else
         {

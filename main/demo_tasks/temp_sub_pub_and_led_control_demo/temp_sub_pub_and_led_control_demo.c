@@ -1,29 +1,4 @@
 /*
- * Lab-Project-coreMQTT-Agent 201215
- * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * http://www.FreeRTOS.org
- * http://aws.amazon.com/freertos
- */
-
-/*
  * This file demonstrates numerous tasks all of which use the MQTT agent API
  * to send unique MQTT payloads to unique topics over the same MQTT connection
  * to the same MQTT agent.  Some tasks use QoS0 and others QoS1.
@@ -40,39 +15,37 @@
  * or failure message.
  */
 
+/* Includes *******************************************************************/
 
 /* Standard includes. */
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
-/* Kernel includes. */
+/* FreeRTOS includes. */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
 
-/* MQTT library includes. */
+/* coreMQTT library include. */
 #include "core_mqtt.h"
 
-/* MQTT agent include. */
+/* coreMQTT-Agent include. */
 #include "core_mqtt_agent.h"
 
-/* Subscription manager header include. */
-#include "subscription_manager.h"
-
-#include "app_driver.h"
-
-/* Network manager */
+/* coreMQTT-Agent network manager include. */
 #include "core_mqtt_agent_network_manager.h"
-
-/* coreMQTT-Agent events include. */
 #include "core_mqtt_agent_events.h"
+
+/* coreJSON include. */
+#include "core_json.h"
+
+/* Subscription manager include. */
+#include "subscription_manager.h"
 
 /* Hardware drivers include. */
 #include "app_driver.h"
-
-#include "core_json.h"
 
 /* Public functions include. */
 #include "temp_sub_pub_and_led_control_demo.h"
@@ -80,74 +53,13 @@
 /* Demo task configurations include. */
 #include "temp_sub_pub_and_led_control_demo_config.h"
 
-#ifdef LIBRARY_LOG_NAME
-    #undef LIBRARY_LOG_NAME
-    #define LIBRARY_LOG_NAME    "temp_pub_sub_demo"
-#endif
+/* Preprocessor definitions ***************************************************/
 
 /* coreMQTT-Agent event group bit definitions */
 #define CORE_MQTT_AGENT_NETWORKING_READY_BIT       ( 1 << 0 )
 #define CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT    ( 1 << 1 )
 
-const static char * TAG = "temp_sub_pub_demo";
-
-/**
- * @brief The event group used to manage events posted from the coreMQTT-Agent
- * network manager.
- */
-static EventGroupHandle_t xCoreMqttAgentEventGroup;
-
-static void prvMTTAgentConnectedHandler( void * pvHandlerArg,
-                                         esp_event_base_t xEventBase,
-                                         int32_t lEventId,
-                                         void * pvEventData )
-{
-    ( void ) pvHandlerArg;
-    ( void ) xEventBase;
-    ( void ) pvEventData;
-
-    switch( lEventId )
-    {
-        case CORE_MQTT_AGENT_CONNECTED_EVENT:
-            ESP_LOGI( TAG,
-                      "coreMQTT-Agent connected." );
-            xEventGroupSetBits( xCoreMqttAgentEventGroup,
-                                CORE_MQTT_AGENT_NETWORKING_READY_BIT );
-            break;
-
-        case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-            ESP_LOGI( TAG,
-                      "coreMQTT-Agent disconnected. Preventing coreMQTT-Agent "
-                      "commands from being enqueued." );
-            xEventGroupClearBits( xCoreMqttAgentEventGroup,
-                                  CORE_MQTT_AGENT_NETWORKING_READY_BIT );
-            break;
-
-        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
-            ESP_LOGI( TAG,
-                      "OTA started. Preventing coreMQTT-Agent commands from "
-                      "being enqueued." );
-            xEventGroupClearBits( xCoreMqttAgentEventGroup,
-                                  CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
-            break;
-
-        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
-            ESP_LOGI( TAG,
-                      "OTA stopped. No longer preventing coreMQTT-Agent "
-                      "commands from being enqueued." );
-            xEventGroupSetBits( xCoreMqttAgentEventGroup,
-                                CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
-            break;
-
-        default:
-            ESP_LOGE( TAG,
-                      "coreMQTT-Agent event handler received unexpected event: %d",
-                      lEventId );
-            break;
-    }
-}
-
-/*-----------------------------------------------------------*/
+/* Struct definitions *********************************************************/
 
 /**
  * @brief Defines the structure to use as the command callback context in this
@@ -161,7 +73,44 @@ struct MQTTAgentCommandContext
     void * pArgs;
 };
 
-/*-----------------------------------------------------------*/
+/* Global variables ***********************************************************/
+
+/**
+ * @brief Logging tag for ESP-IDF logging functions.
+ */
+const static char * TAG = "temp_sub_pub_demo";
+
+/**
+ * @brief The MQTT agent manages the MQTT contexts.  This set the handle to the
+ * context used by this demo.
+ */
+extern MQTTAgentContext_t xGlobalMqttAgentContext;
+
+/**
+ * @brief The buffer to hold the topic filter. The topic is generated at runtime
+ * by adding the task names.
+ *
+ * @note The topic strings must persist until unsubscribed.
+ */
+static char topicBuf[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
+
+/**
+ * @brief The event group used to manage events posted from the coreMQTT-Agent
+ * network manager.
+ */
+static EventGroupHandle_t xCoreMqttAgentEventGroup;
+
+/* Static function declarations ***********************************************/
+
+/**
+ * @brief ESP Event Loop library handler for coreMQTT-Agent events.
+ *
+ * This handles events defined in core_mqtt_agent_events.h.
+ */
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData );
 
 /**
  * @brief Passed into MQTTAgent_Subscribe() as the callback to execute when the
@@ -241,79 +190,9 @@ static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
 /**
  * @brief The function that implements the task demonstrated by this file.
  */
-static void prvSimpleSubscribePublishTask( void * pvParameters );
+static void prvTempSubPubAndLEDControlTask( void * pvParameters );
 
-/*-----------------------------------------------------------*/
-
-/**
- * @brief The MQTT agent manages the MQTT contexts.  This set the handle to the
- * context used by this demo.
- */
-extern MQTTAgentContext_t xGlobalMqttAgentContext;
-
-/*-----------------------------------------------------------*/
-
-/**
- * @brief The buffer to hold the topic filter. The topic is generated at runtime
- * by adding the task names.
- *
- * @note The topic strings must persist until unsubscribed.
- */
-#if democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE > 0
-    static char topicBuf[ democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE ][ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
-#else
-    static char topicBuf[ 1U ][ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
-#endif
-
-/**
- * @brief Pass and fail counts for each created task.
- */
-#if democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE > 0
-    static volatile uint32_t ulQoS0FailCount[ ( democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE + 1 ) / 2 ] = { 0UL },
-                             ulQoS1FailCount[ ( democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE + 1 ) / 2 ] = { 0UL };
-    static volatile uint32_t ulQoS0PassCount[ ( democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE + 1 ) / 2 ] = { 0UL },
-                             ulQoS1PassCount[ ( democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE + 1 ) / 2 ] = { 0UL };
-#else
-    static volatile uint32_t ulQoS0FailCount[ 1 ] = { 0UL }, ulQoS1FailCount[ 1 ] = { 0UL };
-    static volatile uint32_t ulQoS0PassCount[ 1 ] = { 0UL }, ulQoS1PassCount[ 1 ] = { 0UL };
-#endif
-
-/*-----------------------------------------------------------*/
-
-void vStartTempSubscribePublishTask( uint32_t ulNumberToCreate,
-                                     configSTACK_DEPTH_TYPE uxStackSize,
-                                     UBaseType_t uxPriority )
-{
-    char pcTaskNameBuf[ 15 ];
-    uint32_t ulTaskNumber;
-
-    /* Hardware initialisation */
-    app_driver_init();
-
-    xCoreMqttAgentEventGroup = xEventGroupCreate();
-
-    /* Initialize the coreMQTT-Agent event group. */
-    xEventGroupSetBits( xCoreMqttAgentEventGroup,
-                        CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
-
-    /* Each instance of prvSimpleSubscribePublishTask() generates a unique name
-     * and topic filter for itself from the number passed in as the task
-     * parameter. */
-    /* Create a few instances of vSimpleSubscribePublishTask(). */
-    for( ulTaskNumber = 0; ulTaskNumber < ulNumberToCreate; ulTaskNumber++ )
-    {
-        memset( pcTaskNameBuf, 0x00, sizeof( pcTaskNameBuf ) );
-        snprintf( pcTaskNameBuf, 10, "SubPub%d", ( int ) ulTaskNumber );
-        xTaskCreate( prvSimpleSubscribePublishTask,
-                     pcTaskNameBuf,
-                     uxStackSize,
-                     ( void * ) ulTaskNumber,
-                     uxPriority,
-                     NULL );
-    }
-}
-
-/*-----------------------------------------------------------*/
+/* Static function definitions ************************************************/
 
 static void prvPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                        MQTTAgentReturnInfo_t * pxReturnInfo )
@@ -332,8 +211,6 @@ static void prvPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandCont
                      eSetValueWithOverwrite );
     }
 }
-
-/*-----------------------------------------------------------*/
 
 static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                          MQTTAgentReturnInfo_t * pxReturnInfo )
@@ -361,9 +238,10 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
 
         if( xSubscriptionAdded == false )
         {
-            LogError( ( "Failed to register an incoming publish callback for topic %.*s.",
-                        pxSubscribeArgs->pSubscribeInfo->topicFilterLength,
-                        pxSubscribeArgs->pSubscribeInfo->pTopicFilter ) );
+            ESP_LOGE( TAG,
+                      "Failed to register an incoming publish callback for topic %.*s.",
+                      pxSubscribeArgs->pSubscribeInfo->topicFilterLength,
+                      pxSubscribeArgs->pSubscribeInfo->pTopicFilter );
         }
     }
 
@@ -371,8 +249,6 @@ static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandCo
                  ( uint32_t ) ( pxReturnInfo->returnCode ),
                  eSetValueWithOverwrite );
 }
-
-/*-----------------------------------------------------------*/
 
 static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue )
 {
@@ -387,10 +263,8 @@ static BaseType_t prvWaitForCommandAcknowledgment( uint32_t * pulNotifiedValue )
     return xReturn;
 }
 
-/*-----------------------------------------------------------*/
-
-static void parseIncomingPublish( char * publishPayload,
-                                  size_t publishPayloadLength )
+static void prvParseIncomingPublish( char * publishPayload,
+                                     size_t publishPayloadLength )
 {
     char * outValue = NULL;
     uint32_t outValueLength = 0U;
@@ -411,7 +285,7 @@ static void parseIncomingPublish( char * publishPayload,
     }
     else
     {
-        LogError( ( "The JSON document is invalid!" ) );
+        ESP_LOGE( TAG, "The JSON document is invalid!" );
         return;
     }
 
@@ -435,10 +309,6 @@ static void parseIncomingPublish( char * publishPayload,
     }
 }
 
-
-
-/*-----------------------------------------------------------*/
-
 static void prvIncomingPublishCallback( void * pvIncomingPublishCallbackContext,
                                         MQTTPublishInfo_t * pxPublishInfo )
 {
@@ -459,12 +329,12 @@ static void prvIncomingPublishCallback( void * pvIncomingPublishCallbackContext,
         cTerminatedString[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH - 1 ] = 0x00;
     }
 
-    LogInfo( ( "Received incoming publish message %s", cTerminatedString ) );
+    ESP_LOGI( TAG,
+              "Received incoming publish message %s",
+              cTerminatedString );
 
-    parseIncomingPublish( ( char * ) pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
+    prvParseIncomingPublish( ( char * ) pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
 }
-
-/*-----------------------------------------------------------*/
 
 static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
                                  char * pcTopicFilter )
@@ -482,11 +352,8 @@ static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
      * in the callback that executed upon receipt of the subscription acknowledgment.
      * That way this task can match an acknowledgment to a subscription. */
     xTaskNotifyStateClear( NULL );
-    /* taskENTER_CRITICAL(); */
-    {
-        ulNextSubscribeMessageID++;
-    }
-    /* taskEXIT_CRITICAL(); */
+
+    ulNextSubscribeMessageID++;
 
     /* Complete the subscribe information.  The topic string must persist for
      * duration of subscription! */
@@ -511,13 +378,13 @@ static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
      * attempts to post to it time out.  The queue will not become full if the
      * priority of the MQTT agent task is higher than the priority of the task
      * calling this function. */
-    LogInfo( ( "Sending subscribe request to agent for topic filter: %s with id %d",
-               pcTopicFilter,
-               ( int ) ulNextSubscribeMessageID ) );
+    ESP_LOGI( TAG,
+              "Sending subscribe request to agent for topic filter: %s with id %d",
+              pcTopicFilter,
+              ( int ) ulNextSubscribeMessageID );
 
     do
     {
-        /* TODO: prvIncomingPublish as publish callback. */
         xCommandAdded = MQTTAgent_Subscribe( &xGlobalMqttAgentContext,
                                              &xSubscribeArgs,
                                              &xCommandParams );
@@ -533,50 +400,57 @@ static bool prvSubscribeToTopic( MQTTQoS_t xQoS,
     if( ( xCommandAcknowledged != pdTRUE ) ||
         ( xApplicationDefinedContext.xReturnStatus != MQTTSuccess ) )
     {
-        LogInfo( ( "Error or timed out waiting for ack to subscribe message topic %s",
-                   pcTopicFilter ) );
+        ESP_LOGE( TAG,
+                  "Error or timed out waiting for ack to subscribe message topic %s",
+                  pcTopicFilter );
     }
     else
     {
-        LogInfo( ( "Received subscribe ack for topic %s containing ID %d",
-                   pcTopicFilter,
-                   ( int ) xApplicationDefinedContext.ulNotificationValue ) );
+        ESP_LOGI( TAG,
+                  "Received subscribe ack for topic %s containing ID %d",
+                  pcTopicFilter,
+                  ( int ) xApplicationDefinedContext.ulNotificationValue );
     }
 
     return xCommandAcknowledged;
 }
-/*-----------------------------------------------------------*/
 
-static void prvSimpleSubscribePublishTask( void * pvParameters )
+static void prvTempSubPubAndLEDControlTask( void * pvParameters )
 {
-    /* extern UBaseType_t uxRand( void ); */
     MQTTPublishInfo_t xPublishInfo = { 0UL };
     char payloadBuf[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
-    char taskName[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
     MQTTAgentCommandContext_t xCommandContext;
     uint32_t ulNotification = 0U, ulValueToNotify = 0UL;
     MQTTStatus_t xCommandAdded;
-    uint32_t ulTaskNumber = ( uint32_t ) pvParameters;
     MQTTQoS_t xQoS;
     TickType_t xTicksToDelay;
     float temperatureValue;
     MQTTAgentCommandInfo_t xCommandParams = { 0UL };
-    char * pcTopicBuffer = topicBuf[ ulTaskNumber ];
-    static volatile uint32_t * ulPassCounts[] = { ulQoS0PassCount, ulQoS1PassCount };
-    static volatile uint32_t * ulFailCounts[] = { ulQoS0FailCount, ulQoS1FailCount };
+    char * pcTopicBuffer = topicBuf;
+    const char * pcTaskName;
+    uint32_t ulPublishPassCounts = 0;
+    uint32_t ulPublishFailCounts = 0;
 
-    xCoreMqttAgentNetworkManagerRegisterHandler( prvMTTAgentConnectedHandler );
+    pcTaskName = pcTaskGetName( xTaskGetCurrentTaskHandle() );
 
-    /* Have different tasks use different QoS.  0 and 1.  2 can also be used
-     * if supported by the broker. */
-    xQoS = ( MQTTQoS_t ) ( ulTaskNumber % 2UL );
+    /* Hardware initialisation */
+    app_driver_init();
 
-    /* Create a unique name for this task from the task number that is passed into
-     * the task using the task's parameter. */
-    snprintf( taskName, temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH, "Publisher%d", ( int ) ulTaskNumber );
+    /* Initialize the coreMQTT-Agent event group. */
+    xCoreMqttAgentEventGroup = xEventGroupCreate();
+    xEventGroupSetBits( xCoreMqttAgentEventGroup,
+                        CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
+
+    /* Register coreMQTT-Agent event handler. */
+    xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
+
+    xQoS = ( MQTTQoS_t ) temppubsubandledcontrolconfigQOS_LEVEL;
 
     /* Create a topic name for this task to publish to. */
-    snprintf( pcTopicBuffer, temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH, "/filter/%s", taskName );
+    snprintf( pcTopicBuffer,
+              temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH,
+              "/filter/%s",
+              pcTaskName );
 
     /* Subscribe to the same topic to which this task will publish.  That will
      * result in each published message being published from the server back to
@@ -615,13 +489,13 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
                   "{"                          \
                   "\"temperatureSensor\":"     \
                   "{"                          \
-                  " \"taskName\": \"%s\" ,"    \
+                  " \"taskName\": \"%s\","    \
                   " \"temperatureValue\": %f," \
                   " \"iteration\": %d"         \
                   "}"                          \
                   "}"                          \
                   ,
-                  taskName,
+                  pcTaskName,
                   temperatureValue,
                   ( int ) ulValueToNotify );
 
@@ -640,9 +514,10 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
                              pdTRUE,
                              portMAX_DELAY );
 
-        LogInfo( ( "Sending publish request to agent with message \"%s\" on topic \"%s\"",
-                   payloadBuf,
-                   pcTopicBuffer ) );
+        ESP_LOGI( TAG,
+                  "Sending publish request to agent with message \"%s\" on topic \"%s\"",
+                  payloadBuf,
+                  pcTopicBuffer );
 
         /* To ensure ulNotification doesn't accidentally hold the expected value
          * as it is to be checked against the value sent from the callback.. */
@@ -655,9 +530,11 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
 
         /* For QoS 1 and 2, wait for the publish acknowledgment.  For QoS0,
          * wait for the publish to be sent. */
-        LogInfo( ( "Task %s waiting for publish %d to complete.",
-                   taskName,
-                   ulValueToNotify ) );
+        ESP_LOGI( TAG,
+                  "Task %s waiting for publish %d to complete.",
+                  pcTaskName,
+                  ulValueToNotify );
+
         prvWaitForCommandAcknowledgment( &ulNotification );
 
         /* The value received by the callback that executed when the publish was
@@ -665,21 +542,23 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
          * should match the value set in the context above. */
         if( ulNotification == ulValueToNotify )
         {
-            ( ulPassCounts[ xQoS ][ ulTaskNumber >> 1 ] )++;
-            LogInfo( ( "Rx'ed %s from Tx to %s (P%d:F%d).",
-                       ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
-                       pcTopicBuffer,
-                       ulPassCounts[ xQoS ][ ulTaskNumber >> 1 ],
-                       ulFailCounts[ xQoS ][ ulTaskNumber >> 1 ] ) );
+            ulPublishPassCounts++;
+            ESP_LOGI( TAG,
+                      "Rx'ed %s from Tx to %s (P%d:F%d).",
+                      ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
+                      pcTopicBuffer,
+                      ulPublishPassCounts,
+                      ulPublishFailCounts );
         }
         else
         {
-            ( ulFailCounts[ xQoS ][ ulTaskNumber >> 1 ] )++;
-            LogError( ( "Timed out Rx'ing %s from Tx to %s (P%d:F%d)",
-                        ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
-                        pcTopicBuffer,
-                        ulPassCounts[ xQoS ][ ulTaskNumber >> 1 ],
-                        ulFailCounts[ xQoS ][ ulTaskNumber >> 1 ] ) );
+            ulPublishFailCounts++;
+            ESP_LOGE( TAG,
+                      "Timed out Rx'ing %s from Tx to %s (P%d:F%d)",
+                      ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
+                      pcTopicBuffer,
+                      ulPublishPassCounts,
+                      ulPublishFailCounts );
         }
 
         ulValueToNotify++;
@@ -692,7 +571,67 @@ static void prvSimpleSubscribePublishTask( void * pvParameters )
         vTaskDelay( xTicksToDelay );
     }
 
-    /* Delete the task if it is complete. */
-    LogInfo( ( "Task %s completed.", taskName ) );
     vTaskDelete( NULL );
+}
+
+static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
+                                          esp_event_base_t xEventBase,
+                                          int32_t lEventId,
+                                          void * pvEventData )
+{
+    ( void ) pvHandlerArg;
+    ( void ) xEventBase;
+    ( void ) pvEventData;
+
+    switch( lEventId )
+    {
+        case CORE_MQTT_AGENT_CONNECTED_EVENT:
+            ESP_LOGI( TAG,
+                      "coreMQTT-Agent connected." );
+            xEventGroupSetBits( xCoreMqttAgentEventGroup,
+                                CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
+            ESP_LOGI( TAG,
+                      "coreMQTT-Agent disconnected. Preventing coreMQTT-Agent "
+                      "commands from being enqueued." );
+            xEventGroupClearBits( xCoreMqttAgentEventGroup,
+                                  CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
+            ESP_LOGI( TAG,
+                      "OTA started. Preventing coreMQTT-Agent commands from "
+                      "being enqueued." );
+            xEventGroupClearBits( xCoreMqttAgentEventGroup,
+                                  CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
+            break;
+
+        case CORE_MQTT_AGENT_OTA_STOPPED_EVENT:
+            ESP_LOGI( TAG,
+                      "OTA stopped. No longer preventing coreMQTT-Agent "
+                      "commands from being enqueued." );
+            xEventGroupSetBits( xCoreMqttAgentEventGroup,
+                                CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
+            break;
+
+        default:
+            ESP_LOGE( TAG,
+                      "coreMQTT-Agent event handler received unexpected event: %d",
+                      lEventId );
+            break;
+    }
+}
+
+/* Public function definitions ************************************************/
+
+void vStartTempSubPubAndLEDControlDemo( void )
+{
+    xTaskCreate( prvTempSubPubAndLEDControlTask,
+                 "TempSubPubLED",
+                 temppubsubandledcontrolconfigTASK_STACK_SIZE,
+                 NULL,
+                 temppubsubandledcontrolconfigTASK_PRIORITY,
+                 NULL );
 }
