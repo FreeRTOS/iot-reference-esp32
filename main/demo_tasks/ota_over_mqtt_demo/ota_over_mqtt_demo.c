@@ -1,28 +1,3 @@
-/*
- * FreeRTOS V202011.00
- * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * http://aws.amazon.com/freertos
- * http://www.FreeRTOS.org
- */
-
 /**
  * @file ota_over_mqtt_demo.c
  * @brief Over The Air Update demo using coreMQTT Agent.
@@ -124,29 +99,27 @@
  */
 #define OTA_JOB_ACCEPTED_RESPONSE_TOPIC_FILTER_LENGTH    ( ( uint16_t ) ( sizeof( OTA_JOB_ACCEPTED_RESPONSE_TOPIC_FILTER ) - 1 ) )
 
-
 /**
  * @brief Wildcard topic filter for matching OTA data packets.
  *  The filter is used to match the constructed data stream topic filter from OTA agent and register
  * appropriate callback for it.
  */
-#define OTA_DATA_STREAM_TOPIC_FILTER           OTA_TOPIC_PREFIX  "streams/#"
+#define OTA_DATA_STREAM_TOPIC_FILTER                     OTA_TOPIC_PREFIX  "streams/#"
 
 /**
  * @brief Length of data stream topic filter.
  */
-#define OTA_DATA_STREAM_TOPIC_FILTER_LENGTH    ( ( uint16_t ) ( sizeof( OTA_DATA_STREAM_TOPIC_FILTER ) - 1 ) )
-
+#define OTA_DATA_STREAM_TOPIC_FILTER_LENGTH              ( ( uint16_t ) ( sizeof( OTA_DATA_STREAM_TOPIC_FILTER ) - 1 ) )
 
 /**
  * @brief Starting index of client identifier within OTA topic.
  */
-#define OTA_TOPIC_CLIENT_IDENTIFIER_START_IDX    ( 12U )
+#define OTA_TOPIC_CLIENT_IDENTIFIER_START_IDX            ( 12U )
 
 /**
  * @brief Used to clear bits in a task's notification value.
  */
-#define MAX_UINT32                               ( 0xffffffff )
+#define MAX_UINT32                                       ( 0xffffffff )
 
 /* Struct definitions *********************************************************/
 
