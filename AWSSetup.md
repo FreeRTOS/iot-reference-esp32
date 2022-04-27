@@ -1,4 +1,5 @@
 # AWS IoT Core Setup
+In case you already have an AWS account and user created, you can skip steps 1 and 2 and directly got to step3 (Registering your board with AWS IoT).
 
 ## 1 Sign up for an AWS account
 
@@ -76,10 +77,10 @@ It’s strongly recommended that you adhere to the best practice of using the `A
 
 Your board must be registered with AWS IoT to communicate with the AWS Cloud. To register your board with AWS IoT, you must have:
 
-* **An AWS IoT policy:** An AWS IoT policy grants your device permissions to access AWS IoT resources. It is stored on the AWS Cloud.
-* **An AWS IoT thing:** An AWS IoT thing allows you to manage your devices in AWS IoT. It is stored on the AWS Cloud.
-* **A private key and X.509 certificate:** A private key and certificate allow your device to authenticate with AWS IoT.
-* **An AWS endpoint:** An AWS endpoint is the endpoint your devices connect to.
+* **An AWS IoT policy:** An AWS IoT policy grants your device permissions to access AWS IoT resources. It is stored in the AWS Cloud.
+* **An AWS IoT thing:** An AWS IoT thing allows you to manage your devices in AWS IoT. It represents your device and is stored in the AWS Cloud.
+* **A private key and X.509 certificate:** A private key and its corresponding public key certificate allow your device to authenticate and communicate securely with AWS IoT.
+* **An AWS endpoint:** An AWS endpoint is the URL, or the AWS IoT Core entry point, your devices will connect to.
 
 ### 3.1 Creating an AWS IoT policy
 
@@ -171,7 +172,7 @@ For more information regarding [IAM policy creation](https://docs.aws.amazon.com
 
 ![Image](getting_started_images/image24.png)
 
-8. Download your **Private Key**, **Public Key**, and **Certificate** by clicking the **Download** links for each. These will be used by your device to connect to AWS IoT Core. **NOTE:** The private key and public key can only be downloaded here, so store them in a safe place.
+8. Download your **Private Key**, **Public Key**, and **Device Certificate** by clicking the **Download** links for each. These will be used by your device to connect to AWS IoT Core. **NOTE:** The private key and public key can only be downloaded here, so store them in a safe place. Also download the Amazon Root CA 1 certificate.
 
 ![Image](getting_started_images/image25.png)
 
