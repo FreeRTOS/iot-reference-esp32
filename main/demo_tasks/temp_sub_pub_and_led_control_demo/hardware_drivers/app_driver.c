@@ -5,12 +5,6 @@
 #include "freertos/task.h"
 #include "app_driver.h"
 
-/* Network manager */
-#include "core_mqtt_agent_network_manager.h"
-
-/* coreMQTT-Agent events */
-#include "core_mqtt_agent_events.h"
-
 static const char *TAG = "app_driver";
 
 static esp_err_t temperature_sensor_init()

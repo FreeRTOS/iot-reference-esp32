@@ -1,10 +1,9 @@
 set(MAIN_SRCS
     "main.c"
     "networking/wifi/app_wifi.c"
-    "networking/mqtt/mqtt.c"
     "networking/mqtt/subscription_manager.c"
-    "networking/network_manager/core_mqtt_agent_network_manager.c"
-    "networking/network_manager/core_mqtt_agent_events.c"
+    "networking/mqtt/core_mqtt_agent_manager.c"
+    "networking/mqtt/core_mqtt_agent_manager_events.c"
 )
 
 # Demo enables
@@ -35,7 +34,6 @@ set(MAIN_INCLUDE_DIRS
     "demo_tasks/temp_sub_pub_and_led_control_demo/hardware_drivers"
     "networking/wifi"
     "networking/mqtt"
-    "networking/network_manager"
 )
 
 set(MAIN_REQUIRES

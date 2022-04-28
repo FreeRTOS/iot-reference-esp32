@@ -53,8 +53,8 @@
 #include "sdkconfig.h"
 
 /* coreMQTT-Agent network manager includes. */
-#include "core_mqtt_agent_events.h"
-#include "core_mqtt_agent_network_manager.h"
+#include "core_mqtt_agent_manager_events.h"
+#include "core_mqtt_agent_manager.h"
 
 /* Public function include. */
 #include "ota_over_mqtt_demo.h"
@@ -504,7 +504,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             ESP_LOGI( TAG, "Received an OtaJobEventFail notification from OTA Agent." );
 
             /* Signal coreMQTT-Agent network manager that an OTA job has stopped. */
-            xCoreMqttAgentNetworkManagerPost( CORE_MQTT_AGENT_OTA_STOPPED_EVENT );
+            xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_OTA_STOPPED_EVENT );
             break;
 
         case OtaJobEventStartTest:
@@ -554,7 +554,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
         case OtaJobEventReceivedJob:
             ESP_LOGI( TAG, "Received OtaJobEventReceivedJob callback from OTA Agent." );
             /* Signal coreMQTT-Agent network manager that an OTA job has started. */
-            xCoreMqttAgentNetworkManagerPost( CORE_MQTT_AGENT_OTA_STARTED_EVENT );
+            xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_OTA_STARTED_EVENT );
             break;
 
         default:
@@ -1085,7 +1085,7 @@ void vStartOTACodeSigningDemo( void )
 {
     BaseType_t xResult;
 
-    xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
+    xCoreMqttAgentManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
     if( ( xResult = xTaskCreate( prvOTADemoTask,
                                  "OTADemoTask",
