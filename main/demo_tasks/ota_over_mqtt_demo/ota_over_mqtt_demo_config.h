@@ -34,12 +34,12 @@
 #define otademoconfigMQTT_TIMEOUT_MS          ( CONFIG_GRI_OTA_DEMO_MQTT_TIMEOUT_MS )
 
 /**
- * @brief Task priority of OTA agent.
+ * @brief The task priority of OTA agent task.
  */
 #define otademoconfigAGENT_TASK_PRIORITY      ( CONFIG_GRI_OTA_DEMO_AGENT_TASK_PRIORITY )
 
 /**
- * @brief Maximum stack size of OTA agent task.
+ * @brief The stack size of OTA agent task.
  */
 #define otademoconfigAGENT_TASK_STACK_SIZE    ( CONFIG_GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE )
 

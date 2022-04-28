@@ -19,7 +19,7 @@
 #include "network_transport.h"
 
 /* coreMQTT-Agent network manager include. */
-#include "core_mqtt_agent_network_manager.h"
+#include "core_mqtt_agent_manager.h"
 
 /* WiFi provisioning/connection handler include. */
 #include "app_wifi.h"
@@ -97,7 +97,7 @@ void app_main( void )
      * establishing a TLS connection and MQTT connection to the MQTT broker.
      * This needs to be started before starting WiFi so it can handle WiFi
      * connection events. */
-    xRet = xCoreMqttAgentNetworkManagerStart( &xNetworkContext );
+    xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
 
     if( xRet != pdPASS )
     {
@@ -202,9 +202,9 @@ static BaseType_t prvInitializeNetworkContext( void )
         }
     #else
         #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-        #error "Reference Integration -> Use DS peripheral set to false" \
-            "but Component config -> Enable DS peripheral support set to" \
-            "true."
+        #error Reference Integration -> Use DS peripheral set to false \
+            but Component config -> Enable DS peripheral support set to \
+            true.
         #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
 
         /* If the DS peripheral is not being used, get the device private key from

@@ -35,8 +35,8 @@
 #include "core_mqtt_agent.h"
 
 /* coreMQTT-Agent network manager include. */
-#include "core_mqtt_agent_network_manager.h"
-#include "core_mqtt_agent_events.h"
+#include "core_mqtt_agent_manager.h"
+#include "core_mqtt_agent_manager_events.h"
 
 /* coreJSON include. */
 #include "core_json.h"
@@ -56,7 +56,7 @@
 /* Preprocessor definitions ***************************************************/
 
 /* coreMQTT-Agent event group bit definitions */
-#define CORE_MQTT_AGENT_NETWORKING_READY_BIT       ( 1 << 0 )
+#define CORE_MQTT_AGENT_CONNECTED_BIT              ( 1 << 0 )
 #define CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT    ( 1 << 1 )
 
 /* Struct definitions *********************************************************/
@@ -95,10 +95,9 @@ extern MQTTAgentContext_t xGlobalMqttAgentContext;
 static char topicBuf[ temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH ];
 
 /**
- * @brief The event group used to manage events posted from the coreMQTT-Agent
- * network manager.
+ * @brief The event group used to manage coreMQTT-Agent events.
  */
-static EventGroupHandle_t xCoreMqttAgentEventGroup;
+static EventGroupHandle_t xNetworkEventGroup;
 
 /* Static function declarations ***********************************************/
 
@@ -437,12 +436,12 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
     app_driver_init();
 
     /* Initialize the coreMQTT-Agent event group. */
-    xCoreMqttAgentEventGroup = xEventGroupCreate();
-    xEventGroupSetBits( xCoreMqttAgentEventGroup,
+    xNetworkEventGroup = xEventGroupCreate();
+    xEventGroupSetBits( xNetworkEventGroup,
                         CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
 
     /* Register coreMQTT-Agent event handler. */
-    xCoreMqttAgentNetworkManagerRegisterHandler( prvCoreMqttAgentEventHandler );
+    xCoreMqttAgentManagerRegisterHandler( prvCoreMqttAgentEventHandler );
 
     xQoS = ( MQTTQoS_t ) temppubsubandledcontrolconfigQOS_LEVEL;
 
@@ -489,7 +488,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
                   "{"                          \
                   "\"temperatureSensor\":"     \
                   "{"                          \
-                  " \"taskName\": \"%s\","    \
+                  " \"taskName\": \"%s\","     \
                   " \"temperatureValue\": %f," \
                   " \"iteration\": %d"         \
                   "}"                          \
@@ -508,8 +507,8 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
 
         /* Wait for coreMQTT-Agent task to have working network connection and
          * not be performing an OTA update. */
-        xEventGroupWaitBits( xCoreMqttAgentEventGroup,
-                             CORE_MQTT_AGENT_NETWORKING_READY_BIT | CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT,
+        xEventGroupWaitBits( xNetworkEventGroup,
+                             CORE_MQTT_AGENT_CONNECTED_BIT | CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT,
                              pdFALSE,
                              pdTRUE,
                              portMAX_DELAY );
@@ -588,23 +587,23 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
         case CORE_MQTT_AGENT_CONNECTED_EVENT:
             ESP_LOGI( TAG,
                       "coreMQTT-Agent connected." );
-            xEventGroupSetBits( xCoreMqttAgentEventGroup,
-                                CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            xEventGroupSetBits( xNetworkEventGroup,
+                                CORE_MQTT_AGENT_CONNECTED_BIT );
             break;
 
         case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
             ESP_LOGI( TAG,
                       "coreMQTT-Agent disconnected. Preventing coreMQTT-Agent "
                       "commands from being enqueued." );
-            xEventGroupClearBits( xCoreMqttAgentEventGroup,
-                                  CORE_MQTT_AGENT_NETWORKING_READY_BIT );
+            xEventGroupClearBits( xNetworkEventGroup,
+                                  CORE_MQTT_AGENT_CONNECTED_BIT );
             break;
 
         case CORE_MQTT_AGENT_OTA_STARTED_EVENT:
             ESP_LOGI( TAG,
                       "OTA started. Preventing coreMQTT-Agent commands from "
                       "being enqueued." );
-            xEventGroupClearBits( xCoreMqttAgentEventGroup,
+            xEventGroupClearBits( xNetworkEventGroup,
                                   CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
             break;
 
@@ -612,7 +611,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
             ESP_LOGI( TAG,
                       "OTA stopped. No longer preventing coreMQTT-Agent "
                       "commands from being enqueued." );
-            xEventGroupSetBits( xCoreMqttAgentEventGroup,
+            xEventGroupSetBits( xNetworkEventGroup,
                                 CORE_MQTT_AGENT_OTA_NOT_IN_PROGRESS_BIT );
             break;
 
