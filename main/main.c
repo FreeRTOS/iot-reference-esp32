@@ -45,9 +45,8 @@ static const char * TAG = "main";
 static NetworkContext_t xNetworkContext;
 
 #if CONFIG_GRI_ENABLE_OTA_DEMO
-    extern const char pcAwsCodeSigningCertPem[] asm("_binary_aws_codesign_crt_start");
+    extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_start" );
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
-
 
 static BaseType_t prvInitializeNetworkContext( void );
 static void prvStartEnabledDemos( void );
@@ -189,7 +188,7 @@ static BaseType_t prvInitializeNetworkContext( void )
         xRet = pdFAIL;
     }
 
-    #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+    #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
         /* If the digital signature peripheral is being used, get the digital
          * signature peripheral context from esp_secure_crt_mgr and put into
          * network context. */
@@ -202,6 +201,12 @@ static BaseType_t prvInitializeNetworkContext( void )
             xRet = pdFAIL;
         }
     #else
+        #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+        #error "Reference Integration -> Use DS peripheral set to false" \
+            "but Component config -> Enable DS peripheral support set to" \
+            "true."
+        #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+
         /* If the DS peripheral is not being used, get the device private key from
          * esp_secure_crt_mgr and put into network context. */
 
@@ -223,7 +228,7 @@ static BaseType_t prvInitializeNetworkContext( void )
 
             xRet = pdFAIL;
         }
-    #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+    #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
 
     xNetworkContext.pxTls = NULL;
     xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
@@ -250,7 +255,6 @@ static void prvStartEnabledDemos( void )
     #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
 
     #if CONFIG_GRI_ENABLE_OTA_DEMO
-
         #if CONFIG_GRI_OUTPUT_CERTS_KEYS
             ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
                       strlen( pcAwsCodeSigningCertPem ),
@@ -267,6 +271,5 @@ static void prvStartEnabledDemos( void )
                       "Failed to set the code signing certificate for the AWS OTA "
                       "library. OTA demo will not be started." );
         }
-        
     #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 }
