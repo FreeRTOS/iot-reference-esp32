@@ -1,0 +1,260 @@
+menu "Reference Integration"
+    config APP_WIFI_PROV_SHOW_QR
+        bool "Show provisioning QR code"
+        default y
+        help
+            Show the QR code for provisioning.
+
+    choice APP_WIFI_PROV_TRANSPORT
+        bool "Provisioning Transport method"
+        default APP_WIFI_PROV_TRANSPORT_BLE
+        help
+            Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
+    config APP_WIFI_PROV_TRANSPORT_SOFTAP
+        bool "Soft AP"
+    config APP_WIFI_PROV_TRANSPORT_BLE
+        bool "BLE"
+        select BT_ENABLED
+    endchoice
+
+    config APP_WIFI_PROV_TRANSPORT
+        int
+        default 1 if APP_WIFI_PROV_TRANSPORT_SOFTAP
+        default 2 if APP_WIFI_PROV_TRANSPORT_BLE
+
+    config GRI_MQTT_ENDPOINT
+        string "Endpoint for MQTT Broker to use"
+        default ""
+
+    config GRI_MQTT_PORT
+        int "Port for MQTT Broker to use"
+        default 8883
+
+    config GRI_THING_NAME
+        string "Thing name"
+        default ""
+
+    config GRI_OUTPUT_CERTS_KEYS
+        bool "Output provisioned certificates and keys."
+        default y
+
+    config EXAMPLE_USE_DS_PERIPHERAL
+        bool "Use DS peripheral"
+        default n
+        select ESP_SECURE_CERT_DS_PERIPHERAL
+        select ESP_TLS_USE_DS_PERIPHERAL
+        select CORE_HTTP_USE_DS_PERIPHERAL
+        select CORE_MQTT_USE_DS_PERIPHERAL
+        help
+            Enable the use of DS peripheral for the example.
+            The DS peripheral on the device must be provisioned first to use this option.
+
+    menu "coreMQTT-Agent Manager Configurations"
+
+        config GRI_MQTT_AGENT_TASK_STACK_SIZE
+            int "coreMQTT-Agent task stack size"
+            default 4096
+
+        config GRI_MQTT_AGENT_TASK_PRIORITY
+            int "coreMQTT-Agent task priority"
+            default 4
+
+        config GRI_CONNECTION_TASK_STACK_SIZE
+            int "Connection handling task stack size"
+            default 3072
+
+        config GRI_CONNECTION_TASK_PRIORITY
+            int "Connection handling task priority"
+            default 4
+
+        config GRI_RETRY_MAX_BACKOFF_DELAY_MS
+            int "Maximum backoff delay on connection retry in milliseconds"
+            default 5000
+
+        config GRI_RETRY_BACKOFF_BASE_MS
+            int "Base back-off delay on connection retry in milliseconds"
+            default 500
+
+        config GRI_MQTT_AGENT_NETWORK_BUFFER_SIZE
+            int "coreMQTT-Agent network buffer size"
+            default 10000
+
+        config GRI_MQTT_AGENT_COMMAND_QUEUE_LENGTH
+            int "coreMQTT-Agent command queue length"
+            default 10
+
+        config GRI_MQTT_AGENT_KEEP_ALIVE_INTERVAL_SECONDS
+            int "coreMQTT-Agent keep alive interval in seconds"
+            default 60
+            help
+                The maximum time interval in seconds which is allowed to elapsed between two Control Packets.
+
+        config GRI_MQTT_AGENT_CONNACK_RECV_TIMEOUT_MS
+            int "Timeout for receiving CONNACK in milliseconds"
+            default 1000
+
+        
+    endmenu # coreMQTT-Agent Manager Configurations
+
+    config GRI_ENABLE_SUB_PUB_UNSUB_DEMO
+        bool "Enable pub sub unsub demo"
+        default y
+
+    menu "Sub pub unsub demo configurations"
+        depends on GRI_ENABLE_SUB_PUB_UNSUB_DEMO
+
+        config GRI_SUB_PUB_UNSUB_DEMO_STRING_BUFFER_LENGTH
+            int "Topic name and payload buffer length"
+            default 100
+            help
+                Size of statically allocated buffers for holding topic names and payloads.
+
+        config GRI_SUB_PUB_UNSUB_DEMO_DELAY_BETWEEN_SUB_PUB_UNSUB_LOOPS_MS
+            int "Delay between sub pub unsub loops in milliseconds"
+            default 5000
+            help
+                Delay for each task between subscription, publish, unsubscription loops.
+
+        config GRI_SUB_PUB_UNSUB_DEMO_MAX_COMMAND_SEND_BLOCK_TIME_MS
+            int "coreMQTT-Agent command post block time in milliseconds."
+            default 500
+            help
+                The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
+        
+        config GRI_SUB_PUB_UNSUB_DEMO_QOS_LEVEL
+            int "QoS level of MQTT operations"
+            default 1
+            range 0 2
+            help
+                The QoS level of MQTT messages sent by this demo. This must be 0 or 1 if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker, that supports QoS level 2, this can be set to 2.
+    
+        config GRI_SUB_PUB_UNSUB_DEMO_NUM_TASKS_TO_CREATE
+            int "Number of SubPubUnsub tasks to create"
+            default 1
+            help
+                The number of SubPubUnsub tasks to create for this demo.
+
+        config GRI_SUB_PUB_UNSUB_DEMO_TASK_PRIORITY
+            int "SubPubUnsub task priority."
+            default 1
+            help
+                The task priority of each of the SubPubUnsub tasks.
+
+        config GRI_SUB_PUB_UNSUB_DEMO_TASK_STACK_SIZE
+            int "SubPubUnsub task stack size."
+            default 3072
+            help
+                The task stack size for each of the SubPubUnsub tasks.
+    
+    endmenu # Sub pub unsub demo configurations
+    
+    config GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+        bool "Enable temperature sensor pub sub and LED control demo"
+        default y
+
+    menu "Temperature pub sub and LED control demo configurations"
+        depends on GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_STRING_BUFFER_LENGTH
+            int "Topic name and payload buffer length"
+            default 150
+            help
+                Size of statically allocated buffers for holding topic names and payloads.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_DELAY_BETWEEN_PUBLISH_OPERATIONS_MS
+            int "Delay between publishes in milliseconds"
+            default 3000
+            help
+                Delay for the synchronous publisher task between publishes.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_MAX_COMMAND_SEND_BLOCK_TIME_MS
+            int "coreMQTT-Agent command post block time in milliseconds."
+            default 500
+            help
+                The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
+        
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_QOS_LEVEL
+            int "QoS level of MQTT operations"
+            default 1
+            range 0 2
+            help
+                The QoS level of MQTT messages sent by this demo. This must be 0 or 1 if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker, that supports QoS level 2, this can be set to 2.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_PRIORITY
+            int "Temperature sensor publishing task priority."
+            default 1
+            help
+                The task priority of the temperature sensor publishing task.
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_STACK_SIZE
+            int "Temperature sensor publishing task stack size."
+            default 3072
+            help
+                The task stack size of the temperature sensor publishing task.
+
+    endmenu # Temperature pub sub and LED control demo configurations
+
+    config GRI_ENABLE_OTA_DEMO
+        bool "Enable OTA demo"
+        default y
+    
+    menu "OTA demo configurations"
+        depends on GRI_ENABLE_OTA_DEMO
+
+        config GRI_OTA_DEMO_MAX_FILE_PATH_SIZE
+            int "Max file path size."
+            default 260
+            help
+                The maximum size of the file paths used in the demo.
+
+        config GRI_OTA_DEMO_MAX_STREAM_NAME_SIZE
+            int "Max stream name size."
+            default 128
+            help
+                The maximum size of the stream name required for downloading update file from streaming service.
+        
+        config GRI_OTA_DEMO_TASK_DELAY_MS
+            int "OTA statistic output delay milliseconds."
+            default 1000
+            help
+                The delay used in the OTA demo task to periodically output the OTA statistics like number of packets received, dropped, processed and queued per connection.
+
+        config GRI_OTA_DEMO_MQTT_TIMEOUT_MS
+            int "MQTT operation timeout milliseconds."
+            default 5000
+            help
+                The maximum time for which OTA demo waits for an MQTT operation to be complete. This involves receiving an acknowledgment for broker for SUBSCRIBE, UNSUBSCRIBE and non QOS0 publishes.
+
+        config GRI_OTA_DEMO_AGENT_TASK_PRIORITY
+            int "OTA agent task priority."
+            default 4
+
+        config GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE
+            int "OTA agent task stack size."
+            default 4096
+
+        config GRI_OTA_DEMO_DEMO_TASK_PRIORITY
+            int "OTA demo task priority."
+            default 1
+    
+        config GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE
+            int "OTA demo task stack size."
+            default 3072
+
+        config GRI_OTA_DEMO_APP_VERSION_MAJOR
+            int "Application version major."
+            default 0
+
+        config GRI_OTA_DEMO_APP_VERSION_MINOR
+            int "Application version minor."
+            default 0
+
+        config GRI_OTA_DEMO_APP_VERSION_BUILD
+            int "Application version build."
+            default 0
+
+    endmenu # OTA demo configurations
+
+endmenu # Golden Reference Integration 
+
+
