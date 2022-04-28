@@ -78,7 +78,7 @@ struct MQTTAgentCommandContext
 /**
  * @brief Logging tag for ESP-IDF logging functions.
  */
-const static char * TAG = "temp_sub_pub_demo";
+const static char * TAG = "temp_sub_pub_and_led_control_demo";
 
 /**
  * @brief The MQTT agent manages the MQTT contexts.  This set the handle to the
