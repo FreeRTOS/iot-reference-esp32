@@ -41,10 +41,13 @@ git submodule update --init --recursive
 
 To get started and run the demos, follow the [Getting Started Guide](GettingStartedGuide.md).
 
-## Security
+#### Cloning the Repository
+
+#### Running the demo
+
+### Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
 
 ## License
 
