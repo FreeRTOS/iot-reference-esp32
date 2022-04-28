@@ -15,10 +15,10 @@
 BaseType_t xCoreMqttAgentManagerRegisterHandler( esp_event_handler_t xEventHandler );
 
 /**
- * @brief Start the coreMQTT-Agent manager. 
- * 
+ * @brief Start the coreMQTT-Agent manager.
+ *
  * This handles initializing the underlying coreMQTT context, initializing
- * coreMQTT-Agent, starting the coreMQTT-Agent task, and starting the 
+ * coreMQTT-Agent, starting the coreMQTT-Agent task, and starting the
  * connection handling task.
  *
  * @param[in] pxNetworkContextIn Pointer to the network context.
