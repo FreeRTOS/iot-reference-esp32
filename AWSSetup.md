@@ -1,5 +1,5 @@
 # AWS IoT Core Setup
-In case you already have an AWS account and user created, you can skip steps 1 and 2 and directly got to step3 (Registering your board with AWS IoT).
+In case you already have an AWS account and user created, you can skip steps 1 and 2 and directly got to step 3 (Registering your board with AWS IoT).
 
 ## 1 Sign up for an AWS account
 
