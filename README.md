@@ -14,7 +14,7 @@ This repository currently supports 3 demos implemented as FreeRTOS [tasks](https
 * **sub_pub_unsub_demo**: The demo creates tasks which subscribe to a topic on AWS IoT Core, publish a constant string to the same topic, receive their publish (since they are subscribed to the topic they publish to), and then unsubscribe from the topic in a loop.
 * **temp_sub_pub_and_led_control_demo**: This demo creates a task which subscribes to a topic on AWS IoT Core. This task then reads the temperature from the onboard temperature sensor, publishes this information in JSON format to the same topic, and then receives this publish (since it is subscribed to the same topic it just published to) in a loop. This demo also enables a user to send a JSON packet back to the device to turn an LED off or on.
 
-All three demos can be selected to run together concurrently as separate tasks.
+All three demos can be can be run together concurrently.
 
 ## Cloning the Repository
 
