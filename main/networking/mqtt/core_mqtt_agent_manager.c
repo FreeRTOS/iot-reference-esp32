@@ -50,13 +50,13 @@
 /* Preprocessor definitions ***************************************************/
 
 /* Network event group bit definitions */
-#define WIFI_CONNECTED_BIT                                                   ( 1 << 0 )
-#define WIFI_DISCONNECTED_BIT                                                ( 1 << 1 )
-#define CORE_MQTT_AGENT_CONNECTED_BIT                                        ( 1 << 2 )
-#define CORE_MQTT_AGENT_DISCONNECTED_BIT                                     ( 1 << 3 )
+#define WIFI_CONNECTED_BIT                  ( 1 << 0 )
+#define WIFI_DISCONNECTED_BIT               ( 1 << 1 )
+#define CORE_MQTT_AGENT_CONNECTED_BIT       ( 1 << 2 )
+#define CORE_MQTT_AGENT_DISCONNECTED_BIT    ( 1 << 3 )
 
 /* Timing definitions */
-#define MILLISECONDS_PER_SECOND                                              ( 1000U )
+#define MILLISECONDS_PER_SECOND             ( 1000U )
 #define MILLISECONDS_PER_TICK   \
     ( MILLISECONDS_PER_SECOND / \
       configTICK_RATE_HZ )
