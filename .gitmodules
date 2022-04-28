@@ -1,0 +1,6 @@
+[submodule "components/esp-aws-iot"]
+	path = components/esp-aws-iot
+	url = https://github.com/espressif/esp-aws-iot.git
+[submodule "components/esp_secure_cert_mgr"]
+	path = components/esp_secure_cert_mgr
+	url = https://github.com/espressif/esp_secure_cert_mgr.git
