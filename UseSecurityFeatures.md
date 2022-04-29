@@ -20,6 +20,8 @@ In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the
 9. Go back to `Security features`.
 10. Go back to main menu, Save and Exit.
 
+**NOTE**: For production devices refer to Espressif's documentation on [**Release Mode** for Flash Encryption](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html#release-mode)
+
 ## 4 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 The key and certificates which will be used to establish a secure TLS connection will be encrypted and stored in a special flash partition.
 
@@ -57,6 +59,8 @@ Note: If you have installed openssl and the openssl command fails with a command
 6. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in step 1.
 7. Go back to main menu, Save and Exit.
 
+**NOTE**: This covers setting up Secure Boot with a single private key, but up to 3 private keys can be used. Refer to Espressif's documentation on [Secure Boot V2](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html)
+
 ### 5.1 Build and flash the Secure Boot enabled bootloader
 1. Build the bootloader by running the following command:
 ```
@@ -87,6 +91,8 @@ Run the following command to build and flash the demo project:
 idf.py -p PORT flash monitor
 ```
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
+
+**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board after this step. If flashing to an encrypted part of flash with `esptool.py`, you must also add the `--encrypt` option.
 
 ## 7 Monitoring the demo
 
