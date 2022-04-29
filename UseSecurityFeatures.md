@@ -129,7 +129,7 @@ I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 
 In the previous [Getting Started Guide](GettingStartedGuide.md), you would have setup the required OTA cloud resources.
 
-### 8.1 Build an application binary with a higer version number, to be downloaded and activated on the device 
+### 8.1 Build an application binary with a higher version number, to be downloaded and activated on the device 
 
 Create a binary with a higher version number. 
 1. Run `idf.py menuconfig`
