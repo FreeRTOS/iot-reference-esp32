@@ -15,7 +15,7 @@ Once completed, one can progress to the [UseSecurityFeatures](UseSecurityFeature
 
 ### 1.2 Software Requirements
 
-* ESP-IDF 4.4 or higher to configure, build, and flash project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
+* ESP-IDF 4.4 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
 * [Python3](https://www.python.org/downloads/)
     and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/) to use the AWS CLI to import certificates and perform OTA Job set up. Pip is included when you install
     from Python 3.10.
@@ -23,24 +23,24 @@ Once completed, one can progress to the [UseSecurityFeatures](UseSecurityFeature
     key and certificate. If you have git installed on your machine, you can also use the openssl.exe that comes with the git installation.
 * [AWS CLI Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
     to import your code-signing certificate, private key, and certificate chain into the AWS Certificate Manager,
-    and used for OTA firmware update job set up. Refer to
+    and to set up an OTA firmware update job. Refer to
     [Installing or updating the latest version of the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
     for installation instructions. After installation, follow the steps in
     [Configuration basics](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
     to configure the basic settings (security credentials, the default AWS output format and the default AWS Region)
-    that AWS CLI uses to interact with AWS. (In case you dont have an AWS account and user, to do so, follow steps 1 and 2 in the AWS IoT Core Setup Guide below, before following the Configuration basics for the AWS CLI)
+    that AWS CLI uses to interact with AWS. (If you don't have an AWS account and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before following the Configuration basics for the AWS CLI.)
 
 ## 2 Demo setup
 
 ### 2.1 Setup AWS IoT Core:
 
-To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). This guide shows you how to sign up for an AWS account, create a user and register your device with AWS IoT Core.
-After you have followed the instructions in the AWS IoT Core Setup Guide, you will have created a **device Endpoint**, an AWS IoT **Thing**, a **PEM-encoded device certificate**, a **PEM-encoded private key** and a **PEM-encoded root CA certificate**. (An explanation of these entities is given in the Setup Guide.) The root CA certificate can also be downloaded [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem). Your ESP23-C3 board must now be provisioned with these entities in order for it to connect securely with AWS IoT Core.
+To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). The guide shows you how to sign up for an AWS account, create a user, and register your device with AWS IoT Core.
+After you have followed the instructions in the AWS IoT Core Setup Guide, you will have created a **device Endpoint**, an AWS IoT **thing**, a **PEM-encoded device certificate**, a **PEM-encoded private key**, and a **PEM-encoded root CA certificate**. (An explanation of these entities is given in the Setup Guide.) The root CA certificate can also be downloaded [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem). Your ESP23-C3 board must now be provisioned with these entities in order for it to connect securely with AWS IoT Core.
 
 ### 2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint
 The demo will connect to the AWS IoT device Endpoint that you configure here.
 
-1. From a terminal/command prompt, run `idf.py menuconfig`. This is assuming the ESP-IDF environment is exported i.e. export.bat/export.sh which is to be found under the ESP-IDF directory has been run, or one is using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, the path is ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command->The `SDK Configuration editor` window should pop up after a moment.
+1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be found under the ESP-IDF directory, has been run, or that you are using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, do ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The `SDK Configuration editor` window should pop up after a moment.
 (Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
 2. Select `Reference Integration` from the menu.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
@@ -61,7 +61,7 @@ Replace:
 **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
 **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
 
-The partition binary will be created here "esp_ds_data/esp_secure_crt.bin"
+The partition binary will be created here: "esp_ds_data/esp_secure_crt.bin".
 You will see a message that says "--configure_ds option not set. Configuring without use of DS peripheral.". Ignore this message.
 
 2. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
@@ -72,8 +72,8 @@ Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
 
 ## 3 Build and flash the demo project
 
-Before you build and flash the demo project, if you are setting up the ESP32-C3 for the first time, the board will have to be provisioned with Wi-Fi credentials for it to use your Wi-Fi network to connect to the internet. This can be done via BLE or SoftAP. BLE is the default, but can be changed via menuconfig - Reference Integration->Show provisioning QR code->Provisioning Transport method.
-Espressif provides BLE and SoftAP provisioning mobile apps and are available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble) for Android or the [Apple App Store](https://apps.apple.com/app/esp-ble-provisioning/id1473590141) for iOS. Download the appropriate app to your phone before proceeding.
+Before you build and flash the demo project, if you are setting up the ESP32-C3 for the first time, the board will have to be provisioned with Wi-Fi credentials to be able to use your Wi-Fi network to connect to the internet. This can be done via BLE or SoftAP. BLE is the default, but can be changed via menuconfig - Reference Integration->Show provisioning QR code->Provisioning Transport method.
+Espressif provides BLE and SoftAP provisioning mobile apps which are available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble) for Android or the [Apple App Store](https://apps.apple.com/app/esp-ble-provisioning/id1473590141) for iOS. Download the appropriate app to your phone before proceeding.
 
 Run the following command to build and flash the demo project:
 ```
@@ -81,8 +81,8 @@ idf.py -p PORT flash monitor
 ```
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
 
-If you are setting up the ESP32-C3 for the first time, the device will go though the Wi-Fi provisioning workflow and you will have to use the app you previously downloaded, to scan the QR code and follow the instructions that follow. Once the device is provisioned successfully with the required Wi-Fi credentials, the demo will proceed. If previously Wi-Fi provisioned, the device will not go through the Wi-Fi provisioning workflow again.
-Note: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials, you will have to erase the nvs flash partition where the Wi-Fi credentials are stored, else the device will presume that it has already been provisioned. In such a situation, use the following command to erase the nvs partition.
+If you are setting up the ESP32-C3 for the first time, the device will go though the Wi-Fi provisioning workflow and you will have to use the app you previously downloaded to scan the QR code and follow the instructions that follow. Once the device is provisioned successfully with the required Wi-Fi credentials, the demo will proceed. If previously Wi-Fi provisioned, the device will not go through the Wi-Fi provisioning workflow again.
+Note: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials, you will have to erase the nvs flash partition where the Wi-Fi credentials are stored, otherwise the device will presume that it has already been provisioned. In this situation, use the following command to erase the nvs partition.
 ```
 parttool.py -p PORT erase_partition --partition-name=nvs
 ```
@@ -116,14 +116,14 @@ I (3163) temp_pub_sub_demo: Sending publish request to agent with message "{"tem
 I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 ```
 
-2. On the AWS IoT console, select "Test" then select "MQTT test client". Under "Subscribe to a topic", type "#" (# is to select all topics. You can also enter a specific topic such as /filter/Publisher0), click on "Subscribe", and confirm that the MQTT messages from the device are received.
+2. On the AWS IoT console, select "Test" then select "MQTT test client". Under "Subscribe to a topic", type "#". (# is used to select all topics. You can also enter a specific topic such as /filter/Publisher0.) Click on "Subscribe", then confirm that the MQTT messages from the device are received.
 
 ## 5 Perform firmware Over-the-Air Updates with AWS IoT
 
 This demo uses the OTA client library and the AWS IoT OTA service for code signing and secure download of firmware updates. A safe and secure boot process is performed using Secure Boot.
 
 ### 5.1 Setup pre-requisites for OTA cloud resources
-Before you create an OTA job, the following resources are required. This is a one time setup required for performing OTA firmware updates. Make a note of the names of the resources you will create, as you will need to provide them during subsequent configuration.
+Before you create an OTA job, the following resources are required. This is a one time setup required for performing OTA firmware updates. Make a note of the names of the resources you create, as you will need to provide them during subsequent configuration steps.
 
 * An Amazon S3 bucket to store your updated firmware. S3 is an AWS Service that enables you to store files in the cloud that can be accessed by you or other services. This is used by the OTA Update Manager Service to store the firmware image in an S3 “bucket” before sending it to the device. [Create an Amazon S3 Bucket to Store Your Update](https://docs.aws.amazon.com/freertos/latest/userguide/dg-ota-bucket.html).
 * An OTA Update Service role. By default, the OTA Update Manager cloud service does not have permission to access the S3 bucket that will contain the firmware image. An OTA Service Role is required to allow the OTA Update Manager Service to read and write to the S3 bucket. [Create an OTA Update Service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html).
@@ -132,32 +132,32 @@ Before you create an OTA job, the following resources are required. This is a on
 * [Grant access to Code Signing for AWS IoT](https://docs.aws.amazon.com/freertos/latest/userguide/code-sign-policy.html).
 
 ### 5.2 Provision the project with the code-signing public key certificate
-The code-signing public key certificate will be used by the application binary i.e. the demo, to authenticate a binary that was downloaded for an update (this downloaded firmware would have been signed by the certificate's corresponding private key). 
+The code-signing public key certificate will be used by the application binary, i.e. the demo, to authenticate a binary that was downloaded for an update. (This downloaded firmware would have been signed by the certificate's corresponding private key.) 
 
-Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step, to 'main/cert/aws_codesign.crt'
+Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step to 'main/cert/aws_codesign.crt'
 
 The demo will read the certificate 'aws_codesign.crt' from your host filesystem and save it in memory.
 
 ### 5.3 Build an application binary with a higer version number, to be downloaded and activated on the device 
 To perform an OTA firmware update, you must go through these steps:
-* Increment the version of the binary and create the signed binary image.
-* Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
-* Restore the original version (lower version number) and flash this to the device.
+1. Increment the version of the binary and create the signed binary image.
+1. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
+1. Restore the original version (lower version number) and flash this to the device.
 The version of the new image must be later than the current image on the board or else OTA will not proceed.
 
-The OTA Update Job will send a notification to an MQTT topic to which the device will be listening to. Upon receiving an OTA update notfication, the device will then commence downloading the new firmware.
+The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notfication, the device will then start downloading the new firmware.
 
 Create a binary with a higher version number. 
-1. Run `idf.py menuconfig`
+1. Run `idf.py menuconfig`.
 2. Select `Reference Integration` from the menu.
-3. Under `Enable OTA demo` go to `OTA demo configurations`
+3. Under `Enable OTA demo`, go to `OTA demo configurations`.
 4. Set the `Application version build` number to '1'.
 5. Go back to main menu, Save and exit.
 6. Run the following command to only build the demo project.
 ```
 idf.py build
 ```
-If successful, there will be a new binary under the 'build' directory - build/GoldenReferenceIntegration.bin. Copy this binary to another location, else it will be overwritten in the next step.
+If successful, there will be a new binary under the 'build' directory - build/GoldenReferenceIntegration.bin. Copy this binary to another location, otherwise it will be overwritten in the next step.
 
 ### 5.4 Build and flash the device with a binary with a lower version number
 1. Follow the same steps in 5.3, but this time, set the `Application version build` number to '0'.
@@ -170,27 +170,27 @@ idf.py -p PORT flash monitor
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
 Choose 'Create a job'.
 2. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose 'Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
-3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you would have created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices. 
+3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices. 
 4. Under 'Select the protocol for file transfer', choose 'MQTT'.
 5. Under 'Sign and choose your file', choose 'Sign a new file for me'.
 6. Under 'Code signing profile', choose 'Create a new profile'.
 7. In 'Create a code signing profile':
-* Type in a name for this profile.
-* For the Device hardware platform, select: 'ESP32-DevKitC'.
-* Under Code signing certificate, choose 'Select an existing certificate', then choose the certificate that you created with AWS CLI earlier and registered with AWS ACM (you can use the ARN to identify).
-* Under 'Path name of code signing certificate on device', enter '/' (this is not applicable for the ESP32-C3 and hence the / is only a filler).
-* Click 'Create'. Confirm that the code signing profile was created successfully.
+   1. Type in a name for this profile.
+   1. For the Device hardware platform, select: 'ESP32-DevKitC'.
+   1. Under Code signing certificate, choose 'Select an existing certificate', then choose the certificate that you created with the AWS CLI earlier and registered with AWS ACM (you can use the ARN to identify it).
+   1. Under 'Path name of code signing certificate on device', enter '/'. (This is not applicable for the ESP32-C3 and hence the / is only a filler.)
+   1. Click 'Create'. Confirm that the code signing profile was created successfully.
 8. Back on the FreeRTOS OTA Job console:
-* Under 'Code signing profile', select the code signing profile that was just created from the drop down list.
-* Under 'File', choose 'Upload a new file' then click 'Choose file'. A file browser pops up. Select the signed binary image with the higher version number.
-* Under 'File upload location in S3', click 'Browse S3', then select the S3 bucket that you had earlier created for this job. Click 'Choose'
-* Under 'Path name of file on device', type 'NA'
-* Under 'IAM role for OTA update job', choose the role that you created earlier for the OTA update from the drop down list.
-* Click 'Next', then click on 'Create job'. Confirm if the job was created successfully. Note: If it fails to create an OTA job, make sure the role for this OTA job update has the correct permissions (policies) attached.
+   1. Under 'Code signing profile', select the code signing profile that was just created from the drop down list.
+   1. Under 'File', choose 'Upload a new file', then click 'Choose file'. A file browser pops up. Select the signed binary image with the higher version number.
+   1. Under 'File upload location in S3', click 'Browse S3', then select the S3 bucket that you created earlier for this job. Click 'Choose'.
+   1. Under 'Path name of file on device', type 'NA'.
+   1. Under 'IAM role for OTA update job', choose the role that you created earlier for the OTA update from the drop down list.
+   1. Click 'Next', then click on 'Create job'. Confirm that the job was created successfully. Note: If this fails to create an OTA job, make sure the role for this OTA job update has the correct permissions (policies) attached.
 
 ### 5.6 Monitor OTA
 
-Once the job is created successfully, the demo should start downloading the firmware in chunks. For eg.
+Once the job is created successfully, the demo should start downloading the firmware in chunks. For example:
 ```
 I (196573) ota_over_mqtt_demo: OTA Event processing completed. Freeing the event buffer to pool.
 I (196583) AWS_OTA: Current State=[WaitingForFileBlock], Event=[ReceivedFileBlock], New state=[WaitingForFileBlock]
@@ -207,8 +207,8 @@ I (197603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   Dropped: 0
 ```
 
-Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
-You can see the new version number of the demo binary. Look for the string "Application version"
+Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu) on FreeRTOS.org for more details.
+You can see the new version number of the demo binary in the terminal console output. Look for the string "Application version"
 
 ```
 I (461802) esp_image: Verifying image signature...
