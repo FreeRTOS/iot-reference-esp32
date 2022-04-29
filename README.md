@@ -1,4 +1,4 @@
-# Featured FreeROTS IoT Integration on ESP32-C3 RISC-V MCU
+# Featured FreeRTOS IoT Integration on ESP32-C3 RISC-V MCU
 
 ## Introduction
 
