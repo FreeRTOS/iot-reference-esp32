@@ -60,9 +60,10 @@ Replace:
 **CA_CERT_FILEPATH** with the file path to the **PEM-encoded root CA certificate**.
 **DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
 **PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
+For convenience sake, you could place your key and certificate files under the 'main/certs' directory.
 
-The partition binary will be created here: "esp_ds_data/esp_secure_crt.bin".
 You will see a message that says "--configure_ds option not set. Configuring without use of DS peripheral.". Ignore this message.
+The partition binary will be created here: "esp_ds_data/esp_secure_crt.bin".
 
 2. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
 ```
@@ -143,9 +144,10 @@ To perform an OTA firmware update, you must go through these steps:
 1. Increment the version of the binary and create the signed binary image.
 2. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
 3. Restore the original version (lower version number) and flash this to the device.
+
 The version of the new image must be later than the current image on the board or else OTA will not proceed.
 
-The OTA Update Job will send a notification to an MQTT topic to which the device will be listening to. Upon receiving an OTA update notfication, the device will then commence downloading the new firmware.
+The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notfication, the device will then start downloading the new firmware.
 
 Create a binary with a higher version number. 
 1. Run `idf.py menuconfig`.
@@ -160,7 +162,7 @@ idf.py build
 If successful, there will be a new binary under the 'build' directory - build/GoldenReferenceIntegration.bin. Copy this binary to another location, otherwise it will be overwritten in the next step.
 
 ### 5.4 Build and flash the device with a binary with a lower version number
-1. Follow the same steps in 5.3, but this time, set the `Application version build` number to '0'.
+1. Follow the same steps in 5.3 starting with running idf.py menuconfig, but this time, set the `Application version build` number to '0'.
 2. Build and flash this new application binary with a lower version number.
 ```
 idf.py -p PORT flash monitor
