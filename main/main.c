@@ -1,3 +1,31 @@
+/*
+ * ESP32-C3 FreeRTOS Reference Integration V202204.00
+ * Copyright (C) 2022 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
+ *
+ */
+
+/* Includes *******************************************************************/
+
 /* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -38,78 +66,44 @@
     #include "ota_over_mqtt_demo.h"
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
+/* Global variables ***********************************************************/
 
-/* Logging tag */
+/**
+ * @brief Logging tag for ESP-IDF logging functions.
+ */
 static const char * TAG = "main";
 
+/**
+ * @brief The global network context used to store the credentials
+ * and TLS connection.
+ */
 static NetworkContext_t xNetworkContext;
 
 #if CONFIG_GRI_ENABLE_OTA_DEMO
+
+/**
+ * @brief The AWS code signing certificate passed in from ./certs/aws_codesign.crt
+ */
     extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_start" );
+
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
+/* Static function declarations ***********************************************/
+
+/**
+ * @brief This function initializes the global network context with credentials.
+ *
+ * This handles retrieving and initializing the global network context with the
+ * credentials it needs to establish a TLS connection.
+ */
 static BaseType_t prvInitializeNetworkContext( void );
+
+/**
+ * @brief This function starts all enabled demos.
+ */
 static void prvStartEnabledDemos( void );
 
-void app_main( void )
-{
-    /* This is used to store the return of initialization functions. */
-    BaseType_t xRet;
-
-    /* This is used to store the error return of ESP-IDF functions. */
-    esp_err_t xEspErrRet;
-
-    /* Initialize global network context. */
-    xRet = prvInitializeNetworkContext();
-
-    if( xRet != pdPASS )
-    {
-        ESP_LOGE( TAG, "Failed to initialize global network context." );
-        return;
-    }
-
-    /* Initialize NVS partition. This needs to be done before initializing
-     * WiFi. */
-    xEspErrRet = nvs_flash_init();
-
-    if( ( xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES ) ||
-        ( xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND ) )
-    {
-        /* NVS partition was truncated
-         * and needs to be erased */
-        ESP_ERROR_CHECK( nvs_flash_erase() );
-
-        /* Retry nvs_flash_init */
-        ESP_ERROR_CHECK( nvs_flash_init() );
-    }
-
-    /* Initialize ESP-Event library default event loop.
-     * This handles WiFi and TCP/IP events and this needs to be called before
-     * starting WiFi and the coreMQTT-Agent network manager. */
-    ESP_ERROR_CHECK( esp_event_loop_create_default() );
-
-    /* Start demo tasks. This needs to be done before starting WiFi and
-     * and the coreMQTT-Agent network manager so demos can
-     * register their coreMQTT-Agent event handlers before events happen. */
-    prvStartEnabledDemos();
-
-    /* Initialize and start the coreMQTT-Agent network manager. This handles
-     * establishing a TLS connection and MQTT connection to the MQTT broker.
-     * This needs to be started before starting WiFi so it can handle WiFi
-     * connection events. */
-    xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
-
-    if( xRet != pdPASS )
-    {
-        ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
-                       "manager." );
-        return;
-    }
-
-    /* Start WiFi. */
-    app_wifi_init();
-    app_wifi_start( POP_TYPE_MAC );
-}
+/* Static function definitions ************************************************/
 
 static BaseType_t prvInitializeNetworkContext( void )
 {
@@ -203,8 +197,8 @@ static BaseType_t prvInitializeNetworkContext( void )
     #else
         #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
         #error Reference Integration -> Use DS peripheral set to false \
-            but Component config -> Enable DS peripheral support set to \
-            true.
+        but Component config -> Enable DS peripheral support set to    \
+        true.
         #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
 
         /* If the DS peripheral is not being used, get the device private key from
@@ -273,3 +267,69 @@ static void prvStartEnabledDemos( void )
         }
     #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 }
+
+/* Main function definition ***************************************************/
+
+/**
+ * @brief This function serves as the main entry point of this project.
+ */
+void app_main( void )
+{
+    /* This is used to store the return of initialization functions. */
+    BaseType_t xRet;
+
+    /* This is used to store the error return of ESP-IDF functions. */
+    esp_err_t xEspErrRet;
+
+    /* Initialize global network context. */
+    xRet = prvInitializeNetworkContext();
+
+    if( xRet != pdPASS )
+    {
+        ESP_LOGE( TAG, "Failed to initialize global network context." );
+        return;
+    }
+
+    /* Initialize NVS partition. This needs to be done before initializing
+     * WiFi. */
+    xEspErrRet = nvs_flash_init();
+
+    if( ( xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES ) ||
+        ( xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND ) )
+    {
+        /* NVS partition was truncated
+         * and needs to be erased */
+        ESP_ERROR_CHECK( nvs_flash_erase() );
+
+        /* Retry nvs_flash_init */
+        ESP_ERROR_CHECK( nvs_flash_init() );
+    }
+
+    /* Initialize ESP-Event library default event loop.
+     * This handles WiFi and TCP/IP events and this needs to be called before
+     * starting WiFi and the coreMQTT-Agent network manager. */
+    ESP_ERROR_CHECK( esp_event_loop_create_default() );
+
+    /* Start demo tasks. This needs to be done before starting WiFi and
+     * and the coreMQTT-Agent network manager so demos can
+     * register their coreMQTT-Agent event handlers before events happen. */
+    prvStartEnabledDemos();
+
+    /* Initialize and start the coreMQTT-Agent network manager. This handles
+     * establishing a TLS connection and MQTT connection to the MQTT broker.
+     * This needs to be started before starting WiFi so it can handle WiFi
+     * connection events. */
+    xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
+
+    if( xRet != pdPASS )
+    {
+        ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
+                       "manager." );
+        return;
+    }
+
+    /* Start WiFi. */
+    app_wifi_init();
+    app_wifi_start( POP_TYPE_MAC );
+}
+
