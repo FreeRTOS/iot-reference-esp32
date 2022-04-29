@@ -42,7 +42,7 @@ The demo will connect to the AWS IoT device Endpoint that you configure here.
 
 1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be found under the ESP-IDF directory, has been run, or that you are using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, do ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The `SDK Configuration editor` window should pop up after a moment.
 (Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
-2. Select `Reference Integration` from the menu.
+2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
 5. Set `Thing name` to your **Thing Name**.
@@ -73,7 +73,8 @@ Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
 
 ## 3 Build and flash the demo project
 
-Before you build and flash the demo project, if you are setting up the ESP32-C3 for the first time, the board will have to be provisioned with Wi-Fi credentials to be able to use your Wi-Fi network to connect to the internet. This can be done via BLE or SoftAP. BLE is the default, but can be changed via menuconfig - Reference Integration->Show provisioning QR code->Provisioning Transport method.
+Before you build and flash the demo project, if you are setting up the ESP32-C3 for the first time, the board will have to be provisioned with Wi-Fi credentials to be able to use your Wi-Fi network to connect to the internet. This can be done via BLE or SoftAP. BLE is the default, but can be changed via menuconfig - Featured FreeRTOS IoT Integration -> Show provisioning QR code -> Provisioning Transport method.
+
 Espressif provides BLE and SoftAP provisioning mobile apps which are available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble) for Android or the [Apple App Store](https://apps.apple.com/app/esp-ble-provisioning/id1473590141) for iOS. Download the appropriate app to your phone before proceeding.
 
 Run the following command to build and flash the demo project:
@@ -151,7 +152,7 @@ The OTA Update Job will send a notification to an MQTT topic that the device wil
 
 Create a binary with a higher version number. 
 1. Run `idf.py menuconfig`.
-2. Select `Reference Integration` from the menu.
+2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Under `Enable OTA demo`, go to `OTA demo configurations`.
 4. Set the `Application version build` number to '1'.
 5. Go back to main menu, Save and exit.
@@ -209,7 +210,7 @@ I (197603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   Dropped: 0
 ```
 
-Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu) on FreeRTOS.org for more details.
+Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu) on FreeRTOS.org for more details.
 You can see the new version number of the demo binary in the terminal console output. Look for the string "Application version"
 
 ```
