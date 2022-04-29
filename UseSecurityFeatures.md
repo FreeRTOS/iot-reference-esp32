@@ -121,7 +121,7 @@ I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 
 ## 8 Perform firmware Over-the-Air Updates with AWS IoT
 
-In the previous [GettingStartedGuide](GettingStartedGuide.md), you would have setup the required OTA cloud resources.
+In the previous [Getting Started Guide](GettingStartedGuide.md), you would have setup the required OTA cloud resources.
 
 ### 8.1 Build an application binary with a higer version number, to be downloaded and activated on the device 
 
