@@ -1,13 +1,13 @@
-# Getting Started Guide With Security Features
+# Getting Started With Security Features
 
 ## 1 Pre-requisites
 
-In the [GettingStartedGuide](GettingStartedGuide.md), one would have setup the ESP32-C3 device, installed the required software, setup AWS IoT, configured the demo project with the AWS IoT endpoint, Thing, private key and certificates, and built and run the demo.
+In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the ESP32-C3 device, installed the required software, setup AWS IoT, configured the demo project with the AWS IoT endpoint, thing name, private key and certificates, and build and run the demo.
 
 ## 2 Enable the DS peripheral
 
 1. Run `idf.py menuconfig`
-2. Select `Reference Integration`.
+2. Select `Featured FreeRTOS IoT Integration`.
 3. Select `Use DS Peripheral`.
 4. Go back to the main menu.
 
@@ -43,7 +43,7 @@ Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
 
 ## 5 Configure Secure Boot
 
-1. For Secure Boot, an RSA 3072 private key must be generated which will be used to sign the secondary bootloader and the application binary. Please refer to the Secure Boot section in the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for further details. The private key can be generated with the following command:
+1. For Secure Boot, an RSA 3072 private key must be generated which will be used to sign the secondary bootloader and the application binary. Please refer to the Secure Boot section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for further details. The private key can be generated with the following command:
 ```
 openssl genrsa -out secure_boot_signing_key.pem 3072
 ```
@@ -127,7 +127,7 @@ In the previous [GettingStartedGuide](GettingStartedGuide.md), you would have se
 
 Create a binary with a higher version number. 
 1. Run `idf.py menuconfig`
-2. Select `Reference Integration` from the menu.
+2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Under `Enable OTA demo` go to `OTA demo configurations`
 4. Set the `Application version build` number to '1'.
 5. Go back to main menu, Save and exit.
@@ -177,7 +177,7 @@ I (197603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   Dropped: 0
 ```
 
-Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
+Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
 You can see the new version number of the demo binary. Look for the string "Application version"
 
 ```
