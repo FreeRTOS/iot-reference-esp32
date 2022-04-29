@@ -5,4 +5,4 @@ set(EXTRA_COMPONENT_DIRS "${CMAKE_CURRENT_LIST_DIR}/components/esp-aws-iot/libra
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 include_directories(BEFORE "${CMAKE_CURRENT_LIST_DIR}/main")
-project(GoldenReferenceIntegration)
+project(FeaturedFreeRTOSIoTIntegration)

@@ -1,8 +1,8 @@
 # Getting Started Guide
 
-This guide contains instructions on how to setup, build and run the demo without use of the security features of the ESP32-C3 enabled i.e. without the DS peripheral, flash encryption and Secure Boot, and is meant to provide a developer friendly first use experience.
+This guide contains instructions on how to setup, build and run the demo without use of the security features of the ESP32-C3 enabled i.e. without the DS peripheral, flash encryption and Secure Boot. It is meant to provide a developer with a friendly first use experience.
 
-Once completed, one can progress to the [UseSecurityFeatures](UseSecurityFeatures.md) guide.
+Once completed, one can progress to the [Use Security Features](UseSecurityFeatures.md) guide.
 
 ## 1 Pre-requisites
 
@@ -142,8 +142,9 @@ The demo will read the certificate 'aws_codesign.crt' from your host filesystem 
 ### 5.3 Build an application binary with a higer version number, to be downloaded and activated on the device 
 To perform an OTA firmware update, you must go through these steps:
 1. Increment the version of the binary and create the signed binary image.
-1. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
-1. Restore the original version (lower version number) and flash this to the device.
+2. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
+3. Restore the original version (lower version number) and flash this to the device.
+
 The version of the new image must be later than the current image on the board or else OTA will not proceed.
 
 The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notfication, the device will then start downloading the new firmware.

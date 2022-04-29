@@ -1,18 +1,46 @@
 /*
- * This file demonstrates numerous tasks all of which use the MQTT agent API
- * to send unique MQTT payloads to unique topics over the same MQTT connection
- * to the same MQTT agent.  Some tasks use QoS0 and others QoS1.
+ * ESP32-C3 Featured FreeRTOS IoT Integration V202204.00
+ * Copyright (C) 2022 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
- * Each created task is a unique instance of the task implemented by
- * prvSimpleSubscribePublishTask().  prvSimpleSubscribePublishTask()
- * subscribes to a topic then periodically publishes a message to the same
- * topic to which it has subscribed.  The command context sent to
- * MQTTAgent_Publish() contains a unique number that is sent back to the task
- * as a task notification from the callback function that executes when the
- * PUBLISH operation is acknowledged (or just sent in the case of QoS 0).  The
- * task checks the number it receives from the callback equals the number it
- * previously set in the command context before printing out either a success
- * or failure message.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
+ *
+ */
+
+/*
+ * This file demonstrates a task which use the coreMQTT-agent API
+ * to send and receive MQTT payloads and showcases how these can be used with
+ * hardware.
+ *
+ * The created task is an instance of the task implemented by
+ * prvTempSubPubAndLEDControlTask(). prvTempSubPubAndLEDControlTask()
+ * subscribes to a topic then periodically reads the temperature sensor of the
+ * ESP32-C3 and publishes a JSON payload with the temperature data to the same
+ * topic to which it has subscribed. The user can also publish a JSON payload to
+ * this same topic to turn off and on the LED on the ESP32-C3.
+ * The command context sent to MQTTAgent_Publish() contains a unique number that
+ * is sent back to the task as a task notification from the callback function
+ * that executes when the PUBLISH operation is acknowledged (or just sent
+ * in the case of QoS 0). The task checks the number it receives from the
+ * callback equals the number it previously set in the command context before
+ * printing out either a success or failure message.
  */
 
 /* Includes *******************************************************************/
@@ -27,6 +55,11 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
+
+/* ESP-IDF includes. */
+#include "esp_log.h"
+#include "esp_event.h"
+#include "sdkconfig.h"
 
 /* coreMQTT library include. */
 #include "core_mqtt.h"
@@ -78,7 +111,7 @@ struct MQTTAgentCommandContext
 /**
  * @brief Logging tag for ESP-IDF logging functions.
  */
-const static char * TAG = "temp_sub_pub_demo";
+const static char * TAG = "temp_sub_pub_and_led_control_demo";
 
 /**
  * @brief The MQTT agent manages the MQTT contexts.  This set the handle to the
