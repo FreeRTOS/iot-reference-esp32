@@ -157,7 +157,7 @@ Before you create an OTA job, the following resources are required. This is a on
 ### 5.2 Provision the project with the code-signing public key certificate
 The code-signing public key certificate will be used by the application binary, i.e. the demo, to authenticate a binary that was downloaded for an update. (This downloaded firmware would have been signed by the certificate's corresponding private key.) 
 
-Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step to 'main/cert/aws_codesign.crt'
+Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step to 'main/certs/aws_codesign.crt'
 
 The demo will read the certificate 'aws_codesign.crt' from your host filesystem and save it in memory.
 
