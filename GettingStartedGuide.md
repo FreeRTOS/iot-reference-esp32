@@ -119,6 +119,27 @@ I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 ```
 
 2. On the AWS IoT console, select "Test" then select "MQTT test client". Under "Subscribe to a topic", type "#". (# is used to select all topics. You can also enter a specific topic such as /filter/Publisher0.) Click on "Subscribe", then confirm that the MQTT messages from the device are received.
+3. To change the LED power state, under "Publish to a topic" publish one of the following JSON payloads to the `/filter/TempSubPubLED` topic:
+
+To turn the LED on:
+```json
+{
+    "led":
+    {
+        "power": 1
+    }
+}
+```
+
+To turn the LED off:
+```json
+{
+    "led":
+    {
+        "power": 0
+    }
+}
+```
 
 ## 5 Perform firmware Over-the-Air Updates with AWS IoT
 
@@ -140,7 +161,7 @@ Copy the public key certificate that you would have created in the 'Create a cod
 
 The demo will read the certificate 'aws_codesign.crt' from your host filesystem and save it in memory.
 
-### 5.3 Build an application binary with a higer version number, to be downloaded and activated on the device 
+### 5.3 Build an application binary with a higher version number, to be downloaded and activated on the device 
 To perform an OTA firmware update, you must go through these steps:
 1. Increment the version of the binary and create the signed binary image.
 2. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
