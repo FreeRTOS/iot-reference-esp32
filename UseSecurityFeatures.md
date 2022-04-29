@@ -20,7 +20,7 @@ In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the
 9. Go back to `Security features`.
 10. Go back to main menu, Save and Exit.
 
-**NOTE**: For production devices refer to Espressif's documentation on [**Release Mode** for Flash Encryption](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html#release-mode)
+**NOTE**: This enables Flash Encryption in **Development Mode**. For production devices, refer to Espressif's documentation on [**Release Mode** for Flash Encryption](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html#release-mode)
 
 ## 4 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 The key and certificates which will be used to establish a secure TLS connection will be encrypted and stored in a special flash partition.
@@ -124,6 +124,27 @@ I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 ```
 
 2. On the AWS IoT console, select "Test" then select "MQTT test client". Under "Subscribe to a topic", type "#" (# is to select all topics. You can also enter a specific topic such as /filter/Publisher0), click on "Subscribe", and confirm that the MQTT messages from the device are received.
+3. To change the LED power state, under "Publish to a topic" publish one of the following JSON payloads to the `/filter/TempSubPubLED` topic:
+
+To turn the LED on:
+```json
+{
+    "led":
+    {
+        "power": 1
+    }
+}
+```
+
+To turn the LED off:
+```json
+{
+    "led":
+    {
+        "power": 0
+    }
+}
+```
 
 ## 8 Perform firmware Over-the-Air Updates with AWS IoT
 
