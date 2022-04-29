@@ -2,7 +2,7 @@
 
 This guide contains instructions on how to setup, build and run the demo without use of the security features of the ESP32-C3 enabled i.e. without the DS peripheral, flash encryption and Secure Boot. It is meant to provide a developer with a friendly first use experience.
 
-Once completed, one can progress to the [UseSecurityFeatures](UseSecurityFeatures.md) guide.
+Once completed, one can progress to the [Use Security Features](UseSecurityFeatures.md) guide.
 
 ## 1 Pre-requisites
 
