@@ -143,7 +143,7 @@ To turn the LED off:
 
 ## 5 Perform firmware Over-the-Air Updates with AWS IoT
 
-This demo uses the OTA client library and the AWS IoT OTA service for code signing and secure download of firmware updates. A safe and secure boot process is performed using Secure Boot.
+This demo uses the OTA client library and the AWS IoT OTA service for code signing and secure download of firmware updates.
 
 ### 5.1 Setup pre-requisites for OTA cloud resources
 Before you create an OTA job, the following resources are required. This is a one time setup required for performing OTA firmware updates. Make a note of the names of the resources you create, as you will need to provide them during subsequent configuration steps.
