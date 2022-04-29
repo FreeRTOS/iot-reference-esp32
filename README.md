@@ -40,7 +40,7 @@ All three demos can be selected to run together concurrently as separate tasks.
 
 To get started and run the demos, follow the [Getting Started Guide](GettingStartedGuide.md).
 
-## Security
+## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
