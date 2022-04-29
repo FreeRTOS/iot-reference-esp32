@@ -149,6 +149,7 @@ If successful, there will be a new binary under the 'build' directory - build/Go
 ```
 idf.py -p PORT flash monitor
 ```
+**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board for this step.
 
 ### 8.3 Upload the binary with the higher version number (created in step 8.1) and create an OTA Update Job
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
