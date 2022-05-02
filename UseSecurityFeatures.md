@@ -2,7 +2,7 @@
 
 ## 1 Pre-requisites
 
-In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the ESP32-C3 device, installed the required software, setup AWS IoT, configured the demo project with the AWS IoT endpoint, thing name, private key and certificates, and build and run the demo.
+In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the ESP32-C3 device, installed the required software, setup AWS IoT, configured the demo project with the AWS IoT endpoint, thing name, private key and certificates, and built and run the demo.
 
 ## 2 Enable the DS peripheral
 
@@ -92,7 +92,7 @@ idf.py -p PORT flash monitor
 ```
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
 
-**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board after this step. If flashing to an encrypted part of flash with `esptool.py`, you must also add the `--encrypt` option.
+**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board AFTER this step i.e. with subsequent flashes. If flashing to an encrypted part of flash with `esptool.py`, you must also add the `--encrypt` option.
 
 ## 7 Monitoring the demo
 
@@ -168,9 +168,9 @@ If successful, there will be a new binary under the 'build' directory - build/Go
 1. Follow the same steps in 8.1, but this time, set the `Application version build` number to '0'.
 2. Build and flash this new application binary with a lower version number.
 ```
-idf.py -p PORT flash monitor
+idf.py -p PORT encrypted-flash monitor
 ```
-**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board for this step.
+**NOTE**: Since Flash Encryption was enabled in the previous steps, instead of `flash`, we use `encrypted-flash` to flash the board for this step.
 
 ### 8.3 Upload the binary with the higher version number (created in step 8.1) and create an OTA Update Job
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
@@ -205,120 +205,227 @@ I (197603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   Dropped: 0
 ```
 
-Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
+Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image, during which the Secure Boot sequence is executed. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
 You can see the new version number of the demo binary. Look for the string "Application version"
 
 ```
-I (461802) esp_image: Verifying image signature...
-I (461812) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
-I (461822) secure_boot_v2: #0 app key digest == #0 trusted key digest
-I (461822) secure_boot_v2: Verifying with RSA-PSS...
-I (461872) secure_boot_v2: Signature verified successfully!
-I (461872) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2d668h (185960) map
-I (461902) esp_image: segment 1: paddr=001dd690 vaddr=3fc91800 size=02988h ( 10632) 
-I (461902) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=da904h (895236) map
-I (462022) esp_image: segment 3: paddr=002ba92c vaddr=3fc94188 size=00df4h (  3572) 
-I (462022) esp_image: segment 4: paddr=002bb728 vaddr=40380000 size=11720h ( 71456) 
-I (462032) esp_image: segment 5: paddr=002cce50 vaddr=50000010 size=00010h (    16) 
-I (462032) esp_image: segment 6: paddr=002cce68 vaddr=00000000 size=03168h ( 12648) 
-I (462042) esp_image: Verifying image signature...
-I (462042) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
-I (462052) secure_boot_v2: #0 app key digest == #0 trusted key digest
-I (462062) secure_boot_v2: Verifying with RSA-PSS...
-I (462112) secure_boot_v2: Signature verified successfully!
-I (462652) wifi:state: run -> init (0)
-I (462652) wifi:pm stop, total sleep time: 382862279 us / 461539198 us
+I (793824) AWS_OTA: Number of blocks remaining: 1
+I (793824) ota_over_mqtt_demo: OTA Event processing completed. Freeing the event buffer to pool.
+I (793824) AWS_OTA: Current State=[WaitingForFileBlock], Event=[ReceivedFileBlock], New state=[WaitingForFileBlock]
+I (793914) ota_over_mqtt_demo:  Received: 288   Queued: 288   Processed: 288   Dropped: 0
+I (794914) ota_over_mqtt_demo:  Received: 288   Queued: 288   Processed: 288   Dropped: 0
+I (795914) ota_over_mqtt_demo:  Received: 288   Queued: 288   Processed: 288   Dropped: 0
+I (796734) coreMQTT: Publishing message to $aws/things/thing_esp32c3_nonOta/streams/AFR_OTA-dbfcec8e-1161-42e5-be91-a570c42ae26c/get/cbor.
 
-W (462652) wifi:<ba-del>idx
-W (462652) wifi:<ba-del>idx
-I (462652) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1
-I (462662) core_mqtt_agent_network_manager: WiFi disconnected.
-I (462662) app_wifi: Disconnected. Connecting to the AP again...
-E (462672) esp-tls-mbedtls: read error :-0x004C:
-I (462672) core_mqtt_agent_network_manager: coreMQTT-Agent disconnected.
-I (462682) MQTT: coreMQTT-Agent disconnected.
-I (462692) sub_pub_unsub_demo: coreMQTT-Agent disconnected. Preventing coreMQTT-Agent commands from being enqueued.
-I (462702) temp_sub_pub_demo: coreMQTT-Agent disconnected. Preventing coreMQTT-Agent commands from being enqueued.
-I (462712) ota_over_mqtt_demo: coreMQTT-Agent disconnected. Suspending OTA agent.
-I (462722) wifi:flush txq
-I (462722) wifi:stop sw txq
-I (462722) wifi:lmac stop hw txq
+I (796734) ota_over_mqtt_demo: Sent PUBLISH packet to broker $aws/things/thing_esp32c3_nonOta/streams/AFR_OTA-dbfcec8e-1161-42e5-be91-a570c42ae26c/get/cbor to broker.
+
+
+I (796744) AWS_OTA: Published to MQTT topic to request the next block: topic=$aws/things/thing_esp32c3_nonOta/streams/AFR_OTA-dbfcec8e-1161-42e5-be91-a570c42ae26c/get/cbor
+I (796764) AWS_OTA: Current State=[WaitingForFileBlock], Event=[RequestFileBlock], New state=[WaitingForFileBlock]
+I (796884) coreMQTT: Packet received. ReceivedBytes=4219.
+I (796884) coreMQTT: De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
+I (796884) coreMQTT: State record updated. New state=MQTTPublishDone.
+I (796894) AWS_OTA: Received valid file block: Block index=288, Size=4096
+I (796914) AWS_OTA: Received final block of the update.
+I (797464) AWS_OTA: Signature verification succeeded.
+I (797464) AWS_OTA: Received entire update and validated the signature.
+I (797474) ota_over_mqtt_demo:  Received: 289   Queued: 289   Processed: 288   Dropped: 0
+I (798474) ota_over_mqtt_demo:  Received: 289   Queued: 289   Processed: 288   Dropped: 0
+I (799474) ota_over_mqtt_demo:  Received: 289   Queued: 289   Processed: 288   Dropped: 0
+I (799894) coreMQTT: Publishing message to $aws/things/thing_esp32c3_nonOta/jobs/AFR_OTA-c3-29440/update.
+
+I (800044) coreMQTT: Packet received. ReceivedBytes=2.
+I (800044) coreMQTT: Ack packet deserialized with result: MQTTSuccess.
+I (800044) coreMQTT: State record updated. New state=MQTTPublishDone.
+I (800054) ota_over_mqtt_demo: Sent PUBLISH packet to broker $aws/things/thing_esp32c3_nonOta/jobs/AFR_OTA-c3-29440/update to broker.
+
+
+I (800064) ota_over_mqtt_demo: Received OtaJobEventActivate callback from OTA Agent.
+I (800074) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2e280h (189056) map
+I (800064) coreMQTT: Packet received. ReceivedBytes=96.
+I (800094) coreMQTT: De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
+I (800104) coreMQTT: State record updated. New state=MQTTPublishDone.
+W (800114) core_mqtt_agent_manager: WARN:  Received an unsolicited publish from topic $aws/things/thing_esp32c3_nonOta/jobs/AFR_OTA-c3-29440/update/accepted
+I (800124) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536) 
+I (800134) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352) map
+I (800264) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) 
+I (800264) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) 
+I (800284) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) 
+I (800284) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (800284) esp_image: Verifying image signature...
+I (800294) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
+I (800304) secure_boot_v2: #0 app key digest == #0 trusted key digest
+I (800304) secure_boot_v2: Verifying with RSA-PSS...
+I (800354) secure_boot_v2: Signature verified successfully!
+I (800354) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2e280h (189056) map
+I (800384) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536) 
+I (800384) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352) map
+I (800524) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) 
+I (800524) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) 
+I (800534) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) 
+I (800534) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (800544) esp_image: Verifying image signature...
+I (800544) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
+I (800554) secure_boot_v2: #0 app key digest == #0 trusted key digest
+I (800564) secure_boot_v2: Verifying with RSA-PSS...
+I (800614) secure_boot_v2: Signature verified successfully!
+I (800664) ota_over_mqtt_demo:  Received: 289   Queued: 289   Processed: 289   Dropped: 0
+I (801164) wifi:state: run -> init (0)
+I (801164) wifi:pm stop, total sleep time: 677102328 us / 799967059 us
+
+W (801164) wifi:<ba-del>idx
+W (801164) wifi:<ba-del>idx
+I (801164) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (801174) core_mqtt_agent_manager: WiFi disconnected.
+I (801174) app_wifi: Disconnected. Connecting to the AP again...
+E (801184) esp-tls-mbedtls: read error :-0x004C:
+I (801184) sub_pub_unsub_demo: coreMQTT-Agent disconnected. Preventing coreMQTT-Agent commands from being enqueued.
+I (801194) ota_over_mqtt_demo: coreMQTT-Agent disconnected. Suspending OTA agent.
+I (801204) core_mqtt_agent_manager: coreMQTT-Agent disconnected.
+I (801214) temp_sub_pub_and_led_control_demo: coreMQTT-Agent disconnected. Preventing coreMQTT-Agent commands from being enqueued.I (801224) wifi:flush txq
+I (801224) wifi:stop sw txq
+I (801234) wifi:lmac stop hw txq
 ESP-ROM:esp32c3-api1-20210207
 Build:Feb  7 2021
 rst:0x3 (RTC_SW_SYS_RST),boot:0xc (SPI_FAST_FLASH_BOOT)
 Saved PC:0x403805d8
-0x403805d8: esp_restart_noos_dig at C:/Users/wallit/Work/.espressif/frameworks/esp-idf-v4.4/components/esp_system/esp_system.c:46 (discriminator 1)
+0x403805d8: esp_restart_noos_dig at C:/Users/wallit/Work/.espressif/frameworks/esp-idf-v4.4/components/esp_system/esp_system.c:46 
+(discriminator 1)
 
 SPIWP:0xee
 mode:DIO, clock div:1
 Valid secure boot key blocks: 0
 secure boot verification succeeded
-load:0x3fcd6268,len:0x2e94
+load:0x3fcd6268,len:0x356c
 load:0x403ce000,len:0x930
-load:0x403d0000,len:0x4db4
+load:0x403d0000,len:0x5538
 entry 0x403ce000
-I (75) boot: ESP-IDF v4.4 2nd stage bootloader
-I (75) boot: compile time 17:29:01
-I (75) boot: chip revision: 3
-I (76) boot.esp32c3: SPI Speed      : 80MHz
-I (81) boot.esp32c3: SPI Mode       : DIO
-I (86) boot.esp32c3: SPI Flash Size : 4MB
-I (91) boot: Enabling RNG early entropy source...
-I (96) boot: Partition Table:
-I (100) boot: ## Label            Usage          Type ST Offset   Length
-I (107) boot:  0 esp_secure_cert  unknown          3f 06 0000d000 00006000
-I (115) boot:  1 nvs              WiFi data        01 02 00013000 00006000
-I (122) boot:  2 otadata          OTA data         01 00 00019000 00002000
-I (130) boot:  3 phy_init         RF data          01 01 0001b000 00001000
-I (137) boot:  4 ota_0            OTA app          00 10 00020000 00190000
-I (145) boot:  5 ota_1            OTA app          00 11 001b0000 00190000
-I (152) boot:  6 storage          WiFi data        01 02 00340000 00010000
-I (160) boot:  7 nvs_key          NVS keys         01 04 00350000 00001000
-I (167) boot: End of partition table
-I (172) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2d668h (185960) map
-I (208) esp_image: segment 1: paddr=001dd690 vaddr=3fc91800 size=02988h ( 10632) load
-I (210) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=da904h (895236) map
-I (348) esp_image: segment 3: paddr=002ba92c vaddr=3fc94188 size=00df4h (  3572) load
-I (349) esp_image: segment 4: paddr=002bb728 vaddr=40380000 size=11720h ( 71456) load
-I (367) esp_image: segment 5: paddr=002cce50 vaddr=50000010 size=00010h (    16) load
-I (367) esp_image: segment 6: paddr=002cce68 vaddr=00000000 size=03168h ( 12648) 
-I (374) esp_image: Verifying image signature...
-I (378) secure_boot_v2: Verifying with RSA-PSS...
-I (386) secure_boot_v2: Signature verified successfully!
-I (394) boot: Loaded app from partition at offset 0x1b0000
-I (395) secure_boot_v2: enabling secure boot v2...
-I (401) secure_boot_v2: secure boot v2 is already enabled, continuing..
-I (408) boot: Disabling RNG early entropy source...
-I (425) cpu_start: Pro cpu up.
-I (433) cpu_start: Pro cpu start user code
-I (433) cpu_start: cpu freq: 160000000
-I (433) cpu_start: Application information:
-I (436) cpu_start: Project name:     GoldenReferenceIntegration
-I (442) cpu_start: App version:      c506f74-dirty
-I (448) cpu_start: Compile time:     Apr 27 2022 14:21:30
-I (454) cpu_start: ELF file SHA256:  6b1586752c298eb4...
-I (460) cpu_start: ESP-IDF:          v4.4
-I (465) heap_init: Initializing. RAM available for dynamic allocation:
-I (472) heap_init: At 3FCACE60 len 000131A0 (76 KiB): DRAM
-I (478) heap_init: At 3FCC0000 len 0001F060 (124 KiB): STACK/DRAM
-I (485) heap_init: At 50000020 len 00001FE0 (7 KiB): RTCRAM
-I (491) spi_flash: detected chip: generic
-I (496) spi_flash: flash io: dio
-I (500) sleep: Configure to isolate all GPIO pins in sleep state
-I (507) sleep: Enable automatic switching of GPIO sleep configuration
-I (514) coexist: coexist rom version 9387209
-I (519) cpu_start: Starting scheduler.
-I (524) main: 
+I (80) boot: ESP-IDF v4.4 2nd stage bootloader
+I (80) boot: compile time 16:08:31
+I (80) boot: chip revision: 3
+I (81) boot.esp32c3: SPI Speed      : 80MHz
+I (86) boot.esp32c3: SPI Mode       : DIO
+I (91) boot.esp32c3: SPI Flash Size : 4MB
+I (96) boot: Enabling RNG early entropy source...
+I (101) boot: Partition Table:
+I (105) boot: ## Label            Usage          Type ST Offset   Length
+I (112) boot:  0 esp_secure_cert  unknown          3f 06 0000d000 00006000
+I (120) boot:  1 nvs              WiFi data        01 02 00013000 00006000
+I (127) boot:  2 otadata          OTA data         01 00 00019000 00002000
+I (135) boot:  3 phy_init         RF data          01 01 0001b000 00001000
+I (142) boot:  4 ota_0            OTA app          00 10 00020000 00190000
+I (150) boot:  5 ota_1            OTA app          00 11 001b0000 00190000
+I (157) boot:  6 storage          WiFi data        01 02 00340000 00010000
+I (165) boot:  7 nvs_key          NVS keys         01 04 00350000 00001000
+I (173) boot: End of partition table
+I (224) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2e280h (189056) map
+I (257) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536) load
+I (259) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352) map
+I (421) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) load
+I (422) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) load
+I (441) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) load
+I (441) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (448) esp_image: Verifying image signature...
+I (452) secure_boot_v2: Verifying with RSA-PSS...
+I (460) secure_boot_v2: Signature verified successfully!
+I (469) boot: Loaded app from partition at offset 0x1b0000
+I (469) secure_boot_v2: enabling secure boot v2...
+I (475) secure_boot_v2: secure boot v2 is already enabled, continuing..
+I (482) boot: Checking flash encryption...
+I (487) flash_encrypt: flash encryption is enabled (1 plaintext flashes left)
+I (494) boot: Disabling RNG early entropy source...
+I (512) cpu_start: Pro cpu up.
+I (520) cpu_start: Pro cpu start user code
+I (520) cpu_start: cpu freq: 160000000
+I (520) cpu_start: Application information:
+I (523) cpu_start: Project name:     FeaturedFreeRTOSIoTIntegration
+I (530) cpu_start: App version:      v202204.00-dirty
+I (535) cpu_start: Compile time:     Apr 29 2022 16:24:04
+I (542) cpu_start: ELF file SHA256:  922df577fdce440c...
+I (547) cpu_start: ESP-IDF:          v4.4
+I (552) heap_init: Initializing. RAM available for dynamic allocation:
+I (559) heap_init: At 3FCACEB0 len 00013150 (76 KiB): DRAM
+I (566) heap_init: At 3FCC0000 len 0001F060 (124 KiB): STACK/DRAM
+I (572) heap_init: At 50000020 len 00001FE0 (7 KiB): RTCRAM
+I (579) spi_flash: detected chip: generic
+I (583) spi_flash: flash io: dio
+W (587) flash_encrypt: Flash encryption mode is DEVELOPMENT (not secure)
+I (595) sleep: Configure to isolate all GPIO pins in sleep state
+I (602) sleep: Enable automatic switching of GPIO sleep configuration
+I (609) coexist: coexist rom version 9387209
+I (614) cpu_start: Starting scheduler.
+I (619) main: 
 ...
-I (764) temp_pub_sub_demo: Sending subscribe request to agent for topic filter: /filter/Publisher0 with id 
-1
-I (814) pp: pp rom version: 9387209
-I (814) net80211: net80211 rom version: 9387209
-I (814) ota_over_mqtt_demo: OTA over MQTT demo, Application version 0.9.1
-I (834) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
-I (844) AWS_OTA: otaPal_GetPlatformImageState
-I (844) esp_ota_ops: aws_esp_ota_get_boot_flags: 1
-I (854) esp_ota_ops: [1] aflags/seq:0xffffffff/0x2, pflags/seq:0x2/0x1
-I (854) AWS_OTA: Current State=[RequestingJob], Event=[Start], New state=[RequestingJob]
+I (869) app_driver: Initializing Temperature sensor
+I (909) ota_over_mqtt_demo: OTA over MQTT demo, Application version 0.0.1
+I (909) pp: pp rom version: 9387209
+I (919) AWS_OTA: otaPal_GetPlatformImageState
+I (929) esp_ota_ops: aws_esp_ota_get_boot_flags: 1
+I (929) esp_ota_ops: [1] aflags/seq:0x1/0x2, pflags/seq:0x2/0x1
+I (939) AWS_OTA: Current State=[RequestingJob], Event=[Start], New state=[RequestingJob]
+I (949) net80211: net80211 rom version: 9387209
+I (919) temp_sub_pub_and_led_control_demo: Sending subscribe request to agent for topic filter: /filter/TempSubPubLED with id 1   
+I (959) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
+I (969) wifi:wifi driver task: 3fcbcd44, prio:23, stack:6656, core=0
+I (979) system_api: Base MAC address is not set
+I (979) system_api: read default base MAC address from EFUSE
+I (999) wifi:wifi firmware version: 7679c42
+I (999) wifi:wifi certification version: v7.0
+I (999) wifi:config NVS flash: enabled
+I (999) wifi:config nano formating: disabled
+I (1009) wifi:Init data frame dynamic rx buffer num: 32
+I (1009) wifi:Init management frame dynamic rx buffer num: 32
+I (1019) wifi:Init management short buffer num: 32
+I (1019) wifi:Init dynamic tx buffer num: 32
+I (1019) wifi:Init static tx FG buffer num: 2
+I (1029) wifi:Init static rx buffer size: 1600
+I (1029) wifi:Init static rx buffer num: 10
+I (1039) wifi:Init dynamic rx buffer num: 32
+I (1039) wifi_init: rx ba win: 6
+I (1039) wifi_init: tcpip mbox: 32
+I (1049) wifi_init: udp mbox: 6
+I (1049) wifi_init: tcp mbox: 6
+I (1059) wifi_init: tcp tx win: 5744
+I (1059) wifi_init: tcp rx win: 5744
+I (1069) wifi_init: tcp mss: 1440
+I (1069) wifi_init: WiFi IRAM OP enabled
+I (1069) wifi_init: WiFi RX IRAM OP enabled
+W (1079) BTDM_INIT: esp_bt_mem_release not implemented, return OK
+I (1089) wifi_prov_scheme_ble: BT memory released
+I (1089) app_wifi: Already provisioned, starting Wi-Fi STA
+W (1099) BTDM_INIT: esp_bt_mem_release not implemented, return OK
+I (1099) wifi_prov_scheme_ble: BTDM memory released
+I (1109) phy_init: phy_version 907,3369105-dirty,Dec  3 2021,14:55:12
+I (1159) wifi:mode : sta (84:f7:03:5f:f1:40)
+I (1159) wifi:enable tsf
+I (1229) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (1229) wifi:state: init -> auth (b0)
+I (1229) wifi:state: auth -> assoc (0)
+I (1229) wifi:state: assoc -> run (10)
+W (1249) wifi:<ba-add>idx:0 (ifx:0, 8c:6a:8d:fc:31:8e), tid:0, ssn:0, winSize:64
+I (1249) wifi:connected with Stranger 5, aid = 18, channel 6, BW20, bssid = 8c:6a:8d:fc:31:8e
+I (1249) wifi:security: WPA2-PSK, phy: bgn, rssi: -62
+I (1259) wifi:pm start, type: 1
+
+I (1259) wifi:set rx beacon pti, rx_bcn_pti: 14, bcn_timeout: 14, mt_pti: 25000, mt_time: 10000
+W (1269) wifi:<ba-add>idx:1 (ifx:0, 8c:6a:8d:fc:31:8e), tid:6, ssn:0, winSize:64
+I (1329) wifi:BcnInt:102400, DTIM:1
+I (1909) core_mqtt_agent_manager: WiFi connected.
+I (1909) app_wifi: Connected with IP Address:10.0.0.140
+I (1909) esp_netif_handlers: sta ip: 10.0.0.140, mask: 255.255.255.0, gw: 10.0.0.1
+I (1969) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
+I (2999) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
+I (3179) coreMQTT: Packet received. ReceivedBytes=2.
+I (3179) coreMQTT: CONNACK session present bit not set.
+I (3179) coreMQTT: Connection accepted.
+I (3179) coreMQTT: Received MQTT CONNACK successfully from broker.
+I (3189) coreMQTT: MQTT connection established with the broker.
+I (3189) core_mqtt_agent_manager: Session present: 0
+
+I (3199) sub_pub_unsub_demo: coreMQTT-Agent connected.
+I (3209) ota_over_mqtt_demo: coreMQTT-Agent connected. Resuming OTA agent.
+I (3209) core_mqtt_agent_manager: coreMQTT-Agent connected.
+I (3219) temp_sub_pub_and_led_control_demo: coreMQTT-Agent connected.
+I (3229) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id 
 ```
 
