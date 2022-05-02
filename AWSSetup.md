@@ -1,15 +1,15 @@
 # AWS IoT Core Setup
-In case you already have an AWS account and user created, you can skip steps 1 and 2 and directly got to step 3 (Registering your board with AWS IoT).
+In case you already have an AWS account and user created, you can skip steps 1 and 2 and directly go to step 3 (Registering your board with AWS IoT).
 
 ## 1 Sign up for an AWS account
 
 1. Open https://portal.aws.amazon.com/billing/signup.
 2. Follow the online instructions. **NOTE:** Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad. 
-3. Make a note of your AWS account number as it will be needed for following steps.
+3. Make a note of your AWS account number as it will be needed for the following steps.
 
 ## 2 Create an Administrator IAM user and grant it permissions
 
-It’s strongly recommended that you adhere to the best practice of using the `Administrator` IAM user that the following steps show you how to create and securely lock away the root user credentials. One should only sign in as the root user to perform a few [account and service management tasks](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root). 
+It’s strongly recommended that you adhere to the best practice of using the `Administrator` IAM user. The following steps show you how to create and securely lock away the root user credentials. One should only sign in as the root user to perform a few [account and service management tasks](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root). 
 
 1. Sign in to the [IAM console](https://console.aws.amazon.com/iam/) as the account owner by choosing **Root user** and entering your AWS account email address. On the next page, enter your password.
 2. On the navigation bar, click your account name, and then click Account.
