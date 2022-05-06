@@ -1,31 +1,3 @@
-/*
- * ESP32-C3 FreeRTOS Reference Integration V202204.00
- * Copyright (C) 2022 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
- */
-
-/* Includes *******************************************************************/
-
 /* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -46,249 +18,70 @@
 /* Network transport include. */
 #include "network_transport.h"
 
-/* coreMQTT-Agent network manager include. */
-#include "core_mqtt_agent_manager.h"
-
 /* WiFi provisioning/connection handler include. */
 #include "app_wifi.h"
 
-/* Demo includes. */
-#if CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO
-    #include "sub_pub_unsub_demo.h"
-#endif /* CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO */
+/* Transport test includes */
+#include "transport_interface.h"
+#include "transport_interface_test.h"
+#include "qualification_test.h"
 
-#if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
-    #include "temp_sub_pub_and_led_control_demo.h"
-#endif /* CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO */
-
-#if CONFIG_GRI_ENABLE_OTA_DEMO
-    #include "ota_pal.h"
-    #include "ota_over_mqtt_demo.h"
-#endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
-
-/* Global variables ***********************************************************/
-
-/**
- * @brief Logging tag for ESP-IDF logging functions.
- */
+/* Logging tag */
 static const char * TAG = "main";
 
-/**
- * @brief The global network context used to store the credentials
- * and TLS connection.
- */
-static NetworkContext_t xNetworkContext;
+static NetworkContext_t xNetworkContext = { 0 };
+static NetworkContext_t xSecondNetworkContext = { 0 };
+static TransportInterface_t xTransport = { 0 };
 
-#if CONFIG_GRI_ENABLE_OTA_DEMO
-
-/**
- * @brief The AWS code signing certificate passed in from ./certs/aws_codesign.crt
- */
-    extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_start" );
-
-#endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
-
-/* Static function declarations ***********************************************/
-
-/**
- * @brief This function initializes the global network context with credentials.
- *
- * This handles retrieving and initializing the global network context with the
- * credentials it needs to establish a TLS connection.
- */
-static BaseType_t prvInitializeNetworkContext( void );
-
-/**
- * @brief This function starts all enabled demos.
- */
-static void prvStartEnabledDemos( void );
-
-/* Static function definitions ************************************************/
-
-static BaseType_t prvInitializeNetworkContext( void )
+static NetworkConnectStatus_t prvTransportNetworkConnect( void * pNetworkContext,
+                                                          TestHostInfo_t * pHostInfo,
+                                                          void * pNetworkCredentials )
 {
-    /* This is returned by this function. */
-    BaseType_t xRet = pdPASS;
+    ( void ) pNetworkCredentials;
+    ( ( NetworkContext_t * ) pNetworkContext )->pcHostname = pHostInfo->pHostName;
+    ( ( NetworkContext_t * ) pNetworkContext )->xPort = pHostInfo->port;
 
-    /* This is used to store the required buffer length when retrieving data
-     * from flash. */
-    uint32_t ulBufferLen;
-
-    /* This is used to store the error return of ESP-IDF functions. */
-    esp_err_t xEspErrRet;
-
-    /* Verify that the MQTT endpoint and thing name have been configured by the
-     * user. */
-    if( strlen( CONFIG_GRI_MQTT_ENDPOINT ) == 0 )
+    if( xTlsConnect( pNetworkContext ) != TLS_TRANSPORT_SUCCESS )
     {
-        ESP_LOGE( TAG, "Empty endpoint for MQTT broker. Set endpoint by "
-                       "running idf.py menuconfig, then Golden Reference Integration -> "
-                       "Endpoint for MQTT Broker to use." );
-        xRet = pdFAIL;
+        return NETWORK_CONNECT_FAILURE;
     }
 
-    if( strlen( CONFIG_GRI_THING_NAME ) == 0 )
-    {
-        ESP_LOGE( TAG, "Empty thingname for MQTT broker. Set thing name by "
-                       "running idf.py menuconfig, then Golden Reference Integration -> "
-                       "Thing name." );
-        xRet = pdFAIL;
-    }
-
-    /* Initialize network context. */
-
-    xNetworkContext.pcHostname = CONFIG_GRI_MQTT_ENDPOINT;
-    xNetworkContext.xPort = CONFIG_GRI_MQTT_PORT;
-
-    /* Get the device certificate from esp_secure_crt_mgr and put into network
-     * context. */
-    xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &xNetworkContext.pcClientCertPem,
-                                                    &ulBufferLen );
-
-    if( xEspErrRet == ESP_OK )
-    {
-        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %d\n%s",
-                      strlen( xNetworkContext.pcClientCertPem ),
-                      xNetworkContext.pcClientCertPem );
-        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-    }
-    else
-    {
-        ESP_LOGE( TAG, "Error in getting device certificate. Error: %s",
-                  esp_err_to_name( xEspErrRet ) );
-
-        xRet = pdFAIL;
-    }
-
-    /* Get the root CA certificate from esp_secure_crt_mgr and put into network
-     * context. */
-    xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &xNetworkContext.pcServerRootCAPem,
-                                                   &ulBufferLen );
-
-    if( xEspErrRet == ESP_OK )
-    {
-        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nCA Cert: \nLength: %d\n%s",
-                      strlen( xNetworkContext.pcServerRootCAPem ),
-                      xNetworkContext.pcServerRootCAPem );
-        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-    }
-    else
-    {
-        ESP_LOGE( TAG, "Error in getting CA certificate. Error: %s",
-                  esp_err_to_name( xEspErrRet ) );
-
-        xRet = pdFAIL;
-    }
-
-    #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
-        /* If the digital signature peripheral is being used, get the digital
-         * signature peripheral context from esp_secure_crt_mgr and put into
-         * network context. */
-
-        xNetworkContext.ds_data = esp_secure_cert_get_ds_ctx();
-
-        if( xNetworkContext.ds_data == NULL )
-        {
-            ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
-            xRet = pdFAIL;
-        }
-    #else
-        #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-        #error Reference Integration -> Use DS peripheral set to false \
-        but Component config -> Enable DS peripheral support set to    \
-        true.
-        #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
-        /* If the DS peripheral is not being used, get the device private key from
-         * esp_secure_crt_mgr and put into network context. */
-
-        xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &xNetworkContext.pcClientKeyPem,
-                                                        &ulBufferLen );
-
-        if( xEspErrRet == ESP_OK )
-        {
-            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %d\n%s",
-                          strlen( xNetworkContext.pcClientKeyPem ),
-                          xNetworkContext.pcClientKeyPem );
-            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-        }
-        else
-        {
-            ESP_LOGE( TAG, "Error in getting private key. Error: %s",
-                      esp_err_to_name( xEspErrRet ) );
-
-            xRet = pdFAIL;
-        }
-    #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
-
-    xNetworkContext.pxTls = NULL;
-    xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
-
-    if( xNetworkContext.xTlsContextSemaphore == NULL )
-    {
-        ESP_LOGE( TAG, "Not enough memory to create TLS semaphore for global "
-                       "network context." );
-
-        xRet = pdFAIL;
-    }
-
-    return xRet;
+    return NETWORK_CONNECT_SUCCESS;
 }
 
-static void prvStartEnabledDemos( void )
+static void prvTransportNetworkDisconnect( void * pNetworkContext )
 {
-    #if CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO
-        vStartSubscribePublishUnsubscribeDemo();
-    #endif /* CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO */
-
-    #if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
-        vStartTempSubPubAndLEDControlDemo();
-    #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
-
-    #if CONFIG_GRI_ENABLE_OTA_DEMO
-        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                      strlen( pcAwsCodeSigningCertPem ),
-                      pcAwsCodeSigningCertPem );
-        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-
-        if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
-        {
-            vStartOTACodeSigningDemo();
-        }
-        else
-        {
-            ESP_LOGE( TAG,
-                      "Failed to set the code signing certificate for the AWS OTA "
-                      "library. OTA demo will not be started." );
-        }
-    #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
+    /* Disconnect the transport network. */
+    xTlsDisconnect( pNetworkContext );
 }
 
-/* Main function definition ***************************************************/
 
-/**
- * @brief This function serves as the main entry point of this project.
- */
+void SetupTransportTestParam( TransportTestParam_t * pTestParam )
+{
+    if( pTestParam != NULL )
+    {
+        /* Setup the transport interface. */
+        xTransport.send = espTlsTransportSend;
+        xTransport.recv = espTlsTransportRecv;
+
+        pTestParam->pTransport = &xTransport;
+        pTestParam->pNetworkContext = &xNetworkContext;
+        pTestParam->pSecondNetworkContext = &xSecondNetworkContext;
+
+        pTestParam->pNetworkConnect = prvTransportNetworkConnect;
+        pTestParam->pNetworkDisconnect = prvTransportNetworkDisconnect;
+    }
+}
+
+static BaseType_t prvInitializeNetworkContext( NetworkContext_t * pxNetworkContext );
+
 void app_main( void )
 {
-    /* This is used to store the return of initialization functions. */
-    BaseType_t xRet;
-
-    /* This is used to store the error return of ESP-IDF functions. */
     esp_err_t xEspErrRet;
 
     /* Initialize global network context. */
-    xRet = prvInitializeNetworkContext();
-
-    if( xRet != pdPASS )
-    {
-        ESP_LOGE( TAG, "Failed to initialize global network context." );
-        return;
-    }
+    prvInitializeNetworkContext( &xNetworkContext );
+    prvInitializeNetworkContext( &xSecondNetworkContext );
 
     /* Initialize NVS partition. This needs to be done before initializing
      * WiFi. */
@@ -310,26 +103,121 @@ void app_main( void )
      * starting WiFi and the coreMQTT-Agent network manager. */
     ESP_ERROR_CHECK( esp_event_loop_create_default() );
 
-    /* Start demo tasks. This needs to be done before starting WiFi and
-     * and the coreMQTT-Agent network manager so demos can
-     * register their coreMQTT-Agent event handlers before events happen. */
-    prvStartEnabledDemos();
-
-    /* Initialize and start the coreMQTT-Agent network manager. This handles
-     * establishing a TLS connection and MQTT connection to the MQTT broker.
-     * This needs to be started before starting WiFi so it can handle WiFi
-     * connection events. */
-    xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
-
-    if( xRet != pdPASS )
-    {
-        ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
-                       "manager." );
-        return;
-    }
-
     /* Start WiFi. */
     app_wifi_init();
     app_wifi_start( POP_TYPE_MAC );
+
+    RunQualificationTest();
 }
 
+static BaseType_t prvInitializeNetworkContext( NetworkContext_t * pxNetworkContext )
+{
+    /* This is returned by this function. */
+    BaseType_t xRet = pdPASS;
+
+    /* This is used to store the required buffer length when retrieving data
+     * from flash. */
+    uint32_t ulBufferLen;
+
+    /* This is used to store the error return of ESP-IDF functions. */
+    esp_err_t xEspErrRet;
+
+    /* Initialize network context. */
+
+    /* Get the device certificate from esp_secure_crt_mgr and put into network
+     * context. */
+    xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &( pxNetworkContext->pcClientCertPem ),
+                                                    &ulBufferLen );
+
+    if( xEspErrRet == ESP_OK )
+    {
+        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %d\n%s",
+                      strlen( pxNetworkContext->pcClientCertPem ),
+                      pxNetworkContext->pcClientCertPem );
+        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+    }
+    else
+    {
+        ESP_LOGE( TAG, "Error in getting device certificate. Error: %s",
+                  esp_err_to_name( xEspErrRet ) );
+
+        xRet = pdFAIL;
+    }
+
+    /* Get the root CA certificate from esp_secure_crt_mgr and put into network
+     * context. */
+    xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &( pxNetworkContext->pcServerRootCAPem ),
+                                                   &ulBufferLen );
+
+    if( xEspErrRet == ESP_OK )
+    {
+        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+            ESP_LOGI( TAG, "\nCA Cert: \nLength: %d\n%s",
+                      strlen( pxNetworkContext->pcServerRootCAPem ),
+                      pxNetworkContext->pcServerRootCAPem );
+        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+    }
+    else
+    {
+        ESP_LOGE( TAG, "Error in getting CA certificate. Error: %s",
+                  esp_err_to_name( xEspErrRet ) );
+
+        xRet = pdFAIL;
+    }
+
+    #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+        /* If the digital signature peripheral is being used, get the digital
+         * signature peripheral context from esp_secure_crt_mgr and put into
+         * network context. */
+
+        pxNetworkContext->ds_data = esp_secure_cert_get_ds_ctx();
+
+        if( pxNetworkContext->ds_data == NULL )
+        {
+            ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
+            xRet = pdFAIL;
+        }
+    #else
+        #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+        #error Reference Integration -> Use DS peripheral set to false \
+        but Component config -> Enable DS peripheral support set to    \
+        true.
+        #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+
+        /* If the DS peripheral is not being used, get the device private key from
+         * esp_secure_crt_mgr and put into network context. */
+
+        xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &( pxNetworkContext->pcClientKeyPem ),
+                                                        &ulBufferLen );
+
+        if( xEspErrRet == ESP_OK )
+        {
+            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %d\n%s",
+                          strlen( pxNetworkContext->pcClientKeyPem ),
+                          pxNetworkContext->pcClientKeyPem );
+            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+        }
+        else
+        {
+            ESP_LOGE( TAG, "Error in getting private key. Error: %s",
+                      esp_err_to_name( xEspErrRet ) );
+
+            xRet = pdFAIL;
+        }
+    #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
+
+    pxNetworkContext->pxTls = NULL;
+    pxNetworkContext->xTlsContextSemaphore = xSemaphoreCreateMutex();
+
+    if( pxNetworkContext->xTlsContextSemaphore == NULL )
+    {
+        ESP_LOGE( TAG, "Not enough memory to create TLS semaphore for "
+                       "network context." );
+
+        xRet = pdFAIL;
+    }
+
+    return xRet;
+}

@@ -47,6 +47,7 @@ set(MAIN_REQUIRES
     backoffAlgorithm
     esp_secure_cert_mgr
     ota-for-aws-iot-embedded-sdk
+    FreeRTOS-Libraries-Integration-Tests
 )
 
 idf_component_register(
