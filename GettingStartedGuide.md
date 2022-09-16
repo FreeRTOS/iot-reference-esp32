@@ -15,7 +15,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 
 ### 1.2 Software Requirements
 
-* ESP-IDF 4.4 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
+* ESP-IDF 4.4.2 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
 * [Python3](https://www.python.org/downloads/)
     and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/) to use the AWS CLI to import certificates and perform OTA Job set up. Pip is included when you install
     from Python 3.10.
