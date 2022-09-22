@@ -1,9 +1,6 @@
 [submodule "components/esp_secure_cert_mgr"]
 	path = components/esp_secure_cert_mgr
 	url = https://github.com/espressif/esp_secure_cert_mgr.git
-[submodule "components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests"]
-	path = components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests
-	url = git@github.com:ActoryOu/FreeRTOS-Libraries-Integration-Tests.git
 [submodule "components/esp-aws-iot"]
 	path = components/esp-aws-iot
 	url = https://github.com/ActoryOu/esp-aws-iot/
