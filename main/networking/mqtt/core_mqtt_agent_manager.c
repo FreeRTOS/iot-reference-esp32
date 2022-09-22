@@ -62,16 +62,16 @@
 /* Network transport include. */
 #include "network_transport.h"
 
-/* OTA demo include. */
-#if CONFIG_GRI_ENABLE_OTA_DEMO
-    #include "ota_over_mqtt_demo.h"
-#endif
-
 /* Public functions include. */
 #include "core_mqtt_agent_manager.h"
 
 /* Configurations include. */
 #include "core_mqtt_agent_manager_config.h"
+
+/* OTA demo include. */
+#if CONFIG_GRI_ENABLE_OTA_DEMO
+    #include "ota_over_mqtt_demo.h"
+#endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
 /* Preprocessor definitions ***************************************************/
 
@@ -86,6 +86,8 @@
 #define MILLISECONDS_PER_TICK   \
     ( MILLISECONDS_PER_SECOND / \
       configTICK_RATE_HZ )
+
+#define MUTEX_IS_OWNED( xHandle )    ( xTaskGetCurrentTaskHandle() == xSemaphoreGetMutexHolder( xHandle ) )
 
 /* Global variables ***********************************************************/
 
@@ -127,6 +129,11 @@ MQTTAgentContext_t xGlobalMqttAgentContext;
  * will be initialized to 0 by default.
  */
 SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ];
+
+/**
+ * @brief Lock to handle multi-tasks accessing xSubInfo in prvHandleResubscribe.
+ */
+SemaphoreHandle_t xSubListMutex;
 
 /**
  * @brief Pointer to the network context passed in.
@@ -269,6 +276,58 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
 /* Static function definitions ************************************************/
 
+static inline BaseType_t xLockSubList( void )
+{
+    BaseType_t xResult = pdFALSE;
+
+    configASSERT( xSubListMutex );
+
+    configASSERT( !MUTEX_IS_OWNED( xSubListMutex ) );
+
+    ESP_LOGD( TAG,
+              "Waiting for Mutex." );
+    xResult = xSemaphoreTake( xSubListMutex, portMAX_DELAY );
+
+    if( xResult )
+    {
+        ESP_LOGD( TAG,
+                  ">>>> Mutex wait complete." );
+    }
+    else
+    {
+        ESP_LOGE( TAG,
+                  "**** Mutex request failed, xResult=%d.", xResult );
+    }
+
+    return xResult;
+}
+
+/*-----------------------------------------------------------*/
+
+static inline BaseType_t xUnlockSubList( void )
+{
+    BaseType_t xResult = pdFALSE;
+
+    configASSERT( xSubListMutex );
+
+    configASSERT( MUTEX_IS_OWNED( xSubListMutex ) );
+
+    xResult = xSemaphoreGive( xSubListMutex );
+
+    if( xResult )
+    {
+        ESP_LOGD( TAG,
+                  "<<<< Mutex Give." );
+    }
+    else
+    {
+        ESP_LOGE( TAG,
+                  "**** Mutex Give request failed, xResult=%d.", xResult );
+    }
+
+    return xResult;
+}
+
 static uint32_t prvGetTimeMs( void )
 {
     TickType_t xTickCount = 0;
@@ -309,7 +368,7 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
         {
             xPublishHandled = vOTAProcessMessage( pMqttAgentContext->pIncomingCallbackContext, pxPublishInfo );
         }
-    #endif
+    #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
     /* If there are no callbacks to handle the incoming publishes,
      * handle it as an unsolicited publish. */
@@ -333,6 +392,8 @@ static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComman
     size_t lIndex = 0;
     MQTTAgentSubscribeArgs_t * pxSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) pxCommandContext;
 
+    xLockSubList();
+
     /* If the return code is success, no further action is required as all the topic filters
      * are already part of the subscription list. */
     if( pxReturnInfo->returnCode != MQTTSuccess )
@@ -341,7 +402,7 @@ static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComman
         for( lIndex = 0; lIndex < pxSubscribeArgs->numSubscriptions; lIndex++ )
         {
             /* This demo doesn't attempt to resubscribe in the event that a SUBACK failed. */
-            if( pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure )
+            if( pxReturnInfo->pSubackCodes != NULL && pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure )
             {
                 ESP_LOGE( TAG,
                           "Failed to resubscribe to topic %.*s.",
@@ -358,6 +419,8 @@ static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComman
          * the subscriptions. This logic will be updated with exponential backoff and retry.  */
         configASSERT( pdTRUE );
     }
+
+    xUnlockSubList();
 }
 
 static MQTTStatus_t prvHandleResubscribe( void )
@@ -370,6 +433,8 @@ static MQTTStatus_t prvHandleResubscribe( void )
     static MQTTAgentSubscribeArgs_t xSubArgs = { 0 };
     static MQTTSubscribeInfo_t xSubInfo[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ];
     static MQTTAgentCommandInfo_t xCommandParams = { 0 };
+
+    xLockSubList();
 
     memset( &( xSubInfo[ 0 ] ), 0, SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS * sizeof( MQTTSubscribeInfo_t ) );
 
@@ -422,6 +487,8 @@ static MQTTStatus_t prvHandleResubscribe( void )
                   "Failed to enqueue the MQTT subscribe command. xResult=%s.",
                   MQTT_Status_strerror( xResult ) );
     }
+
+    xUnlockSubList();
 
     return xResult;
 }
@@ -902,6 +969,23 @@ BaseType_t xCoreMqttAgentManagerStart( NetworkContext_t * pxNetworkContextIn )
             ESP_LOGE( TAG,
                       "Failed to initialize coreMQTT-Agent." );
 
+            xRet = pdFAIL;
+        }
+    }
+
+    if( xRet != pdFAIL )
+    {
+        xSubListMutex = xSemaphoreCreateMutex();
+
+        if( xSubListMutex )
+        {
+            ESP_LOGD( TAG,
+                      "Creating MqttAgent manager Mutex." );
+        }
+        else
+        {
+            ESP_LOGE( TAG,
+                      "No memory to allocate mutex for MQTT agent manager." );
             xRet = pdFAIL;
         }
     }

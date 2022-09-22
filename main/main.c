@@ -66,6 +66,10 @@
     #include "ota_over_mqtt_demo.h"
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
+#if CONFIG_GRI_RUN_QUALIFICATION_TEST
+    #include "qualification_wrapper_config.h"
+#endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
+
 /* Global variables ***********************************************************/
 
 /**
@@ -102,6 +106,10 @@ static BaseType_t prvInitializeNetworkContext( void );
  * @brief This function starts all enabled demos.
  */
 static void prvStartEnabledDemos( void );
+
+#if CONFIG_GRI_RUN_QUALIFICATION_TEST
+    extern BaseType_t xQualificationStart( void );
+#endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
 /* Static function definitions ************************************************/
 
@@ -240,32 +248,59 @@ static BaseType_t prvInitializeNetworkContext( void )
 
 static void prvStartEnabledDemos( void )
 {
-    #if CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO
-        vStartSubscribePublishUnsubscribeDemo();
-    #endif /* CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO */
+    BaseType_t xResult;
 
-    #if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
-        vStartTempSubPubAndLEDControlDemo();
-    #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
+    #if ( CONFIG_GRI_RUN_QUALIFICATION_TEST == 0 )
+        #if CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO
+            vStartSubscribePublishUnsubscribeDemo();
+        #endif /* CONFIG_GRI_ENABLE_SIMPLE_PUB_SUB_DEMO */
 
-    #if CONFIG_GRI_ENABLE_OTA_DEMO
-        #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                      strlen( pcAwsCodeSigningCertPem ),
-                      pcAwsCodeSigningCertPem );
-        #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+        #if CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
+            vStartTempSubPubAndLEDControlDemo();
+        #endif /* CONFIG_GRI_ENABLE_TEMPERATURE_LED_PUB_SUB_DEMO */
 
-        if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
+        #if CONFIG_GRI_ENABLE_OTA_DEMO
+            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+                ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
+                        strlen( pcAwsCodeSigningCertPem ),
+                        pcAwsCodeSigningCertPem );
+            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+
+            if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
+            {
+                vStartOTACodeSigningDemo();
+            }
+            else
+            {
+                ESP_LOGE( TAG,
+                        "Failed to set the code signing certificate for the AWS OTA "
+                        "library. OTA demo will not be started." );
+            }
+        #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
+
+        /* Initialize and start the coreMQTT-Agent network manager. This handles
+         * establishing a TLS connection and MQTT connection to the MQTT broker.
+         * This needs to be started before starting WiFi so it can handle WiFi
+         * connection events. */
+        xResult = xCoreMqttAgentManagerStart( &xNetworkContext );
+
+        if( xResult != pdPASS )
         {
-            vStartOTACodeSigningDemo();
+            ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
+                        "manager." );
+
+            configASSERT( xResult == pdPASS );
         }
-        else
+    #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST == 0 */
+
+    #if CONFIG_GRI_RUN_QUALIFICATION_TEST
+        if( ( xResult = xQualificationStart() ) != pdPASS )
         {
-            ESP_LOGE( TAG,
-                      "Failed to set the code signing certificate for the AWS OTA "
-                      "library. OTA demo will not be started." );
+            ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xResult );
         }
-    #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
+
+        configASSERT( xResult == pdPASS );
+    #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 }
 
 /* Main function definition ***************************************************/
@@ -314,19 +349,6 @@ void app_main( void )
      * and the coreMQTT-Agent network manager so demos can
      * register their coreMQTT-Agent event handlers before events happen. */
     prvStartEnabledDemos();
-
-    /* Initialize and start the coreMQTT-Agent network manager. This handles
-     * establishing a TLS connection and MQTT connection to the MQTT broker.
-     * This needs to be started before starting WiFi so it can handle WiFi
-     * connection events. */
-    xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
-
-    if( xRet != pdPASS )
-    {
-        ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
-                       "manager." );
-        return;
-    }
 
     /* Start WiFi. */
     app_wifi_init();

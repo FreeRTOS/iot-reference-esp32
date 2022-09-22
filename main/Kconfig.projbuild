@@ -22,16 +22,26 @@ menu "Featured FreeRTOS IoT Integration"
         default 1 if APP_WIFI_PROV_TRANSPORT_SOFTAP
         default 2 if APP_WIFI_PROV_TRANSPORT_BLE
 
+    config GRI_RUN_QUALIFICATION_TEST
+        bool "Run qualification test."
+        default n
+        help
+            Enable to run qualification test. Use configurations in test_execution_config.h and test_param_config.h.
+            Disable to demo. Use configurations below (in sdkconfig).
+
     config GRI_MQTT_ENDPOINT
         string "Endpoint for MQTT Broker to use"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default ""
 
     config GRI_MQTT_PORT
         int "Port for MQTT Broker to use"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default 8883
 
     config GRI_THING_NAME
         string "Thing name"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default ""
 
     config GRI_OUTPUT_CERTS_KEYS
@@ -40,6 +50,7 @@ menu "Featured FreeRTOS IoT Integration"
 
     config EXAMPLE_USE_DS_PERIPHERAL
         bool "Use DS peripheral"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default n
         select ESP_SECURE_CERT_DS_PERIPHERAL
         select ESP_TLS_USE_DS_PERIPHERAL
@@ -98,6 +109,7 @@ menu "Featured FreeRTOS IoT Integration"
 
     config GRI_ENABLE_SUB_PUB_UNSUB_DEMO
         bool "Enable pub sub unsub demo"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default y
 
     menu "Sub pub unsub demo configurations"
@@ -150,6 +162,7 @@ menu "Featured FreeRTOS IoT Integration"
     
     config GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
         bool "Enable temperature sensor pub sub and LED control demo"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default y
 
     menu "Temperature pub sub and LED control demo configurations"
@@ -196,6 +209,7 @@ menu "Featured FreeRTOS IoT Integration"
 
     config GRI_ENABLE_OTA_DEMO
         bool "Enable OTA demo"
+        depends on !GRI_RUN_QUALIFICATION_TEST
         default y
     
     menu "OTA demo configurations"

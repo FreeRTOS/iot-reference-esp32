@@ -4,6 +4,31 @@ This guide contains instructions on how to setup, build and run the demo without
 
 Once completed, one can progress to the [Use Security Features](UseSecurityFeatures.md) guide.
 
+[1 Pre-requisites](#1-pre-requisites)
+&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Hardware Requirements](#11-hardware-requirements)
+&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Software Requirements](#12-software-requirements)
+
+[2 Demo setup](#2-demo-setup)
+&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup AWS IoT Core](#21-setup-aws-iot-core)
+&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint](#22-configure-the-project-with-the-aws-iot-thing-name-and-aws-device-endpoint)
+&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode](#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode)
+
+[3 Build and flash the demo project](#3-build-and-flash-the-demo-project)
+
+[4 Monitoring the demo](#4-monitoring-the-demo)
+
+[5 Perform firmware Over-the-Air Updates with AWS IoT](#5-perform-firmware-over-the-air-updates-with-aws-iot)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Setup pre-requisites for OTA cloud resources](#51-setup-pre-requisites-for-ota-cloud-resources)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Provision the project with the code-signing public key certificate](#52-provision-the-project-with-the-code-signing-public-key-certificate)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.3 Build an application binary with a higher version number, to be downloaded and activated on the device](#53-build-an-application-binary-with-a-higher-version-number-to-be-downloaded-and-activated-on-the-device)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.4 Build and flash the device with a binary with a lower version number](#54-build-and-flash-the-device-with-a-binary-with-a-lower-version-number)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job](#55-upload-the-binary-with-the-higher-version-number-created-in-step-53-and-create-an-ota-update-job)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.6 Monitor OTA](#56-monitor-ota)
+
+[7 Run AWS IoT Qualification Test](#7-run-aws-iot-qualification-test)
+&nbsp;&nbsp;&nbsp;&nbsp;[7.1 Prerequisite](#71-prerequisite)
+&nbsp;&nbsp;&nbsp;&nbsp;[7.2 Steps for each test case](#72-steps-for-each-test-case)
+
 ## 1 Pre-requisites
 
 ### 1.1 Hardware Requirements
@@ -32,7 +57,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 
 ## 2 Demo setup
 
-### 2.1 Setup AWS IoT Core:
+### 2.1 Setup AWS IoT Core
 
 To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). The guide shows you how to sign up for an AWS account, create a user, and register your device with AWS IoT Core.
 After you have followed the instructions in the AWS IoT Core Setup Guide, you will have created a **device Endpoint**, an AWS IoT **thing**, a **PEM-encoded device certificate**, a **PEM-encoded private key**, and a **PEM-encoded root CA certificate**. (An explanation of these entities is given in the Setup Guide.) The root CA certificate can also be downloaded [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem). Your ESP23-C3 board must now be provisioned with these entities in order for it to connect securely with AWS IoT Core.
@@ -421,3 +446,82 @@ I (3444) coreMQTT: Packet received. ReceivedBytes=3.
 I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOta/jobs/notify-next. 
 ```
 
+## 7 Run AWS IoT Qualification Test
+
+### 7.1 Prerequisite
+- Run [OTA](#5-perform-firmware-over-the-air-updates-with-aws-iot) once manually.
+- Enable "Run qualification test" by menuconfig (Featured FreeRTOS IoT Integration -> Run qualification test).
+- Enable Unity and Unity/Fixture by menuconfig.
+
+### 7.2 Steps for each test case
+
+1. DEVICE_ADVISOR_TEST_ENABLED - device advisor test
+    - Set DEVICE_ADVISOR_TEST_ENABLED to 1 in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Create a device advisor test on website. ( Iot Console -> Test -> Device Advisor )
+    - Create test suite.
+    - Run test suite and set the device advisor endpoint to MQTT_SERVER_ENDPOINT in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Set MQTT_SERVER_PORT and IOT_THING_NAME (Same as provisioned one) in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Build and run.
+    - See device advisor test result on website.
+1. MQTT_TEST_ENABLED - MQTT test
+    - Set MQTT_TEST_ENABLED to 1 in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Set the MQTT endpoint to MQTT_SERVER_ENDPOINT in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Set MQTT_SERVER_PORT and IOT_THING_NAME (Same as provisioned one) in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Build and run.
+    - See test result on target output.
+    - Example output
+        ```
+        I (821) qual_main: Run qualification test.
+        ...
+        -----------------------
+        7 Tests 0 Failures 0 Ignored
+        OK
+        I (84381) qual_main: End qualification test.
+        ```
+1. TRANSPORT_INTERFACE_TEST_ENABLED - Transport layer test
+    - Set TRANSPORT_INTERFACE_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start a echo server.
+    - Set ECHO_SERVER_ENDPOINT / ECHO_SERVER_PORT / ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Build and run.
+    - See test result on target output.
+    - Example output
+        ```
+        I (855) qual_main: Run qualification test.
+        ...
+        -----------------------
+        14 Tests 0 Failures 0 Ignored
+        OK
+        I (612755) qual_main: End qualification test.
+        ```
+1. OTA_PAL_TEST_ENABLED - OTA PAL test
+    - Set OTA_PAL_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Set OTA_PAL_FIRMWARE_FILE to "b_u585i_iot02a_ntz.bin" in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Build and run.
+    - See test result on target output.
+    - Example output
+        ```
+        I (905) qual_main: Run qualification test.
+        ...
+        -----------------------
+        15 Tests 0 Failures 0 Ignored
+        OK
+        I (113755) qual_main: End qualification test.
+        ```
+1. CORE_PKCS11_TEST_ENABLED - Core PKCS11 test
+    - Set CORE_PKCS11_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Build and run.
+    - See test result on target output.
+    - Example output
+        ```
+        I (858) qual_main: Run qualification test.
+        ...
+        -----------------------
+        17 Tests 0 Failures 0 Ignored
+        OK
+        I (7518) qual_main: End qualification test.
+        ```
+1. OTA_E2E_TEST_ENABLED - OTA E2E test
+    - Disable all configurations in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+    - Follow [FreeRTOS IDT 2.0](https://docs.aws.amazon.com/freertos/latest/userguide/lts-idt-freertos-qualification.html) to set-up tool.
+    - Run IDT OTA E2E test cases.
+    - See test result on tool output.
