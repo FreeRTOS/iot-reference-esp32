@@ -550,7 +550,7 @@ static BaseType_t prvStartCoreMqttAgent( void )
 
 static MQTTStatus_t prvCoreMqttAgentInit( NetworkContext_t * pxNetworkContext )
 {
-    TransportInterface_t xTransport;
+    TransportInterface_t xTransport = { 0 };
     MQTTStatus_t xReturn;
     MQTTFixedBuffer_t xFixedBuffer = { .pBuffer = ucNetworkBuffer, .size = configMQTT_AGENT_NETWORK_BUFFER_SIZE };
     static uint8_t staticQueueStorageArea[ configMQTT_AGENT_COMMAND_QUEUE_LENGTH * sizeof( MQTTAgentCommand_t * ) ];

@@ -33,6 +33,7 @@
 #if CONFIG_GRI_RUN_QUALIFICATION_TEST
     #include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
+
 /**
  * @brief The thing name of the device.
  */

@@ -25,6 +25,7 @@ typedef struct TaskParam
     TaskHandle_t taskHandle;
 } TaskParam_t;
 
+extern uint32_t MqttTestGetTimeMs( void );
 /*----------------------- Log Helper -----------------------*/
 
 /* The buffer to store test result. The content will be printed if an eol character
@@ -136,5 +137,11 @@ void * FRTest_MemoryAlloc( size_t size )
 void FRTest_MemoryFree( void * ptr )
 {
     return vPortFree( ptr );
+}
+/*-----------------------------------------------------------*/
+
+uint32_t FRTest_GetTimeMs( void )
+{
+    return MqttTestGetTimeMs();
 }
 /*-----------------------------------------------------------*/
