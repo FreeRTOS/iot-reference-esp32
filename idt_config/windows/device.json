@@ -1,0 +1,60 @@
+[
+   {
+      "id":"esp32c3-test",
+      "sku":"<sku>",
+      "features":[
+         {
+            "name":"Wifi",
+            "value":"No"
+         },
+         {
+            "name":"Cellular",
+            "value":"No"
+         },
+         {
+            "name":"BLE",
+            "value":"No"
+         },
+         {
+            "name":"PKCS11",
+            "value":"RSA"
+         },
+         {
+            "name":"OTA",
+            "value":"Yes",
+            "configs":[
+               {
+                  "name":"OTADataPlaneProtocol",
+                  "value":"MQTT"
+               }
+            ]
+         },
+         {
+            "name":"KeyProvisioning",
+            "value":"No"
+         }
+      ],
+      "devices":[
+         {
+            "id":"esp32c3",
+            "connectivity":{
+               "protocol":"uart",
+               "serialPort":"<serial port device e.g. COM3>"
+            },
+             "secureElementConfig" : {
+               "publicKeyAsciiHexFilePath" : "<path to public key file, e.g. C:/Users/foobar/device_tester/config/publicKeyAsciiHex.txt>",
+               "publicDeviceCertificateArn": "<uploaded certificate arn e.g. arn:aws:iot:us-west-2:12345678910:cert/12345abcd>",
+               "secureElementSerialNumber": "<secure-element-serialNo-value>",
+                "preProvisioned"           : "Yes",
+                "pkcs11JITPCodeVerifyRootCertSupport": "No"
+             },
+            "identifiers":[
+               {
+                  "name":"serialNo",
+                  "value":"<serialNo-value>"
+               }
+            ]
+         }
+      ]
+   }
+ ]
