@@ -37,8 +37,10 @@
     /* Common config */
     #if ( MQTT_TEST_ENABLED == 1 )
         #define CONFIG_GRI_THING_NAME                       ( MQTT_TEST_CLIENT_IDENTIFIER )
-    #else
+    #elif ( OTA_E2E_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
         #define CONFIG_GRI_THING_NAME                       ( IOT_THING_NAME )
+    #else
+        #define CONFIG_GRI_THING_NAME                       "noUse"
     #endif
     #define CONFIG_GRI_MQTT_ENDPOINT                    ( MQTT_SERVER_ENDPOINT )
     #define CONFIG_GRI_MQTT_PORT                        ( MQTT_SERVER_PORT )

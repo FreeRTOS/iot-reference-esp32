@@ -26,12 +26,6 @@ typedef struct TaskParam
 } TaskParam_t;
 
 extern uint32_t MqttTestGetTimeMs( void );
-/*----------------------- Log Helper -----------------------*/
-
-/* The buffer to store test result. The content will be printed if an eol character
- * is received */
-static char pcTestResultBuffer[ TEST_RESULT_BUFFER_CAPACITY ] = { 0 };
-static int16_t xBufferSize = 0;
 /*-----------------------------------------------------------*/
 
 int FRTest_GenerateRandInt()
