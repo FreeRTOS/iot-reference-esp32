@@ -25,9 +25,14 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 &nbsp;&nbsp;&nbsp;&nbsp;[5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job](#55-upload-the-binary-with-the-higher-version-number-created-in-step-53-and-create-an-ota-update-job)
 &nbsp;&nbsp;&nbsp;&nbsp;[5.6 Monitor OTA](#56-monitor-ota)
 
-[7 Run AWS IoT Qualification Test](#7-run-aws-iot-qualification-test)
-&nbsp;&nbsp;&nbsp;&nbsp;[7.1 Prerequisite](#71-prerequisite)
-&nbsp;&nbsp;&nbsp;&nbsp;[7.2 Steps for each test case](#72-steps-for-each-test-case)
+[6 Run AWS IoT Qualification Test](#6-run-aws-iot-qualification-test)
+&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Prerequisite](#61-prerequisite)
+&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Steps for each test case](#62-steps-for-each-test-case)
+
+[7 Run AWS IoT Device Tester](#7-run-aws-iot-device-tester)
+&nbsp;&nbsp;&nbsp;&nbsp;[7.1 Download AWS IoT Device Tester](#71-download-aws-iot-device-tester)
+&nbsp;&nbsp;&nbsp;&nbsp;[7.2 Configure AWS IoT Device Tester](#72-configure-aws-iot-device-tester)
+&nbsp;&nbsp;&nbsp;&nbsp;[7.3 Running AWS IoT Device Tester](#73-running-aws-iot-device-tester)
 
 ## 1 Pre-requisites
 
@@ -446,14 +451,14 @@ I (3444) coreMQTT: Packet received. ReceivedBytes=3.
 I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOta/jobs/notify-next. 
 ```
 
-## 7 Run AWS IoT Qualification Test
+## 6 Run AWS IoT Qualification Test
 
-### 7.1 Prerequisite
+### 6.1 Prerequisite
 - Run [OTA](#5-perform-firmware-over-the-air-updates-with-aws-iot) once manually.
 - Enable "Run qualification test" by menuconfig (Featured FreeRTOS IoT Integration -> Run qualification test).
 - Enable Unity and Unity/Fixture by menuconfig.
 
-### 7.2 Steps for each test case
+### 6.2 Steps for each test case
 
 1. DEVICE_ADVISOR_TEST_ENABLED - device advisor test
     - Set DEVICE_ADVISOR_TEST_ENABLED to 1 in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
@@ -525,3 +530,72 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
     - Follow [FreeRTOS IDT 2.0](https://docs.aws.amazon.com/freertos/latest/userguide/lts-idt-freertos-qualification.html) to set-up tool.
     - Run IDT OTA E2E test cases.
     - See test result on tool output.
+
+## 7 Run AWS IoT Device Tester
+
+The reference integration can be tested using [AWS IoT Device Tester for FreeRTOS (IDT)](https://aws.amazon.com/freertos/device-tester/). IDT is a downloadable tool that can be used to exercise a device integration with FreeRTOS to validate functionality and compatibility with Amazon IoT cloud. Passing the test suite provided by IDT is also required to qualify a device for the [Amazon Partner Device Catalogue](https://devices.amazonaws.com/).
+
+IDT runs a suite of tests that include testing the device's transport interface layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test cases, the IDT binary will make a copy of the source code, update the header files in the project, then compile the project and flash the resulting image to your board. Finally, IDT will read serial output from the board and communicate with the AWS IoT cloud to ensure that test cases are passing.
+
+### 7.1 Download AWS IoT Device Tester
+
+The latest version of IDT can be downloaded from the [public documentation page](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html). This reference implementation only supports test suites FRQ_2.2.0 or later.
+
+### 7.2 Configure AWS IoT Device Tester
+
+After downloading and unzipping IDT onto your file system, you should extract a file structure that includes the following directories:
+
+* The `bin` directory holds the devicetester binary, which is the entry point used to run IDT
+* The `results` directory holds logs that are generated every time you run IDT.
+* The `configs` directory holds configuration values that are needed to set up IDT
+
+Before we can run IDT, we have to update the files in `configs`. In this reference implementation, we have pre-defined configs available in the `idt_configs` directory. Copy these templates over into IDT, and the rest of this section will walk through the remaining values that need to be filled in.
+
+First, copy one of each file from `idt_configs` (based on host OS) in this reference repository to the `configs` directory inside the newly downloaded IDT project. This should provide you with the following files in `device_tester/configs` directory:
+
+```
+configs/dummyPublicKeyAsciiHex.txt
+configs/flash.bat or flash.sh
+configs/config.json
+configs/userdata.json
+configs/device.json
+configs/build.bat or build.sh
+```
+
+Next, we need to update some configuration values in these files.
+
+* In `build.bat` / `build.sh`, update ESP_IDF_PATH, and ESP_IDF_FRAMEWORK_PATH
+* In `flash.bat` / `flash.sh`, update ESP_IDF_PATH, ESP_IDF_FRAMEWORK_PATH, and NUM_COMPORT
+
+* In `config.json`, update the `profile` and `awsRegion` fields
+* In `device.json`, update `serialPort` to the serial port of your board as from [PORT](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#21-setup-aws-iot-core).
+* In `userdata.json`, update `sourcePath` to the absolute path to the root of this reference implementation repository.
+* In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
+.](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
+* Run all the steps to create a [second code signing certificate](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
+
+### 7.3 Running AWS IoT Device Tester
+
+With all the configuration out of the way, we can run IDT either from an individual test group or test case, or the entire qualification suite.
+
+To list the available test groups, run:
+
+```
+.\devicetester_win_x86-64.exe list-groups
+```
+
+To run any one test group, run e.g.:
+
+```
+.\devicetester_win_x86-64.exe run-suite -g FullCloudIoT -g OTACore
+```
+
+To run the entire qualification suite, run:
+
+```
+.\devicetester_win_x86-64.exe run-suite --skip-group-id FullPKCS11_PreProvisioned_RSA
+```
+
+For more information, `.\devicetester_win_x86-64.exe help` will show all available commands.
+
+When you run IDT, a `results/uuid` directory is generated that will contain all the logs and other information associated with your test run. This allows you to debug any failures.

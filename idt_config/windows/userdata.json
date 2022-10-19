@@ -39,7 +39,7 @@
       "signerSigningAlgorithm": "ECDSA",
       "signerCertificate": "<ARN of certificate made in section \"etup pre-requisites for OTA cloud resources\" in GettingStartedGuide>",
       "untrustedSignerCertificate": "<ARN of any untrusted certificate>",
-      "signerCertificateFileName": "",
+      "signerCertificateFileName": "/",
       "compileSignerCertificate": false,
       "signerPlatform": "AmazonFreeRTOS-Default"
     }
