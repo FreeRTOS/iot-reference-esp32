@@ -294,6 +294,10 @@ static void prvStartEnabledDemos( void )
     #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST == 0 */
 
     #if CONFIG_GRI_RUN_QUALIFICATION_TEST
+        /* Disable some logs to avoid failure on IDT log parser. */
+        esp_log_level_set("esp_ota_ops", ESP_LOG_NONE);
+        esp_log_level_set("esp-tls-mbedtls", ESP_LOG_NONE);
+
         if( ( xResult = xQualificationStart() ) != pdPASS )
         {
             ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xResult );

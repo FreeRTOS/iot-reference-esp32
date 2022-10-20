@@ -457,6 +457,7 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
 - Run [OTA](#5-perform-firmware-over-the-air-updates-with-aws-iot) once manually.
 - Enable "Run qualification test" by menuconfig (Featured FreeRTOS IoT Integration -> Run qualification test).
 - Enable Unity and Unity/Fixture by menuconfig.
+*Note: The log of module `esp_ota_ops` and `esp-tls-mbedtls` will be disabled when `Run qualification test` is on, you can enable them by comment out `esp_log_level_set` in [main.c](./main/main.c).
 
 ### 6.2 Steps for each test case
 
