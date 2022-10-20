@@ -30,7 +30,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 &nbsp;&nbsp;&nbsp;&nbsp;[6.2 Steps for each test case](#62-steps-for-each-test-case)<br>
 
 [7 Run AWS IoT Device Tester](#7-run-aws-iot-device-tester)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[7.1 PrerequisiteDownload AWS IoT Device Tester](#71-prerequisite)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.1 Prerequisite](#71-prerequisite)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[7.2 Download AWS IoT Device Tester](#72-download-aws-iot-device-tester)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[7.3 Configure AWS IoT Device Tester](#73-configure-aws-iot-device-tester)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[7.4 Running AWS IoT Device Tester](#74-running-aws-iot-device-tester)<br>
