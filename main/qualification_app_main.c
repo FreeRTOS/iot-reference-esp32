@@ -96,12 +96,6 @@ const char pcOtaPalTestCodeSigningCertPem[] = \
  */
 #define mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS    ( 750 )
 
-/**
- * @brief Used to convert times to/from ticks and milliseconds.
- */
-#define mqttexampleMILLISECONDS_PER_SECOND           ( 1000U )
-#define mqttexampleMILLISECONDS_PER_TICK             ( mqttexampleMILLISECONDS_PER_SECOND / configTICK_RATE_HZ )
-
 #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
     static NetworkContext_t xNetworkContext = { 0 };
 #endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
@@ -402,7 +396,7 @@ uint32_t MqttTestGetTimeMs( void )
     xTickCount = xTaskGetTickCount();
 
     /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) xTickCount * mqttexampleMILLISECONDS_PER_TICK;
+    ulTimeMs = ( uint32_t ) pdMS_TO_TICKS( xTickCount );
 
     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
      * elapsed time in the application. */
