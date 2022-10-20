@@ -4,35 +4,36 @@ This guide contains instructions on how to setup, build and run the demo without
 
 Once completed, one can progress to the [Use Security Features](UseSecurityFeatures.md) guide.
 
-[1 Pre-requisites](#1-pre-requisites)
-&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Hardware Requirements](#11-hardware-requirements)
-&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Software Requirements](#12-software-requirements)
+[1 Pre-requisites](#1-pre-requisites)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Hardware Requirements](#11-hardware-requirements)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Software Requirements](#12-software-requirements)<br>
 
-[2 Demo setup](#2-demo-setup)
-&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup AWS IoT Core](#21-setup-aws-iot-core)
-&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint](#22-configure-the-project-with-the-aws-iot-thing-name-and-aws-device-endpoint)
-&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode](#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode)
+[2 Demo setup](#2-demo-setup)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup AWS IoT Core](#21-setup-aws-iot-core)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint](#22-configure-the-project-with-the-aws-iot-thing-name-and-aws-device-endpoint)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode](#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode)<br>
 
-[3 Build and flash the demo project](#3-build-and-flash-the-demo-project)
+[3 Build and flash the demo project](#3-build-and-flash-the-demo-project)<br>
 
-[4 Monitoring the demo](#4-monitoring-the-demo)
+[4 Monitoring the demo](#4-monitoring-the-demo)<br>
 
-[5 Perform firmware Over-the-Air Updates with AWS IoT](#5-perform-firmware-over-the-air-updates-with-aws-iot)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Setup pre-requisites for OTA cloud resources](#51-setup-pre-requisites-for-ota-cloud-resources)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Provision the project with the code-signing public key certificate](#52-provision-the-project-with-the-code-signing-public-key-certificate)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.3 Build an application binary with a higher version number, to be downloaded and activated on the device](#53-build-an-application-binary-with-a-higher-version-number-to-be-downloaded-and-activated-on-the-device)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.4 Build and flash the device with a binary with a lower version number](#54-build-and-flash-the-device-with-a-binary-with-a-lower-version-number)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job](#55-upload-the-binary-with-the-higher-version-number-created-in-step-53-and-create-an-ota-update-job)
-&nbsp;&nbsp;&nbsp;&nbsp;[5.6 Monitor OTA](#56-monitor-ota)
+[5 Perform firmware Over-the-Air Updates with AWS IoT](#5-perform-firmware-over-the-air-updates-with-aws-iot)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Setup pre-requisites for OTA cloud resources](#51-setup-pre-requisites-for-ota-cloud-resources)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Provision the project with the code-signing public key certificate](#52-provision-the-project-with-the-code-signing-public-key-certificate)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.3 Build an application binary with a higher version number, to be downloaded and activated on the device](#53-build-an-application-binary-with-a-higher-version-number-to-be-downloaded-and-activated-on-the-device)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.4 Build and flash the device with a binary with a lower version number](#54-build-and-flash-the-device-with-a-binary-with-a-lower-version-number)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job](#55-upload-the-binary-with-the-higher-version-number-created-in-step-53-and-create-an-ota-update-job)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[5.6 Monitor OTA](#56-monitor-ota)<br>
 
-[6 Run AWS IoT Qualification Test](#6-run-aws-iot-qualification-test)
-&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Prerequisite](#61-prerequisite)
-&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Steps for each test case](#62-steps-for-each-test-case)
+[6 Run AWS IoT Qualification Test](#6-run-aws-iot-qualification-test)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Prerequisite](#61-prerequisite)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Steps for each test case](#62-steps-for-each-test-case)<br>
 
-[7 Run AWS IoT Device Tester](#7-run-aws-iot-device-tester)
-&nbsp;&nbsp;&nbsp;&nbsp;[7.1 Download AWS IoT Device Tester](#71-download-aws-iot-device-tester)
-&nbsp;&nbsp;&nbsp;&nbsp;[7.2 Configure AWS IoT Device Tester](#72-configure-aws-iot-device-tester)
-&nbsp;&nbsp;&nbsp;&nbsp;[7.3 Running AWS IoT Device Tester](#73-running-aws-iot-device-tester)
+[7 Run AWS IoT Device Tester](#7-run-aws-iot-device-tester)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.1 PrerequisiteDownload AWS IoT Device Tester](#71-prerequisite)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.2 Download AWS IoT Device Tester](#72-download-aws-iot-device-tester)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.3 Configure AWS IoT Device Tester](#73-configure-aws-iot-device-tester)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.4 Running AWS IoT Device Tester](#74-running-aws-iot-device-tester)<br>
 
 ## 1 Pre-requisites
 
@@ -538,11 +539,17 @@ The reference integration can be tested using [AWS IoT Device Tester for FreeRTO
 
 IDT runs a suite of tests that include testing the device's transport interface layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test cases, the IDT binary will make a copy of the source code, update the header files in the project, then compile the project and flash the resulting image to your board. Finally, IDT will read serial output from the board and communicate with the AWS IoT cloud to ensure that test cases are passing.
 
-### 7.1 Download AWS IoT Device Tester
+### 7.1 Prerequisite
+- Run [OTA](#5-perform-firmware-over-the-air-updates-with-aws-iot) once manually.
+- Enable "Run qualification test" by menuconfig (Featured FreeRTOS IoT Integration -> Run qualification test).
+- Enable Unity and Unity/Fixture by menuconfig.
+*Note: The log of module `esp_ota_ops` and `esp-tls-mbedtls` will be disabled when `Run qualification test` is on, you can enable them by comment out `esp_log_level_set` in [main.c](./main/main.c).
+
+### 7.2 Download AWS IoT Device Tester
 
 The latest version of IDT can be downloaded from the [public documentation page](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html). This reference implementation only supports test suites FRQ_2.2.0 or later.
 
-### 7.2 Configure AWS IoT Device Tester
+### 7.3 Configure AWS IoT Device Tester
 
 After downloading and unzipping IDT onto your file system, you should extract a file structure that includes the following directories:
 
@@ -575,7 +582,7 @@ Next, we need to update some configuration values in these files.
 .](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
 * Run all the steps to create a [second code signing certificate](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
 
-### 7.3 Running AWS IoT Device Tester
+### 7.4 Running AWS IoT Device Tester
 
 With all the configuration out of the way, we can run IDT either from an individual test group or test case, or the entire qualification suite.
 
