@@ -576,11 +576,11 @@ Next, we need to update some configuration values in these files.
 * In `flash.bat` / `flash.sh`, update ESP_IDF_PATH, ESP_IDF_FRAMEWORK_PATH, and NUM_COMPORT
 
 * In `config.json`, update the `profile` and `awsRegion` fields
-* In `device.json`, update `serialPort` to the serial port of your board as from [PORT](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#21-setup-aws-iot-core).
+* In `device.json`, update `serialPort` to the serial port of your board as from [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
 * In `userdata.json`, update `sourcePath` to the absolute path to the root of this reference implementation repository.
 * In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
-.](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
-* Run all the steps to create a [second code signing certificate](https://github.com/FreeRTOS/iot-reference-esp32c3/blob/main/GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
+.](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
+* Run all the steps to create a [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
 
 ### 7.4 Running AWS IoT Device Tester
 
