@@ -465,7 +465,7 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
 
 1. Device Advisor Test
     - Enable "Device Advisor Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
-    - Create a device advisor test on website. ( Iot Console -> Test -> Device Advisor )
+    - Create a [device advisor test](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) on website. ( Iot Console -> Test -> Device Advisor )
     - Create test suite.
     - Run test suite and record device advisor endpoint.
     - Set "Endpoint for MQTT Broker to use" (from previous step) and "Thing Name for Device Advisor Test/OTA end-to-end Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations by menuconfig.
@@ -530,7 +530,7 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
 
 ## 7 Run AWS IoT Device Tester
 
-The reference integration can be tested using [AWS IoT Device Tester for FreeRTOS (IDT)](https://aws.amazon.com/freertos/device-tester/). IDT is a downloadable tool that can be used to exercise a device integration with FreeRTOS to validate functionality and compatibility with Amazon IoT cloud. Passing the test suite provided by IDT is also required to qualify a device for the [Amazon Partner Device Catalogue](https://devices.amazonaws.com/).
+This repository can be tested using [AWS IoT Device Tester for FreeRTOS (IDT)](https://aws.amazon.com/freertos/device-tester/). IDT is a downloadable tool that can be used to exercise a device integration with FreeRTOS to validate functionality and compatibility with Amazon IoT cloud. Passing the test suite provided by IDT is also required to qualify a device for the [Amazon Partner Device Catalogue](https://devices.amazonaws.com/).
 
 IDT runs a suite of tests that include testing the device's transport interface layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test cases, the IDT binary will make a copy of the source code, update the header files in the project, then compile the project and flash the resulting image to your board. Finally, IDT will read serial output from the board and communicate with the AWS IoT cloud to ensure that test cases are passing.
 
@@ -545,7 +545,7 @@ IDT runs a suite of tests that include testing the device's transport interface 
 
 ### 7.2 Download AWS IoT Device Tester
 
-The latest version of IDT can be downloaded from the [public documentation page](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html). This reference implementation only supports test suites FRQ_2.2.0 or later.
+The latest version of IDT can be downloaded from the [public documentation page](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html). This repository only supports test suites FRQ_2.2.0 or later.
 
 ### 7.3 Configure AWS IoT Device Tester
 
@@ -555,9 +555,9 @@ After downloading and unzipping IDT onto your file system, you should extract a 
 * The `results` directory holds logs that are generated every time you run IDT.
 * The `configs` directory holds configuration values that are needed to set up IDT
 
-Before we can run IDT, we have to update the files in `configs`. In this reference implementation, we have pre-defined configs available in the `idt_configs` directory. Copy these templates over into IDT, and the rest of this section will walk through the remaining values that need to be filled in.
+Before running IDT, the files in `configs` need to be updated. In this repository, we have pre-defined configs available in the `idt_config` directory. Copy these templates over into IDT, and the rest of this section will walk through the remaining values that need to be filled in.
 
-First, copy one of each file from `idt_configs` (based on host OS) in this reference repository to the `configs` directory inside the newly downloaded IDT project. This should provide you with the following files in `device_tester/configs` directory:
+First, copy one of each file from `idt_config` (based on host OS) in this reference repository to the `configs` directory inside the newly downloaded IDT project. This should provide you with the following files in `device_tester/configs` directory:
 
 ```
 configs/dummyPublicKeyAsciiHex.txt
@@ -575,7 +575,7 @@ Next, we need to update some configuration values in these files.
 
 * In `config.json`, update the `profile` and `awsRegion` fields
 * In `device.json`, update `serialPort` to the serial port of your board as from [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
-* In `userdata.json`, update `sourcePath` to the absolute path to the root of this reference implementation repository.
+* In `userdata.json`, update `sourcePath` to the absolute path to the root of this repository.
 * In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
 .](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
 * Run all the steps to create a [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
@@ -599,7 +599,7 @@ To run any one test group, run e.g.:
 To run the entire qualification suite, run:
 
 ```
-.\devicetester_win_x86-64.exe run-suite --skip-group-id FullPKCS11_PreProvisioned_RSA
+.\devicetester_win_x86-64.exe run-suite --skip-group-id FullPKCS11_PreProvisioned_RSA --skip-group-id FullPKCS11_Import_RSA --skip-group-id FullPKCS11_Core --skip-group-id FullTransportInterfacePlainText
 ```
 
 For more information, `.\devicetester_win_x86-64.exe help` will show all available commands.
