@@ -28,19 +28,59 @@
 #ifndef TEST_EXECUTION_CONFIG_H
 #define TEST_EXECUTION_CONFIG_H
 
+#include <sdkconfig.h>
+
+/* Configuration wrapper. */
+#if CONFIG_GRI_DEVICE_ADVISOR_TEST_ENABLED
+    #define DEVICE_ADVISOR_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define DEVICE_ADVISOR_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_DEVICE_ADVISOR_TEST_ENABLED */
+
+#if CONFIG_GRI_MQTT_TEST_ENABLED
+    #define MQTT_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define MQTT_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_MQTT_TEST_ENABLED */
+
+#if CONFIG_GRI_TRANSPORT_INTERFACE_TEST_ENABLED
+    #define TRANSPORT_INTERFACE_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define TRANSPORT_INTERFACE_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_TRANSPORT_INTERFACE_TEST_ENABLED */
+
+#if CONFIG_GRI_OTA_PAL_TEST_ENABLED
+    #define OTA_PAL_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define OTA_PAL_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_OTA_PAL_TEST_ENABLED */
+
+#if CONFIG_GRI_OTA_E2E_TEST_ENABLED
+    #define OTA_E2E_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define OTA_E2E_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_OTA_E2E_TEST_ENABLED */
+
+#if CONFIG_GRI_CORE_PKCS11_TEST_ENABLED
+    #define CORE_PKCS11_TEST_ENABLED_SETTING     ( 1 )
+#else
+    #define CORE_PKCS11_TEST_ENABLED_SETTING     ( 0 )
+#endif /* CONFIG_GRI_CORE_PKCS11_TEST_ENABLED */
+/* Configuration wrapper. */
+
 /**
  * @brief Configuration to enable Device Advisor testing.
  *
  * #define DEVICE_ADVISOR_TEST_ENABLED                 (0)
  */
-#define DEVICE_ADVISOR_TEST_ENABLED         ( 0 )
+#define DEVICE_ADVISOR_TEST_ENABLED         ( DEVICE_ADVISOR_TEST_ENABLED_SETTING )
 
 /**
  * @brief Configuration to enable the MQTT test.
  *
  * #define MQTT_TEST_ENABLED                 (0)
  */
-#define MQTT_TEST_ENABLED                   ( 0 )
+#define MQTT_TEST_ENABLED                   ( MQTT_TEST_ENABLED_SETTING )
 
 /**
  * @brief Configuration to enable the transport interface test.
@@ -48,27 +88,27 @@
  * #define TRANSPORT_INTERFACE_TEST_ENABLED  (0)
  */
 
-#define TRANSPORT_INTERFACE_TEST_ENABLED    ( 0 )
+#define TRANSPORT_INTERFACE_TEST_ENABLED    ( TRANSPORT_INTERFACE_TEST_ENABLED_SETTING )
 
 /**
  * @brief Configuration to enable the OTA PAL test.
  *
  * #define OTA_PAL_TEST_ENABLED  (0)
  */
-#define OTA_PAL_TEST_ENABLED                ( 0 )
+#define OTA_PAL_TEST_ENABLED                ( OTA_PAL_TEST_ENABLED_SETTING )
 
 /**
  * @brief Configuration to enable the OTA End-to-end test.
  *
  * #define OTA_E2E_TEST_ENABLED  (0)
  */
-#define OTA_E2E_TEST_ENABLED                ( 0 )
+#define OTA_E2E_TEST_ENABLED                ( OTA_E2E_TEST_ENABLED_SETTING )
 
 /**
  * @brief Configuration to enable the corePKCS11 test.
  *
  * #define CORE_PKCS11_TEST_ENABLED  (0)
  */
-#define CORE_PKCS11_TEST_ENABLED            ( 0 )
+#define CORE_PKCS11_TEST_ENABLED            ( CORE_PKCS11_TEST_ENABLED_SETTING )
 
 #endif /* TEST_EXECUTION_CONFIG_H */

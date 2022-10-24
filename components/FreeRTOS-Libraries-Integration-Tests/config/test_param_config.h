@@ -28,6 +28,22 @@
 #ifndef TEST_PARAM_CONFIG_H
 #define TEST_PARAM_CONFIG_H
 
+#include <sdkconfig.h>
+
+/* Configuration wrapper. */
+#if GRI_QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR
+    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING     ( 1 )
+#else
+    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING     ( 0 )
+#endif /* GRI_QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR */
+
+#if GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM
+    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING         ( 1 )
+#else
+    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING         ( 0 )
+#endif /* GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM */
+/* Configuration wrapper. */
+
 /**
  * @brief Configuration that indicates if the device should generate a key pair.
  *
@@ -37,6 +53,7 @@
  *
  * #define FORCE_GENERATE_NEW_KEY_PAIR   0
  */
+#define FORCE_GENERATE_NEW_KEY_PAIR   QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING
 
 
 /**
@@ -44,18 +61,22 @@
  *
  * #define MQTT_SERVER_ENDPOINT   "PLACE_HOLDER"
  */
+#define MQTT_SERVER_ENDPOINT    CONFIG_GRI_QUALIFICATION_MQTT_ENDPOINT
+
 
 /**
  * @brief Port of the MQTT broker to connect to in mqtt test.
  *
  * #define MQTT_SERVER_PORT       (8883)
  */
+#define MQTT_SERVER_PORT       CONFIG_GRI_QUALIFICATION_MQTT_PORT
 
 /**
  * @brief The client identifier for MQTT test.
  *
  * #define MQTT_TEST_CLIENT_IDENTIFIER    "PLACE_HOLDER"
  */
+#define MQTT_TEST_CLIENT_IDENTIFIER     CONFIG_GRI_QUALIFICATION_CLIENT_IDENTIFIER
 
  /**
  * @brief Network buffer size specified in bytes. Must be large enough to hold the maximum
@@ -63,18 +84,21 @@
  *
  * #define MQTT_TEST_NETWORK_BUFFER_SIZE			( 5000 )
  */
+#define MQTT_TEST_NETWORK_BUFFER_SIZE			( CONFIG_GRI_QUALIFICATION_NETWORK_BUFFER_SIZE )
 
 /**
  * @brief Endpoint of the echo server to connect to in transport interface test.
  *
  * #define ECHO_SERVER_ENDPOINT   "PLACE_HOLDER"
  */
+#define ECHO_SERVER_ENDPOINT   CONFIG_GRI_QUALIFICATION_ECHO_SERVER
 
 /**
  * @brief Port of the echo server to connect to in transport interface test.
  *
  * #define ECHO_SERVER_PORT       (9000)
  */
+#define ECHO_SERVER_PORT       CONFIG_GRI_QUALIFICATION_ECHO_SERVER_PORT
 
 /**
  * @brief Root certificate of the echo server.
@@ -142,25 +166,26 @@
  * If applicable, the device must be pre-provisioned with this certificate. Please see
  * test/common/ota/test_files for the set of certificates.
  */
-#define OTA_PAL_CERTIFICATE_FILE                         ""
+#define OTA_PAL_CERTIFICATE_FILE                         CONFIG_GRI_QUALIFICATION_OTA_PAL_CERTIFICATE_FILE
 
 /**
  * @brief Some devices have a hard-coded name for the firmware image to boot.
  */
-#define OTA_PAL_FIRMWARE_FILE                            "/"
+#define OTA_PAL_FIRMWARE_FILE                            CONFIG_GRI_QUALIFICATION_OTA_PAL_FIRMWARE_FILE
 
 /**
  * @brief Some boards OTA PAL layers will use the file names passed into it for the
  * image and the certificates because their non-volatile memory is abstracted by a
  * file system. Set this to 1 if that is the case for your device.
  */
-#define OTA_PAL_USE_FILE_SYSTEM                          0
+#define OTA_PAL_USE_FILE_SYSTEM                          QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING
 
 /**
  * @brief The IoT Thing name for the device for OTA test.
  *
  * #define IOT_THING_NAME  "PLACE_HOLDER"
  */
+#define IOT_THING_NAME      CONFIG_GRI_QUALIFICATION_THING_NAME
 
 /**
  * @brief 1 if using PKCS #11 to access the code sign certificate from NVM.
@@ -172,21 +197,21 @@
  *
  * #define OTA_APP_VERSION_MAJOR                            0
  */
-#define OTA_APP_VERSION_MAJOR 0
+#define OTA_APP_VERSION_MAJOR CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
 
 /**
  * @brief Major version for OTA E2E test.
  *
  * #define OTA_APP_VERSION_MINOR                            9
  */
-#define OTA_APP_VERSION_MINOR 9
+#define OTA_APP_VERSION_MINOR CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
 
 /**
  * @brief Major version for OTA E2E test.
  *
  * #define OTA_APP_VERSION_BUILD                            1
  */
-#define OTA_APP_VERSION_BUILD 1
+#define OTA_APP_VERSION_BUILD CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
 
 #define OUTGOING_PUBLISH_RECORD_COUNT ( 10 )
 #define INCOMING_PUBLISH_RECORD_COUNT ( 10 )

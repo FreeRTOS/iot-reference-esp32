@@ -463,18 +463,17 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
 
 ### 6.2 Steps for each test case
 
-1. DEVICE_ADVISOR_TEST_ENABLED - device advisor test
-    - Set DEVICE_ADVISOR_TEST_ENABLED to 1 in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+1. Device Advisor Test
+    - Enable "Device Advisor Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
     - Create a device advisor test on website. ( Iot Console -> Test -> Device Advisor )
     - Create test suite.
-    - Run test suite and set the device advisor endpoint to MQTT_SERVER_ENDPOINT in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
-    - Set MQTT_SERVER_PORT and IOT_THING_NAME (Same as provisioned one) in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Run test suite and record device advisor endpoint.
+    - Set "Endpoint for MQTT Broker to use" (from previous step) and "Thing Name for Device Advisor Test/OTA end-to-end Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations by menuconfig.
     - Build and run.
     - See device advisor test result on website.
-1. MQTT_TEST_ENABLED - MQTT test
-    - Set MQTT_TEST_ENABLED to 1 in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
-    - Set the MQTT endpoint to MQTT_SERVER_ENDPOINT in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
-    - Set MQTT_SERVER_PORT and IOT_THING_NAME (Same as provisioned one) in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+1. MQTT Test
+    - Enable "MQTT Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
+    - Set "Endpoint for MQTT Broker to use" and "Client Identifier for MQTT Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations by menuconfig.
     - Build and run.
     - See test result on target output.
     - Example output
@@ -486,10 +485,11 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
         OK
         I (84381) qual_main: End qualification test.
         ```
-1. TRANSPORT_INTERFACE_TEST_ENABLED - Transport layer test
-    - Set TRANSPORT_INTERFACE_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+1. Transport Interface Test
+    - Enable "Transport Interface Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
     - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start a echo server.
-    - Set ECHO_SERVER_ENDPOINT / ECHO_SERVER_PORT / ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Set "Echo Server Domain Name/IP for Transport Interface Test" and "Port for Echo Server to use" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations by menuconfig.
+    - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
     - Build and run.
     - See test result on target output.
     - Example output
@@ -501,9 +501,8 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
         OK
         I (612755) qual_main: End qualification test.
         ```
-1. OTA_PAL_TEST_ENABLED - OTA PAL test
-    - Set OTA_PAL_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
-    - Set OTA_PAL_FIRMWARE_FILE to "b_u585i_iot02a_ntz.bin" in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+1. OTA PAL Test
+    - Enable "OTA PAL Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
     - Build and run.
     - See test result on target output.
     - Example output
@@ -515,8 +514,8 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
         OK
         I (113755) qual_main: End qualification test.
         ```
-1. CORE_PKCS11_TEST_ENABLED - Core PKCS11 test
-    - Set CORE_PKCS11_TEST_ENABLED to 1 [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
+1. Core PKCS11 Test
+    - Enable "CorePKCS#11 Test" in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
     - Build and run.
     - See test result on target output.
     - Example output
@@ -528,11 +527,6 @@ I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOt
         OK
         I (7518) qual_main: End qualification test.
         ```
-1. OTA_E2E_TEST_ENABLED - OTA E2E test
-    - Disable all configurations in [test_execution_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h).
-    - Follow [FreeRTOS IDT 2.0](https://docs.aws.amazon.com/freertos/latest/userguide/lts-idt-freertos-qualification.html) to set-up tool.
-    - Run IDT OTA E2E test cases.
-    - See test result on tool output.
 
 ## 7 Run AWS IoT Device Tester
 
@@ -544,6 +538,8 @@ IDT runs a suite of tests that include testing the device's transport interface 
 - Run [OTA](#5-perform-firmware-over-the-air-updates-with-aws-iot) once manually.
 - Enable "Run qualification test" by menuconfig (Featured FreeRTOS IoT Integration -> Run qualification test).
 - Enable Unity and Unity/Fixture by menuconfig.
+- Disable all in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
+- run "idf.py fullclean" to clear local CMAKE cache.
 
 *Note: The log of module `esp_ota_ops` and `esp-tls-mbedtls` will be disabled when `Run qualification test` is on. You can enable them back by commenting out `esp_log_level_set` in [main.c](./main/main.c).*
 
@@ -586,7 +582,7 @@ Next, we need to update some configuration values in these files.
 
 ### 7.4 Running AWS IoT Device Tester
 
-With all the configuration out of the way, we can run IDT either from an individual test group or test case, or the entire qualification suite.
+With configuration complete, IDT can be run for an individual test group, a test case, or the entire qualification suite.
 
 To list the available test groups, run:
 
@@ -608,4 +604,4 @@ To run the entire qualification suite, run:
 
 For more information, `.\devicetester_win_x86-64.exe help` will show all available commands.
 
-When you run IDT, a `results/uuid` directory is generated that will contain all the logs and other information associated with your test run. This allows you to debug any failures.
+When IDT is run, it generates the `results/uuid` directory that contains the logs and other information associated with your test run, allowing failures to easily be debugged.
