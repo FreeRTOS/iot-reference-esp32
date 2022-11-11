@@ -396,7 +396,7 @@ uint32_t MqttTestGetTimeMs( void )
     xTickCount = xTaskGetTickCount();
 
     /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) pdMS_TO_TICKS( xTickCount );
+    ulTimeMs = ( uint32_t ) ( xTickCount * 1000 / configTICK_RATE_HZ ) ;
 
     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
      * elapsed time in the application. */
@@ -489,6 +489,13 @@ BaseType_t xQualificationStart( void )
             prvInitializeNetworkContext( ECHO_SERVER_ENDPOINT, ECHO_SERVER_PORT, ECHO_SERVER_ROOT_CA, keyCLIENT_CERTIFICATE_PEM, keyCLIENT_PRIVATE_KEY_PEM );
         #endif /* defined( TRANSPORT_CLIENT_PRIVATE_KEY ) */
     #endif /*  TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) */
+    
+    #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
+        if( xRet == pdPASS )
+        {
+            vStartSubscribePublishUnsubscribeDemo();
+        }
+    #endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) */
 
     #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
         if( xRet == pdPASS )
@@ -572,8 +579,6 @@ BaseType_t xQualificationStart( void )
 #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
     int RunDeviceAdvisorDemo( void )
     {
-        vStartSubscribePublishUnsubscribeDemo();
-
         return 0;
     }
 #endif /* DEVICE_ADVISOR_TEST_ENABLED == 1 */
