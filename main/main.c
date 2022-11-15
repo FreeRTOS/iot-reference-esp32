@@ -297,6 +297,7 @@ static void prvStartEnabledDemos( void )
         /* Disable some logs to avoid failure on IDT log parser. */
         esp_log_level_set("esp_ota_ops", ESP_LOG_NONE);
         esp_log_level_set("esp-tls-mbedtls", ESP_LOG_NONE);
+        esp_log_level_set("ota_pal", ESP_LOG_NONE);
 
         if( ( xResult = xQualificationStart() ) != pdPASS )
         {
