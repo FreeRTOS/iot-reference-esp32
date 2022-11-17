@@ -2,7 +2,7 @@
   "sourcePath": "<path to project root, e.g. C:/Users/foobar/iot-reference-nxp-rt1060>",
   "freeRTOSTestParamConfigPath": "{{testData.sourcePath}}/components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h",
   "freeRTOSTestExecutionConfigPath": "{{testData.sourcePath}}/components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h",
-  "freeRTOSVersion": "202012.04-LTS",
+  "freeRTOSVersion": "202210.00-LTS",
   "buildTool": {
     "name": "esp32c3-build",
     "version": "1.0.0",
@@ -26,19 +26,15 @@
     "serverPort": 9000
   },
   "otaConfiguration": {
-    "otaPALCertificateFile": "notUseInEsp32",
-    "otaPALFirmwareFileName": "/",
-    "otaPALUseFileSystem": "No",
-    "otaE2EDemoFilePath": "{{userData.sourcePath}}/examples/evkbmimxrt1060/test",
-    "otaE2EDemoConfigFilePath": "{{testData.sourcePath}}/components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h",
-    "otaE2EFirmwareFilePath":"{{testData.sourcePath}}/build/FeaturedFreeRTOSIoTIntegration.bin",
-    "otaE2EDeviceFirmwareFileName":"NA",
+    "otaPALCertificatePath": "notUseInEsp32",
+    "otaE2EFirmwarePath":"{{testData.sourcePath}}/build/FeaturedFreeRTOSIoTIntegration.bin",
+    "deviceFirmwarePath":"NA",
     "codeSigningConfiguration": {
       "signingMethod": "AWS",
       "signerHashingAlgorithm": "SHA256",
       "signerSigningAlgorithm": "ECDSA",
-      "signerCertificate": "<ARN of certificate made in section \"etup pre-requisites for OTA cloud resources\" in GettingStartedGuide>",
-      "untrustedSignerCertificate": "<ARN of any untrusted certificate>",
+      "signerCertificate": "arn:aws:acm:ap-northeast-1:767859759493:certificate/f762caec-2237-4cea-ac5d-844e7bb585a5",
+      "untrustedSignerCertificate": "arn:aws:acm:ap-northeast-1:767859759493:certificate/e7eec463-6f1d-4bfd-a34b-b596bf681907",
       "signerCertificateFileName": "/",
       "compileSignerCertificate": false,
       "signerPlatform": "AmazonFreeRTOS-Default"
