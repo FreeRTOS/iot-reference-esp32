@@ -541,7 +541,7 @@ IDT runs a suite of tests that include testing the device's transport interface 
 - Disable all test cases in Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations by menuconfig.
 - run "idf.py fullclean" to clear local CMAKE cache.
 
-*Note: The log of module `esp_ota_ops`, `ota_pal` and `esp-tls-mbedtls` will be disabled when `Run qualification test` is on. You can enable them back by commenting out `esp_log_level_set` in [main.c](./main/main.c).*
+*Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when `Run qualification test` is on. You can enable them back by commenting out `esp_log_level_set` in [main.c](./main/main.c).*
 
 ### 7.2 Download AWS IoT Device Tester
 
