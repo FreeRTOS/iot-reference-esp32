@@ -2,7 +2,7 @@
   "sourcePath": "<path to project root, e.g. C:/Users/foobar/iot-reference-nxp-rt1060>",
   "freeRTOSTestParamConfigPath": "{{testData.sourcePath}}/components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h",
   "freeRTOSTestExecutionConfigPath": "{{testData.sourcePath}}/components/FreeRTOS-Libraries-Integration-Tests/config/test_execution_config.h",
-  "freeRTOSVersion": "202210.00-LTS",
+  "freeRTOSVersion": "202210.01-LTS",
   "buildTool": {
     "name": "esp32c3-build",
     "version": "1.0.0",

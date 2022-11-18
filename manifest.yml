@@ -1,5 +1,5 @@
 name : "FreeRTOS ESP32C3 Reference Integration"
-version: "202210.00"
+version: "202210.01"
 description: |-
   "Reference IoT integration project using the Espressif ESP32C3 and FreeRTOS LTS libraries"
 dependencies:
@@ -16,7 +16,7 @@ dependencies:
       url: "https://github.com/FreeRTOS/coreHTTP.git"
       path: "components/esp-aws-iot/libraries/coreHTTP/coreHTTP"
   - name: "coreMQTT"
-    version: "v2.1.0"
+    version: "v2.1.1"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreMQTT.git"
@@ -64,7 +64,7 @@ dependencies:
       url: "https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git"
       path: "components/esp-aws-iot/libraries/Jobs-for-AWS-IoT-embedded-sdk/Jobs-for-AWS-IoT-embedded-sdk"
   - name: "FreeRTOS-Libraries-Integration-Tests"
-    version: "202210.00"
+    version: "202210.01"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"

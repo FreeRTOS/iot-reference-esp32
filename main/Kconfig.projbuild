@@ -81,6 +81,10 @@ menu "Featured FreeRTOS IoT Integration"
                 int "Network Buffer Size for MQTT Test"
                 default 5000
             
+            config GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
+                int "Timeout to run MQTT process loop for MQTT Test"
+                default 700
+            
             config GRI_QUALIFICATION_ECHO_SERVER
                 string "Echo Server Domain Name/IP for Transport Interface Test"
                 default "PLACE_HOLDER"

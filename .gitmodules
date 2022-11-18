@@ -7,4 +7,4 @@
 [submodule "components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests"]
 	path = components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests
 	url = https://github.com/ActoryOu/FreeRTOS-Libraries-Integration-Tests
-	branch = lts-2.0
+	branch = lts2-patch2

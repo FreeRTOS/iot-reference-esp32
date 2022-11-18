@@ -79,6 +79,16 @@
 #define MQTT_TEST_CLIENT_IDENTIFIER     CONFIG_GRI_QUALIFICATION_CLIENT_IDENTIFIER
 
  /**
+ * @brief Timeout for MQTT_ProcessLoop() function in milliseconds.
+ * The timeout value is appropriately chosen for receiving an incoming
+ * PUBLISH message and ack responses for QoS 1 and QoS 2 communications
+ * with the broker.
+ *
+ * #define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS  ( 700 )
+ */
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS     GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
+
+ /**
  * @brief Network buffer size specified in bytes. Must be large enough to hold the maximum
  * anticipated MQTT payload.
  *
