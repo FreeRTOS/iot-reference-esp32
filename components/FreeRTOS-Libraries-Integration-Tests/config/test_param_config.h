@@ -86,7 +86,7 @@
  *
  * #define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS  ( 700 )
  */
-#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS     GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS     CONFIG_GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
 
  /**
  * @brief Network buffer size specified in bytes. Must be large enough to hold the maximum
