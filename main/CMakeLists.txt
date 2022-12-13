@@ -26,6 +26,14 @@ if(CONFIG_GRI_ENABLE_OTA_DEMO)
     list(APPEND MAIN_SRCS "demo_tasks/ota_over_mqtt_demo/ota_over_mqtt_demo.c")
 endif()
 
+# Qualification Test
+if( CONFIG_GRI_RUN_QUALIFICATION_TEST )
+    list(APPEND MAIN_SRCS 
+        "qualification_app_main.c"
+        "demo_tasks/ota_over_mqtt_demo/ota_over_mqtt_demo.c"
+        "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c")
+endif()
+
 set(MAIN_INCLUDE_DIRS
     "."
     "demo_tasks/ota_over_mqtt_demo"
@@ -47,6 +55,8 @@ set(MAIN_REQUIRES
     backoffAlgorithm
     esp_secure_cert_mgr
     ota-for-aws-iot-embedded-sdk
+    FreeRTOS-Libraries-Integration-Tests
+    unity
 )
 
 idf_component_register(
@@ -59,6 +69,6 @@ idf_component_register(
 )
 
 # OTA demo
-if(CONFIG_GRI_ENABLE_OTA_DEMO)
+if( CONFIG_GRI_ENABLE_OTA_DEMO OR CONFIG_GRI_RUN_QUALIFICATION_TEST )
     target_add_binary_data(${COMPONENT_TARGET} "certs/aws_codesign.crt" TEXT)
 endif()

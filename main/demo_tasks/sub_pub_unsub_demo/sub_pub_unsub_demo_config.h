@@ -30,6 +30,10 @@
 /* ESP-IDF sdkconfig include. */
 #include <sdkconfig.h>
 
+#if CONFIG_GRI_RUN_QUALIFICATION_TEST
+    #include "qualification_wrapper_config.h"
+#endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
+
 /**
  * @brief Size of statically allocated buffers for holding topic names and
  * payloads.
