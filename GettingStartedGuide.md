@@ -25,7 +25,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 &nbsp;&nbsp;&nbsp;&nbsp;[5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job](#55-upload-the-binary-with-the-higher-version-number-created-in-step-53-and-create-an-ota-update-job)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[5.6 Monitor OTA](#56-monitor-ota)<br>
 
-[6 Run AWS IoT Qualification Test](#6-run-aws-iot-qualification-test)<br>
+[6 Run FreeRTOS Integration Test](#6-run-freertos-integration-test)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[6.1 Prerequisite](#61-prerequisite)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[6.2 Steps for each test case](#62-steps-for-each-test-case)<br>
 
@@ -33,7 +33,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 &nbsp;&nbsp;&nbsp;&nbsp;[7.1 Prerequisite](#71-prerequisite)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[7.2 Download AWS IoT Device Tester](#72-download-aws-iot-device-tester)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[7.3 Configure AWS IoT Device Tester](#73-configure-aws-iot-device-tester)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[7.4 Running AWS IoT Device Tester](#74-running-aws-iot-device-tester)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[7.4 Running the FreeRTOS qualification 2.0 suite](#74-running-the-freertos-qualification-20-suite)<br>
 
 ## 1 Pre-requisites
 
