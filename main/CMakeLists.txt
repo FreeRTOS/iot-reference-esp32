@@ -71,4 +71,5 @@ idf_component_register(
 # OTA demo
 if( CONFIG_GRI_ENABLE_OTA_DEMO OR CONFIG_GRI_RUN_QUALIFICATION_TEST )
     target_add_binary_data(${COMPONENT_TARGET} "certs/aws_codesign.crt" TEXT)
+    target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.pem" TEXT)
 endif()

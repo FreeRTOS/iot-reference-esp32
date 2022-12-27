@@ -70,6 +70,11 @@
     #include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
+/**
+ * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
+ */
+extern const uint8_t root_cert_auth_pem_start[] asm ( "_binary_root_cert_auth_pem_start" );
+
 /* Global variables ***********************************************************/
 
 /**
@@ -150,7 +155,7 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
-    xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &xNetworkContext.pcClientCertPem,
+    xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCertPem,
                                                     &ulBufferLen );
 
     if( xEspErrRet == ESP_OK )
@@ -169,10 +174,8 @@ static BaseType_t prvInitializeNetworkContext( void )
         xRet = pdFAIL;
     }
 
-    /* Get the root CA certificate from esp_secure_crt_mgr and put into network
-     * context. */
-    xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &xNetworkContext.pcServerRootCAPem,
-                                                   &ulBufferLen );
+    /* Putting the Root CA certificate into the network context. */
+    xNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
 
     if( xEspErrRet == ESP_OK )
     {
@@ -212,7 +215,7 @@ static BaseType_t prvInitializeNetworkContext( void )
         /* If the DS peripheral is not being used, get the device private key from
          * esp_secure_crt_mgr and put into network context. */
 
-        xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &xNetworkContext.pcClientKeyPem,
+        xEspErrRet = esp_secure_cert_get_priv_key( ( const void ** ) &xNetworkContext.pcClientKeyPem,
                                                         &ulBufferLen );
 
         if( xEspErrRet == ESP_OK )
