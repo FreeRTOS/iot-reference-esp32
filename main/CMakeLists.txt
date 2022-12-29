@@ -57,6 +57,7 @@ set(MAIN_REQUIRES
     ota-for-aws-iot-embedded-sdk
     FreeRTOS-Libraries-Integration-Tests
     unity
+    driver
 )
 
 idf_component_register(

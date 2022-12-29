@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
@@ -42,6 +43,8 @@
 #include <esp_err.h>
 #include <esp_log.h>
 #include <sdkconfig.h>
+#include <esp_wifi_types.h>
+#include <esp_netif_types.h>
 
 /* Backoff algorithm library include. */
 #include "backoff_algorithm.h"
@@ -835,7 +838,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
             break;
 
         default:
-            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %d",
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
                       lEventId );
             break;
     }

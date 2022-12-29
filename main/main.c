@@ -26,6 +26,9 @@
 
 /* Includes *******************************************************************/
 
+/* Standard includes. */
+#include <string.h>
+
 /* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

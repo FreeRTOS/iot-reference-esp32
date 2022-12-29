@@ -310,7 +310,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
         default:
             ESP_LOGE( TAG,
-                      "coreMQTT-Agent event handler received unexpected event: %d",
+                      "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
                       lEventId );
             break;
     }
@@ -499,7 +499,7 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
                              portMAX_DELAY );
 
         ESP_LOGI( TAG,
-                  "Task \"%s\" sending publish request to coreMQTT-Agent with message \"%s\" on topic \"%s\" with ID %ld.",
+                  "Task \"%s\" sending publish request to coreMQTT-Agent with message \"%s\" on topic \"%s\" with ID %"PRIu32".",
                   pcTaskGetName( xCommandContext.xTaskToNotify ),
                   pcPayload,
                   pcTopicName,
@@ -520,7 +520,7 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
             /* For QoS 1 and 2, wait for the publish acknowledgment.  For QoS0,
              * wait for the publish to be sent. */
             ESP_LOGI( TAG,
-                      "Task \"%s\" waiting for publish %d to complete.",
+                      "Task \"%s\" waiting for publish %"PRIu32" to complete.",
                       pcTaskGetName( xCommandContext.xTaskToNotify ),
                       ulPublishMessageId );
 
@@ -540,13 +540,13 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
             ( ulNotifiedValue != ulPublishMessageId ) )
         {
             ESP_LOGW( TAG,
-                      "Error or timed out waiting for ack for publish message %ld. Re-attempting publish.",
+                      "Error or timed out waiting for ack for publish message %"PRIu32". Re-attempting publish.",
                       ulPublishMessageId );
         }
         else
         {
             ESP_LOGI( TAG,
-                      "Publish %ld succeeded for task \"%s\".",
+                      "Publish %"PRIu32" succeeded for task \"%s\".",
                       ulPublishMessageId,
                       pcTaskGetName( xCommandContext.xTaskToNotify ) );
         }

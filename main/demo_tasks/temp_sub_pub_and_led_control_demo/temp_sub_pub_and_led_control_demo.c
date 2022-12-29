@@ -523,13 +523,13 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
                   "{"                          \
                   " \"taskName\": \"%s\","     \
                   " \"temperatureValue\": %f," \
-                  " \"iteration\": %d"         \
+                  " \"iteration\": %"PRIu32""  \
                   "}"                          \
                   "}"                          \
                   ,
                   pcTaskName,
                   temperatureValue,
-                  ( int ) ulValueToNotify );
+                  ulValueToNotify );
 
         xPublishInfo.payloadLength = ( uint16_t ) strlen( payloadBuf );
 
@@ -563,7 +563,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
         /* For QoS 1 and 2, wait for the publish acknowledgment.  For QoS0,
          * wait for the publish to be sent. */
         ESP_LOGI( TAG,
-                  "Task %s waiting for publish %d to complete.",
+                  "Task %s waiting for publish %"PRIu32" to complete.",
                   pcTaskName,
                   ulValueToNotify );
 
@@ -576,7 +576,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
         {
             ulPublishPassCounts++;
             ESP_LOGI( TAG,
-                      "Rx'ed %s from Tx to %s (P%d:F%d).",
+                      "Rx'ed %s from Tx to %s (P%"PRIu32":F%"PRIu32").",
                       ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
                       pcTopicBuffer,
                       ulPublishPassCounts,
@@ -586,7 +586,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
         {
             ulPublishFailCounts++;
             ESP_LOGE( TAG,
-                      "Timed out Rx'ing %s from Tx to %s (P%d:F%d)",
+                      "Timed out Rx'ing %s from Tx to %s (P%"PRIu32":F%"PRIu32")",
                       ( xQoS == 0 ) ? "completion notification for QoS0 publish" : "ack for QoS1 publish",
                       pcTopicBuffer,
                       ulPublishPassCounts,
@@ -650,7 +650,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
         default:
             ESP_LOGE( TAG,
-                      "coreMQTT-Agent event handler received unexpected event: %d",
+                      "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
                       lEventId );
             break;
     }
