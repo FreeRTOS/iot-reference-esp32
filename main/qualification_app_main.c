@@ -76,6 +76,11 @@ static const char * TAG = "qual_main";
 extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_start" );
 
 /**
+ * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
+ */
+extern const uint8_t root_cert_auth_pem_start[] asm ( "_binary_root_cert_auth_pem_start" );
+
+/**
  * @brief The code signing certificate from 
  * components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests/src/ota/test_files/ecdsa-sha256-signer.crt.pem.test
  */
@@ -184,7 +189,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
         }
         else
         {
-            xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &xNetworkContext.pcClientCertPem,
+            xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCertPem,
                                                             &ulBufferLen );
         }
         
@@ -213,8 +218,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
         }
         else
         {
-            xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &xNetworkContext.pcServerRootCAPem,
-                                                           &ulBufferLen );
+            xNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
         }
 
         if( xEspErrRet == ESP_OK )
@@ -307,7 +311,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_dev_cert_addr( ( const void ** ) &xSecondNetworkContext.pcClientCertPem,
+                xEspErrRet = esp_secure_cert_get_device_cert( &xSecondNetworkContext.pcClientCertPem,
                                                                 &ulBufferLen );
             }
 
@@ -319,8 +323,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_ca_cert_addr( ( const void ** ) &xSecondNetworkContext.pcServerRootCAPem,
-                                                               &ulBufferLen );
+                xSecondNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
             }
 
             #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
