@@ -353,6 +353,29 @@ menu "Featured FreeRTOS IoT Integration"
     menu "Temperature pub sub and LED control demo configurations"
         depends on GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
 
+        choice GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_TYPE
+            prompt "LED type"
+            default GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO if IDF_TARGET_ESP32 || IDF_TARGET_ESP32C2
+            default GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_RMT
+            help
+                Defines the default peripheral for the GRI
+
+            config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO
+                bool "GPIO"
+            config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_RMT
+                bool "RMT - Addressable LED"
+        endchoice
+
+        config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO_NUMBER
+            int "GRI GPIO number"
+            default 8 if IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32H2 || IDF_TARGET_ESP32C2
+            default 18 if IDF_TARGET_ESP32S2
+            default 48 if IDF_TARGET_ESP32S3
+            default 5
+            help
+                GPIO number (IOxx) to blink on and off or the RMT signal for the addressable LED.
+                Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used for LED.
+
         config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_STRING_BUFFER_LENGTH
             int "Topic name and payload buffer length"
             default 150

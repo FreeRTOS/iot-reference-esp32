@@ -328,11 +328,11 @@ static void prvParseIncomingPublish( char * publishPayload,
 
         if( state == 1 )
         {
-            ws2812_led_set_rgb( 0, 25, 0 );
+            app_driver_led_on();
         }
         else if( state == 0 )
         {
-            ws2812_led_clear();
+            app_driver_led_off();
         }
     }
     else

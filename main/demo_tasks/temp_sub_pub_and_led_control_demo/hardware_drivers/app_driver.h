@@ -18,12 +18,17 @@
 extern "C" {
 #endif
 
-#include "ws2812_led.h"
 #include "driver/temp_sensor.h"
+#include "driver/gpio.h"
+#include "led_strip.h"
 
 esp_err_t app_driver_init();
 
 float app_driver_temp_sensor_read_celsius();
+
+esp_err_t app_driver_led_on();
+
+esp_err_t app_driver_led_off();
 
 #ifdef __cplusplus
 }

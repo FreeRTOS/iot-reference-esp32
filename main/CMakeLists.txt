@@ -47,7 +47,6 @@ set(MAIN_INCLUDE_DIRS
 set(MAIN_REQUIRES
     qrcode
     wifi_provisioning
-    ws2812_led
     coreMQTT
     coreMQTT-Agent
     corePKCS11
@@ -72,5 +71,7 @@ idf_component_register(
 # OTA demo
 if( CONFIG_GRI_ENABLE_OTA_DEMO OR CONFIG_GRI_RUN_QUALIFICATION_TEST )
     target_add_binary_data(${COMPONENT_TARGET} "certs/aws_codesign.crt" TEXT)
-    target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.pem" TEXT)
 endif()
+
+# Root Certificate
+target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.pem" TEXT)

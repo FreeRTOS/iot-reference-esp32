@@ -26,6 +26,9 @@
 
 /* Includes *******************************************************************/
 
+/* Standard includes. */
+#include <string.h>
+
 /* FreeRTOS includes. */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -266,7 +269,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &xNetworkContext.pcClientKeyPem,
+                xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKeyPem,
                                                                 &ulBufferLen );
             }
 
@@ -355,7 +358,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
                 }
                 else
                 {
-                    xEspErrRet = esp_secure_cert_get_priv_key_addr( ( const void ** ) &xSecondNetworkContext.pcClientKeyPem,
+                    xEspErrRet = esp_secure_cert_get_priv_key( &xSecondNetworkContext.pcClientKeyPem,
                                                                     &ulBufferLen );
                 }
 
