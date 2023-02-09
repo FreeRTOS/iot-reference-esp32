@@ -233,18 +233,6 @@ menu "Featured FreeRTOS IoT Integration"
         bool "Output provisioned certificates and keys."
         default y
 
-    config EXAMPLE_USE_DS_PERIPHERAL
-        bool "Use DS peripheral"
-        depends on !GRI_RUN_QUALIFICATION_TEST
-        default n
-        select ESP_SECURE_CERT_DS_PERIPHERAL
-        select ESP_TLS_USE_DS_PERIPHERAL
-        select CORE_HTTP_USE_DS_PERIPHERAL
-        select CORE_MQTT_USE_DS_PERIPHERAL
-        help
-            Enable the use of DS peripheral for the example.
-            The DS peripheral on the device must be provisioned first to use this option.
-
     menu "coreMQTT-Agent Manager Configurations"
 
         config GRI_MQTT_AGENT_TASK_STACK_SIZE

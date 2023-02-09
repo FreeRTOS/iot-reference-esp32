@@ -2,4 +2,7 @@
 dependencies:
   espressif/led_strip: "^2.0.0"
   espressif/esp_secure_cert_mgr: "^2.0.8"
-  espressif/cbor: "^0.6.0"
+  espressif/cbor:
+    version: "^0.6.0"
+    rules:
+      - if: "idf_version >=5.0"

@@ -76,7 +76,8 @@
 /**
  * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
  */
-extern const uint8_t root_cert_auth_pem_start[] asm ( "_binary_root_cert_auth_pem_start" );
+extern const char root_cert_auth_start[] asm ( "_binary_root_cert_auth_crt_start" );
+extern const char root_cert_auth_end[]   asm ( "_binary_root_cert_auth_crt_end" );
 
 /* Global variables ***********************************************************/
 
@@ -126,10 +127,6 @@ static BaseType_t prvInitializeNetworkContext( void )
     /* This is returned by this function. */
     BaseType_t xRet = pdPASS;
 
-    /* This is used to store the required buffer length when retrieving data
-     * from flash. */
-    uint32_t ulBufferLen;
-
     /* This is used to store the error return of ESP-IDF functions. */
     esp_err_t xEspErrRet;
 
@@ -158,15 +155,15 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
-    xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCertPem,
-                                                    &ulBufferLen );
+    xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCert,
+                                                  &xNetworkContext.pcClientCertSize );
 
     if( xEspErrRet == ESP_OK )
     {
         #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %d\n%s",
-                      strlen( xNetworkContext.pcClientCertPem ),
-                      xNetworkContext.pcClientCertPem );
+            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %"PRIu32"\n%s",
+                      xNetworkContext.pcClientCertSize,
+                      xNetworkContext.pcClientCert);
         #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
     }
     else
@@ -178,14 +175,15 @@ static BaseType_t prvInitializeNetworkContext( void )
     }
 
     /* Putting the Root CA certificate into the network context. */
-    xNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
+    xNetworkContext.pcServerRootCA = root_cert_auth_start;
+    xNetworkContext.pcServerRootCASize = root_cert_auth_end - root_cert_auth_start;
 
     if( xEspErrRet == ESP_OK )
     {
         #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nCA Cert: \nLength: %d\n%s",
-                      strlen( xNetworkContext.pcServerRootCAPem ),
-                      xNetworkContext.pcServerRootCAPem );
+            ESP_LOGI( TAG, "\nCA Cert: \nLength: %"PRIu32"\n%s",
+                      xNetworkContext.pcServerRootCASize,
+                      xNetworkContext.pcServerRootCA );
         #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
     }
     else
@@ -196,7 +194,7 @@ static BaseType_t prvInitializeNetworkContext( void )
         xRet = pdFAIL;
     }
 
-    #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+    #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
         /* If the digital signature peripheral is being used, get the digital
          * signature peripheral context from esp_secure_crt_mgr and put into
          * network context. */
@@ -209,24 +207,15 @@ static BaseType_t prvInitializeNetworkContext( void )
             xRet = pdFAIL;
         }
     #else
-        #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-        #error Reference Integration -> Use DS peripheral set to false \
-        but Component config -> Enable DS peripheral support set to    \
-        true.
-        #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
-        /* If the DS peripheral is not being used, get the device private key from
-         * esp_secure_crt_mgr and put into network context. */
-
-        xEspErrRet = esp_secure_cert_get_priv_key( ( const void ** ) &xNetworkContext.pcClientKeyPem,
-                                                        &ulBufferLen );
+        xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKey,
+                                                   &xNetworkContext.pcClientKeySize);
 
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %d\n%s",
-                          strlen( xNetworkContext.pcClientKeyPem ),
-                          xNetworkContext.pcClientKeyPem );
+                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %"PRIu32"\n%s",
+                          xNetworkContext.pcClientKeySize,
+                          xNetworkContext.pcClientKey );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
         }
         else
@@ -236,7 +225,7 @@ static BaseType_t prvInitializeNetworkContext( void )
 
             xRet = pdFAIL;
         }
-    #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
+    #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
 
     xNetworkContext.pxTls = NULL;
     xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
@@ -267,7 +256,7 @@ static void prvStartEnabledDemos( void )
 
         #if CONFIG_GRI_ENABLE_OTA_DEMO
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
+                ESP_LOGI( TAG, "\nCS Cert: \nLength: %zu\n%s",
                         strlen( pcAwsCodeSigningCertPem ),
                         pcAwsCodeSigningCertPem );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
