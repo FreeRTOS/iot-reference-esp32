@@ -81,7 +81,8 @@ extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_star
 /**
  * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
  */
-extern const uint8_t root_cert_auth_pem_start[] asm ( "_binary_root_cert_auth_pem_start" );
+extern const uint8_t root_cert_auth_crt_start[] asm ( "_binary_root_cert_auth_crt_start" );
+extern const uint8_t root_cert_auth_crt_end[] asm ( "_binary_root_cert_auth_crt_end" );
 
 /**
  * @brief The code signing certificate from 
@@ -104,13 +105,8 @@ const char pcOtaPalTestCodeSigningCertPem[] = \
  */
 #define mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS    ( 750 )
 
-#if ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
-    static NetworkContext_t xNetworkContext = { 0 };
-#endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
-
 #if ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 )
     static TransportInterface_t xTransport = { 0 };
-    static NetworkContext_t xNetworkContext = { 0 };
     static NetworkContext_t xSecondNetworkContext = { 0 };
 #endif /* ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) */
 
@@ -156,15 +152,12 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
 
 #if ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) || \
     ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
+    static NetworkContext_t xNetworkContext = { 0 };
 
     static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, char * pcCaCert, char * pcDeviceCert, char * pcDeviceKey )
     {
         /* This is returned by this function. */
         BaseType_t xRet = pdPASS;
-
-        /* This is used to store the required buffer length when retrieving data
-        * from flash. */
-        uint32_t ulBufferLen;
 
         /* This is used to store the error return of ESP-IDF functions. */
         esp_err_t xEspErrRet = ESP_OK;
@@ -187,22 +180,21 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
          * context. */
         if( ( pcDeviceCert ) && ( strlen( pcDeviceCert ) > 0 ) )
         {
-            xNetworkContext.pcClientCertPem = pcDeviceCert;
-            ulBufferLen = strlen( pcDeviceCert );
+            xNetworkContext.pcClientCert = pcDeviceCert;
+            xNetworkContext.pcClientCertSize = strlen(pcDeviceCert);
         }
         else
         {
-            xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCertPem,
-                                                            &ulBufferLen );
+            xEspErrRet = esp_secure_cert_get_device_cert( (char **)&xNetworkContext.pcClientCert,
+                                                            &xNetworkContext.pcClientCertSize);
         }
         
-
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\Qualification device Cert: \nLength: %d\n%s",
-                          strlen( xNetworkContext.pcClientCertPem ),
-                          xNetworkContext.pcClientCertPem );
+                ESP_LOGI( TAG, "Qualification device Cert: \nLength: %d\n%s",
+                          strlen( xNetworkContext.pcClientCert ),
+                          xNetworkContext.pcClientCert );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
         }
         else
@@ -216,20 +208,21 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
         /* Get the root CA certificate and put into network context. */
         if( ( pcCaCert ) && ( strlen( pcCaCert ) > 0 ) )
         {
-            xNetworkContext.pcServerRootCAPem = pcCaCert;
-            ulBufferLen = strlen( pcCaCert );
+            xNetworkContext.pcServerRootCA = pcCaCert;
+            xNetworkContext.pcServerRootCASize = strlen( pcCaCert );
         }
         else
         {
-            xNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
+            xNetworkContext.pcServerRootCA = (const char *) root_cert_auth_crt_start;
+            xNetworkContext.pcServerRootCASize = root_cert_auth_crt_end - root_cert_auth_crt_start;
         }
 
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                 ESP_LOGI( TAG, "\nQualification CA Cert: \nLength: %d\n%s",
-                          strlen( xNetworkContext.pcServerRootCAPem ),
-                          xNetworkContext.pcServerRootCAPem );
+                          (int)xNetworkContext.pcServerRootCASize,
+                          xNetworkContext.pcServerRootCA );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
         }
         else
@@ -240,7 +233,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
             xRet = pdFAIL;
         }
 
-        #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+        #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
             /* If the digital signature peripheral is being used, get the digital
              * signature peripheral context from esp_secure_crt_mgr and put into
              * network context. */
@@ -253,32 +246,26 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
                 xRet = pdFAIL;
             }
         #else
-            #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-            #error Reference Integration -> Use DS peripheral set to false \
-            but Component config -> Enable DS peripheral support set to    \
-            true.
-            #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
             /* If the DS peripheral is not being used, get the device private key from
              * esp_secure_crt_mgr and put into network context. */
 
             if( ( pcDeviceKey ) && ( strlen( pcDeviceKey ) > 0 ) )
             {
-                xNetworkContext.pcClientKeyPem = pcDeviceKey;
-                ulBufferLen = strlen( pcDeviceKey );
+                xNetworkContext.pcClientKey = pcDeviceKey;
+                xNetworkContext.pcClientKeySize = strlen( pcDeviceKey );
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKeyPem,
-                                                                &ulBufferLen );
+                xEspErrRet = esp_secure_cert_get_priv_key( (char **)&xNetworkContext.pcClientKey,
+                                                                &xNetworkContext.pcClientKeySize);
             }
 
             if( xEspErrRet == ESP_OK )
             {
                 #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                     ESP_LOGI( TAG, "\nQualification private Key: \nLength: %d\n%s",
-                              strlen( xNetworkContext.pcClientKeyPem ),
-                              xNetworkContext.pcClientKeyPem );
+                              (int)xNetworkContext.pcClientKeySize,
+                              xNetworkContext.pcClientKey );
                 #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
             }
             else
@@ -288,7 +275,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
 
                 xRet = pdFAIL;
             }
-        #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
+        #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
 
         xNetworkContext.pxTls = NULL;
         xNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
@@ -309,27 +296,27 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
             /* Get the device certificate and put into second network context. */
             if( ( pcDeviceCert ) && ( strlen( pcDeviceCert ) > 0 ) )
             {
-                xSecondNetworkContext.pcClientCertPem = pcDeviceCert;
-                ulBufferLen = strlen( pcDeviceCert );
+                xSecondNetworkContext.pcClientCert = pcDeviceCert;
+                xSecondNetworkContext.pcClientCertSize = strlen( pcDeviceCert );
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_device_cert( &xSecondNetworkContext.pcClientCertPem,
-                                                                &ulBufferLen );
+                xEspErrRet = esp_secure_cert_get_device_cert( (char **)&xSecondNetworkContext.pcClientCert,
+                                                                &xSecondNetworkContext.pcClientCertSize);
             }
 
             /* Get the root CA certificate and put into second network context. */
             if( ( pcCaCert ) && ( strlen( pcCaCert ) > 0 ) )
             {
-                xSecondNetworkContext.pcServerRootCAPem = pcCaCert;
-                ulBufferLen = strlen( pcCaCert );
+                xSecondNetworkContext.pcServerRootCA = pcCaCert;
+                xSecondNetworkContext.pcServerRootCASize = strlen( pcCaCert );
             }
             else
             {
-                xSecondNetworkContext.pcServerRootCAPem = (const char *) root_cert_auth_pem_start;
+                xSecondNetworkContext.pcServerRootCA = (const char *) root_cert_auth_crt_start;
             }
 
-            #if CONFIG_EXAMPLE_USE_DS_PERIPHERAL
+            #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
                 /* If the digital signature peripheral is being used, get the digital
                  * signature peripheral context from esp_secure_crt_mgr and put into
                  * second network context. */
@@ -342,24 +329,18 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
                     xRet = pdFAIL;
                 }
             #else
-                #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-                #error Reference Integration -> Use DS peripheral set to false \
-                but Component config -> Enable DS peripheral support set to    \
-                true.
-                #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
                 /* If the DS peripheral is not being used, get the device private key from
                  * esp_secure_crt_mgr and put into second network context. */
 
                 if( ( pcDeviceKey ) && ( strlen( pcDeviceKey ) > 0 ) )
                 {
-                    xSecondNetworkContext.pcClientKeyPem = pcDeviceKey;
-                    ulBufferLen = strlen( pcDeviceKey );
+                    xSecondNetworkContext.pcClientKey = pcDeviceKey;
+                    xSecondNetworkContext.pcClientKeySize = strlen( pcDeviceKey );
                 }
                 else
                 {
-                    xEspErrRet = esp_secure_cert_get_priv_key( &xSecondNetworkContext.pcClientKeyPem,
-                                                                    &ulBufferLen );
+                    xEspErrRet = esp_secure_cert_get_priv_key( (char **)&xSecondNetworkContext.pcClientKey,
+                                                                    &xSecondNetworkContext.pcClientKeySize);
                 }
 
                 if( xEspErrRet == ESP_OK )
@@ -373,7 +354,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, c
 
                     xRet = pdFAIL;
                 }
-            #endif /* CONFIG_EXAMPLE_USE_DS_PERIPHERAL */
+            #endif /* CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
 
             xSecondNetworkContext.pxTls = NULL;
             xSecondNetworkContext.xTlsContextSemaphore = xSemaphoreCreateMutex();
