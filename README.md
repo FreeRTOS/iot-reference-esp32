@@ -1,10 +1,16 @@
-# Featured FreeRTOS IoT Integration on ESP32-C3 RISC-V MCU
+# Featured FreeRTOS IoT Integration on Espressif SoCs
 
 ## Introduction
 
-This repository contains a project that demonstrates how to integrate FreeRTOS modular software libraries with the hardware capabilities of the [ESP32-C3 RISC-V MCU](https://www.espressif.com/en/products/socs/esp32-c3) and the enhanced security capabilities provided by its [Digital Signature (DS) peripheral](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/ds.html) and [Secure Boot V2](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html). The project contains reference implementations that demonstrate IoT application tasks that run concurrently and communicate with enhanced security with [AWS IoT](https://aws.amazon.com/iot-core/). The implementation also shows how to perform over-the-air firmware updates that use the [AWS IoT OTA service](https://docs.aws.amazon.com/freertos/latest/userguide/freertos-ota-dev.html) and the secure bootloader capabilities of Secure Boot V2. The reference implementation runs on the [ESP32-C3-DevKitM-1](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitm-1.html) IoT development board.
+This repository contains a project that demonstrates how to integrate FreeRTOS modular software libraries with the hardware capabilities of [Espressif SoCs](https://www.espressif.com/en/products/socs/) and the enhanced security capabilities.
+The project contains reference implementations that demonstrate IoT application tasks that run concurrently and communicate with enhanced security with [AWS IoT](https://aws.amazon.com/iot-core/). The implementation also shows how to perform over-the-air firmware updates that use the [AWS IoT OTA service](https://docs.aws.amazon.com/freertos/latest/userguide/freertos-ota-dev.html) and the secure bootloader capabilities of Secure Boot V2.
 
-See the [Featured IoT Reference Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu) on FreeRTOS.org for more details about the DS peripheral, Secure Boot and OTA.
+The reference implementation is tested to run on the following IoT development boards:
+1. ESP32
+2. ESP32-C3
+3. ESP32-S3
+
+See the [Featured IoT Reference Integration page](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu) on FreeRTOS.org for more details about the DS peripheral, Secure Boot and OTA.
 
 ## Cloning the Repository
 
