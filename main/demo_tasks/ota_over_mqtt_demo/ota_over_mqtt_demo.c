@@ -114,6 +114,17 @@
 #define OTA_JOB_NOTIFY_TOPIC_FILTER_LENGTH               ( ( uint16_t ) ( sizeof( OTA_JOB_NOTIFY_TOPIC_FILTER ) - 1 ) )
 
 /**
+ * @brief Job update response topics filter for OTA.
+ * This is used to route all the packets for OTA reserved topics which OTA agent has not subscribed for.
+ */
+#define OTA_JOB_UPDATE_RESPONSE_TOPIC_FILTER             OTA_TOPIC_PREFIX "jobs/+/update/+"
+
+/**
+ * @brief Length of Job update response topics filter.
+ */
+#define OTA_JOB_UPDATE_RESPONSE_TOPIC_FILTER_LENGTH      ( ( uint16_t ) ( sizeof( OTA_JOB_UPDATE_RESPONSE_TOPIC_FILTER ) - 1 ) )
+
+/**
  * @brief Wildcard topic filter for matching job response messages.
  * This topic filter is used to match the responses from OTA service for OTA agent job requests. THe
  * topic filter is a reserved topic which is not subscribed with MQTT broker.
@@ -582,6 +593,11 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             ESP_LOGI( TAG, "Received OtaJobEventReceivedJob callback from OTA Agent." );
             /* Signal coreMQTT-Agent network manager that an OTA job has started. */
             xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_OTA_STARTED_EVENT );
+            break;
+
+        case OtaJobEventNoActiveJob:
+            ESP_LOGI( TAG, "Received OtaJobEventNoActiveJob callback from OTA Agent." );
+            /* No more jobs available in IoTCore, no further actions on this event. */
             break;
 
         default:
@@ -1178,6 +1194,22 @@ bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
         if( isMatch == true )
         {
             prvProcessIncomingData( pvIncomingPublishCallbackContext, pxPublishInfo );
+        }
+    }
+
+    if( isMatch == false )
+    {
+        ( void ) MQTT_MatchTopic( pxPublishInfo->pTopicName,
+                                  pxPublishInfo->topicNameLength,
+                                  OTA_JOB_UPDATE_RESPONSE_TOPIC_FILTER,
+                                  OTA_JOB_UPDATE_RESPONSE_TOPIC_FILTER_LENGTH,
+                                  &isMatch );
+
+        /* Return true if receiving update/accepted or update/rejected to get rid of warning
+         * message "WARN:  Received an unsolicited publish from topic $aws/things/+/jobs/+/update/+". */
+        if( isMatch == true )
+        {
+            ESP_LOGI( TAG, "Received update response: %s.", pxPublishInfo->pTopicName );
         }
     }
 
