@@ -62,7 +62,7 @@ menu "Featured FreeRTOS IoT Integration"
             config GRI_QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR
                 bool "Generate a key pair."
                 default n
-            
+
             config GRI_QUALIFICATION_MQTT_ENDPOINT
                 string "Endpoint for MQTT Broker to use"
                 default "PLACE_HOLDER"
@@ -72,19 +72,19 @@ menu "Featured FreeRTOS IoT Integration"
             config GRI_QUALIFICATION_MQTT_PORT
                 int "Port for MQTT Broker to use"
                 default 8883
-            
+
             config GRI_QUALIFICATION_CLIENT_IDENTIFIER
                 string "Client Identifier for MQTT Test"
                 default "PLACE_HOLDER"
-            
+
             config GRI_QUALIFICATION_NETWORK_BUFFER_SIZE
                 int "Network Buffer Size for MQTT Test"
                 default 5000
-            
+
             config GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
                 int "Timeout to run MQTT process loop for MQTT Test"
                 default 700
-            
+
             config GRI_QUALIFICATION_ECHO_SERVER
                 string "Echo Server Domain Name/IP for Transport Interface Test"
                 default "PLACE_HOLDER"
@@ -94,36 +94,36 @@ menu "Featured FreeRTOS IoT Integration"
             config GRI_QUALIFICATION_ECHO_SERVER_PORT
                 int "Port for Echo Server to use"
                 default 9000
-            
+
             config GRI_QUALIFICATION_OTA_PAL_CERTIFICATE_FILE
                 string "Path to cert for OTA PAL Test."
                 default ""
-            
+
             config GRI_QUALIFICATION_OTA_PAL_FIRMWARE_FILE
                 string "Path to store firmware for OTA PAL Test."
                 default "/"
-            
+
             config GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM
                 bool "Use File System for OTA PAL Test."
                 default n
-            
+
             config GRI_QUALIFICATION_THING_NAME
                 string "Thing Name for Device Advisor Test/OTA end-to-end Test"
                 default "PLACE_HOLDER"
-            
+
             config GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
                 int "Application version major for OTA end-to-end Test."
                 default 0
-            
+
             config GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
                 int "Application version minor for OTA end-to-end Test."
                 default 9
-            
+
             config GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
                 int "Application version build for OTA end-to-end Test."
                 default 0
         endmenu # "Qualification Parameter Configurations"
-        
+
         menu "Sub pub unsub demo configurations"
             config GRI_SUB_PUB_UNSUB_DEMO_STRING_BUFFER_LENGTH
                 int "Topic name and payload buffer length"
@@ -142,14 +142,14 @@ menu "Featured FreeRTOS IoT Integration"
                 default 500
                 help
                     The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
-            
+
             config GRI_SUB_PUB_UNSUB_DEMO_QOS_LEVEL
                 int "QoS level of MQTT operations"
                 default 1
                 range 0 2
                 help
                     The QoS level of MQTT messages sent by this demo. This must be 0 or 1 if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker, that supports QoS level 2, this can be set to 2.
-        
+
             config GRI_SUB_PUB_UNSUB_DEMO_NUM_TASKS_TO_CREATE
                 int "Number of SubPubUnsub tasks to create"
                 default 1
@@ -167,7 +167,7 @@ menu "Featured FreeRTOS IoT Integration"
                 default 3072
                 help
                     The task stack size for each of the SubPubUnsub tasks.
-        
+
         endmenu # Sub pub unsub demo configurations
 
         menu "OTA demo configurations"
@@ -182,7 +182,7 @@ menu "Featured FreeRTOS IoT Integration"
                 default 128
                 help
                     The maximum size of the stream name required for downloading update file from streaming service.
-            
+
             config GRI_OTA_DEMO_TASK_DELAY_MS
                 int "OTA statistic output delay milliseconds."
                 default 1000
@@ -206,7 +206,7 @@ menu "Featured FreeRTOS IoT Integration"
             config GRI_OTA_DEMO_DEMO_TASK_PRIORITY
                 int "OTA demo task priority."
                 default 1
-        
+
             config GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE
                 int "OTA demo task stack size."
                 default 3072
@@ -232,6 +232,10 @@ menu "Featured FreeRTOS IoT Integration"
     config GRI_OUTPUT_CERTS_KEYS
         bool "Output provisioned certificates and keys."
         default y
+
+    config GRI_TRANSPORT_TIMEOUT_MS
+        int "TLS Transport Send / Receive timeout in milliseconds"
+        default 1000
 
     config EXAMPLE_USE_DS_PERIPHERAL
         bool "Use DS peripheral"
@@ -289,7 +293,7 @@ menu "Featured FreeRTOS IoT Integration"
             int "Timeout for receiving CONNACK in milliseconds"
             default 1000
 
-        
+
     endmenu # coreMQTT-Agent Manager Configurations
 
     config GRI_ENABLE_SUB_PUB_UNSUB_DEMO
@@ -317,14 +321,14 @@ menu "Featured FreeRTOS IoT Integration"
             default 500
             help
                 The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
-        
+
         config GRI_SUB_PUB_UNSUB_DEMO_QOS_LEVEL
             int "QoS level of MQTT operations"
             default 1
             range 0 2
             help
                 The QoS level of MQTT messages sent by this demo. This must be 0 or 1 if using AWS as AWS only supports levels 0 or 1. If using another MQTT broker, that supports QoS level 2, this can be set to 2.
-    
+
         config GRI_SUB_PUB_UNSUB_DEMO_NUM_TASKS_TO_CREATE
             int "Number of SubPubUnsub tasks to create"
             default 1
@@ -342,9 +346,9 @@ menu "Featured FreeRTOS IoT Integration"
             default 3072
             help
                 The task stack size for each of the SubPubUnsub tasks.
-    
+
     endmenu # Sub pub unsub demo configurations
-    
+
     config GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO
         bool "Enable temperature sensor pub sub and LED control demo"
         depends on !GRI_RUN_QUALIFICATION_TEST
@@ -370,7 +374,7 @@ menu "Featured FreeRTOS IoT Integration"
             default 500
             help
                 The maximum amount of time in milliseconds to wait for the commands to be posted to the MQTT agent should the MQTT agent's command queue be full. Tasks wait in the Blocked state, so don't use any CPU time.
-        
+
         config GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_QOS_LEVEL
             int "QoS level of MQTT operations"
             default 1
@@ -396,7 +400,7 @@ menu "Featured FreeRTOS IoT Integration"
         bool "Enable OTA demo"
         depends on !GRI_RUN_QUALIFICATION_TEST
         default y
-    
+
     menu "OTA demo configurations"
         depends on GRI_ENABLE_OTA_DEMO
 
@@ -411,7 +415,7 @@ menu "Featured FreeRTOS IoT Integration"
             default 128
             help
                 The maximum size of the stream name required for downloading update file from streaming service.
-        
+
         config GRI_OTA_DEMO_TASK_DELAY_MS
             int "OTA statistic output delay milliseconds."
             default 1000
@@ -435,7 +439,7 @@ menu "Featured FreeRTOS IoT Integration"
         config GRI_OTA_DEMO_DEMO_TASK_PRIORITY
             int "OTA demo task priority."
             default 1
-    
+
         config GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE
             int "OTA demo task stack size."
             default 3072
@@ -454,6 +458,6 @@ menu "Featured FreeRTOS IoT Integration"
 
     endmenu # OTA demo configurations
 
-endmenu # Golden Reference Integration 
+endmenu # Golden Reference Integration
 
 
