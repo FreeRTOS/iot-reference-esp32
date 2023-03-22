@@ -47,6 +47,7 @@
 #include "esp_secure_cert_read.h"
 
 /* Network transport include. */
+#include "freertos/projdefs.h"
 #include "network_transport.h"
 
 /* coreMQTT-Agent network manager include. */
@@ -152,6 +153,7 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     xNetworkContext.pcHostname = CONFIG_GRI_MQTT_ENDPOINT;
     xNetworkContext.xPort = CONFIG_GRI_MQTT_PORT;
+    xNetworkContext.xTimeout = pdMS_TO_TICKS( CONFIG_GRI_TRANSPORT_TIMEOUT_MS );
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
