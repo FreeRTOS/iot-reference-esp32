@@ -1,0 +1,8 @@
+## IDF Component Manager Manifest File
+dependencies:
+  espressif/led_strip: ">=1.1.0-alpha"
+  espressif/esp_secure_cert_mgr: "^2.0.8"
+  espressif/cbor:
+    version: "^0.6.0"
+    rules:
+      - if: "idf_version >=5.0"

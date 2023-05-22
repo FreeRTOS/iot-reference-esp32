@@ -2,3 +2,4 @@ build/
 **/.DS_Store
 main/certs/
 esp_ds_data/
+managed_components/

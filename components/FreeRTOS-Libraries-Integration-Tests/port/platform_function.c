@@ -8,9 +8,15 @@
 #include "freertos/semphr.h"
 #include "esp_log.h"
 #include <esp_err.h>
+#include <inttypes.h>
 
 /* Random number generator include. */
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #include "esp_random.h"
+#else
+#include "esp_system.h"
+#endif
+
 
 #define TEST_RESULT_BUFFER_CAPACITY    2048
 
@@ -98,7 +104,7 @@ int FRTest_ThreadTimedJoin( FRTestThreadHandle_t threadHandle,
 
     if( xReturned != pdTRUE )
     {
-        ESP_LOGW( TAG, "Waiting thread exist failed after %u %d. Task abort.", timeoutMs, xReturned );
+        ESP_LOGW( TAG, "Waiting thread exist failed after %"PRIu32" %d. Task abort.", timeoutMs, xReturned );
 
         /* Return negative value to indicate error. */
         retValue = -1;

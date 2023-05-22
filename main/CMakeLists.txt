@@ -47,7 +47,6 @@ set(MAIN_INCLUDE_DIRS
 set(MAIN_REQUIRES
     qrcode
     wifi_provisioning
-    ws2812_led
     coreMQTT
     coreMQTT-Agent
     corePKCS11
@@ -57,6 +56,7 @@ set(MAIN_REQUIRES
     ota-for-aws-iot-embedded-sdk
     FreeRTOS-Libraries-Integration-Tests
     unity
+    driver
 )
 
 idf_component_register(
@@ -72,3 +72,6 @@ idf_component_register(
 if( CONFIG_GRI_ENABLE_OTA_DEMO OR CONFIG_GRI_RUN_QUALIFICATION_TEST )
     target_add_binary_data(${COMPONENT_TARGET} "certs/aws_codesign.crt" TEXT)
 endif()
+
+# Root Certificate
+target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.crt" TEXT)
