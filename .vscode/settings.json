@@ -1,3 +1,7 @@
 {
-    "idf.adapterTargetName": "esp32c3"
+    "idf.adapterTargetName": "esp32c3",
+    "idf.openOcdConfigs": [
+      "board/esp32c3-builtin.cfg"
+    ],
+    "idf.port": "/dev/cu.usbserial-1440"
 }
