@@ -3,5 +3,5 @@
     "idf.openOcdConfigs": [
       "board/esp32c3-builtin.cfg"
     ],
-    "idf.port": "/dev/cu.usbserial-1440"
+    "idf.port": "/dev/cu.usbserial-1430"
 }

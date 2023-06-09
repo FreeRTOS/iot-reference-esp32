@@ -1,6 +1,9 @@
-# Known Issues and Workarounds
+# Known Issues, Workarounds, etc.
 
 Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), that we need it to workaround to make it work.
+
+## Useful Commands
+- Find used port by ESP32C3: `ls /dev/tty.*`, e.g.:  /dev/tty.usbserial-1430
 
 ## Issues
 
@@ -18,8 +21,9 @@ Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), 
 python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
 ```
 
+e.g:
 ```
-python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p /dev/tty.usbserial-1440 --keep_ds_data_on_host --ca-cert main/certs/AmazonRootCA1.pem --device-cert main/certs/certificate.pem.crt --private-key main/certs/private.pem.key --target_chip esp32c3 --secure_cert_type cust_flash
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p /dev/tty.usbserial-1430 --keep_ds_data_on_host --ca-cert main/certs/AmazonRootCA1.pem --device-cert main/certs/certificate.pem.crt --private-key main/certs/private.pem.key --target_chip esp32c3 --secure_cert_type cust_flash
 ```
 
 2. Write the esp_secure_crt partition binary (stored in esp_ds_data/esp_secure_crt.bin) to the ESP32-C3's flash by running the following command
@@ -28,6 +32,7 @@ python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_sec
 esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
 ```
 
+e.g:
 ```
 esptool.py --no-stub --port /dev/tty.usbserial-1440 write_flash 0xD000 esp_secure_cert_data/esp_secure_cert.bin
 ```
@@ -40,8 +45,9 @@ esptool.py --no-stub --port /dev/tty.usbserial-1440 write_flash 0xD000 esp_secur
 idf.py -p PORT flash monitor
 ```
 
+e.g:
 ```
-idf.py -p /dev/tty.usbserial-1440 flash monitor
+idf.py -p /dev/tty.usbserial-1430 flash monitor
 ```
 
 2. If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials
@@ -50,7 +56,8 @@ idf.py -p /dev/tty.usbserial-1440 flash monitor
 parttool.py -p PORT erase_partition --partition-name=nvs
 ```
 
+e.g:
 ```
-parttool.py -p /dev/tty.usbserial-1440  erase_partition --partition-name=nvs
+parttool.py -p /dev/tty.usbserial-1430  erase_partition --partition-name=nvs
 ```
 
