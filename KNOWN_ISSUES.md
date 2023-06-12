@@ -7,6 +7,12 @@ Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), 
 
 ## Issues
 
+- esptool.py: line 7: import: command not found
+  - Run `get_idf`
+
+- zsh: command not found: esptool.py
+  - Run `get_idf`
+
 - Enable support for legacy formats in ESP Secure Cert Manager. 
   - `Component config > ESP Secure Cert Manager -> Enable support for legacy formats`. 
   - Reference: https://github.com/FreeRTOS/iot-reference-esp32c3/issues/37
@@ -34,7 +40,7 @@ esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.
 
 e.g:
 ```
-esptool.py --no-stub --port /dev/tty.usbserial-1440 write_flash 0xD000 esp_secure_cert_data/esp_secure_cert.bin
+esptool.py --no-stub --port /dev/tty.usbserial-1430 write_flash 0xD000 esp_secure_cert_data/esp_secure_cert.bin
 ```
 
 ### 3 Build and flash the demo project
