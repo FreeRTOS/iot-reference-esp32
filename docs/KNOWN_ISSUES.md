@@ -19,6 +19,7 @@ Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), 
 
 ## Steps
 
+### 2 Demo setup
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 
 1. Create the esp_secure_crt partition binary.
@@ -67,3 +68,49 @@ e.g:
 parttool.py -p /dev/tty.usbserial-1430  erase_partition --partition-name=nvs
 ```
 
+### 5 Perform firmware Over-the-Air Updates with AWS IoT
+### 5.1 Setup pre-requisites for OTA cloud resources
+
+#### OTA Update Service role
+
+OTA Update Service role should end in something like this:
+
+![OTA Update Service role 1](iot-reference-esp32c3-role-1.png)
+![OTA Update Service role 2](iot-reference-esp32c3-role-2.png)
+
+iot-reference-esp32c3-role-policy
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole"
+            ],
+            "Resource": "arn:aws:iam::525045532992:role/iot-reference-esp32c3-role"
+        }
+    ]
+}
+```
+
+iot-reference-esp32c3-s3-policy
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObjectVersion",
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::iot-reference-esp32c3-updates/*"
+            ]
+        }
+    ]
+}
+```
