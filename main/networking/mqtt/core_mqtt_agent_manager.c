@@ -794,7 +794,7 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                     {
                         MQTTAgentCommandInfo_t xCommandInfo =
                         {
-                            .blockTimeMs = 10000,
+                            .blockTimeMs = 0,
                             .cmdCompleteCallback = processLoopCompleteCallback,
                             .pCmdCompleteCallbackContext = ( void * ) xTaskGetCurrentTaskHandle(),
                         };
