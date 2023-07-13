@@ -597,7 +597,8 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
 
         /* Add a little randomness into the delay so the tasks don't remain
          * in lockstep. */
-        xTicksToDelay = pdMS_TO_TICKS( temppubsubandledcontrolconfigDELAY_BETWEEN_PUBLISH_OPERATIONS_MS );
+        xTicksToDelay = pdMS_TO_TICKS( temppubsubandledcontrolconfigDELAY_BETWEEN_PUBLISH_OPERATIONS_MS ) +
+                        ( rand() % 0xff );
 
         vTaskDelay( xTicksToDelay );
     }
