@@ -233,6 +233,10 @@ menu "Featured FreeRTOS IoT Integration"
         bool "Output provisioned certificates and keys."
         default y
 
+    config GRI_TRANSPORT_TIMEOUT_MS
+        int "TLS Transport Send / Receive timeout in milliseconds"
+        default 1000
+
 
     menu "coreMQTT-Agent Manager Configurations"
 
