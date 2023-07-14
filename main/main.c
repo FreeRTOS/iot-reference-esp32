@@ -47,7 +47,6 @@
 #include "esp_secure_cert_read.h"
 
 /* Network transport include. */
-#include "freertos/projdefs.h"
 #include "network_transport.h"
 
 /* coreMQTT-Agent network manager include. */
