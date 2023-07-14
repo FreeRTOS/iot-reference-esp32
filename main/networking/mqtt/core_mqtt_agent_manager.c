@@ -53,6 +53,7 @@
 #include "core_mqtt_agent.h"
 
 /* coreMQTT-Agent port include. */
+#include "esp_tls.h"
 #include "freertos_agent_message.h"
 #include "freertos_command_pool.h"
 
@@ -632,6 +633,7 @@ static MQTTStatus_t prvCoreMqttAgentConnect( bool xCleanSession )
                             configMQTT_AGENT_CONNACK_RECV_TIMEOUT_MS,
                             &xSessionPresent );
 
+
     ESP_LOGI( TAG,
               "Session present: %d\n",
               xSessionPresent );
@@ -684,6 +686,12 @@ static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams 
     return xReturnStatus;
 }
 
+static void processLoopCompleteCallback( MQTTAgentCommandContext_t * pCmdCallbackContext,
+                                         MQTTAgentReturnInfo_t * pReturnInfo )
+{
+    xTaskNotifyGive( ( void * ) pCmdCallbackContext );
+}
+
 static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 {
     ( void ) pvParameters;
@@ -696,6 +704,8 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
     while( 1 )
     {
+        int lSockFd = -1;
+
         /* Wait for the device to be connected to WiFi and be disconnected from
          * MQTT broker. */
         xEventGroupWaitBits( xNetworkEventGroup,
@@ -726,7 +736,14 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
             if( xTlsRet == TLS_TRANSPORT_SUCCESS )
             {
-                eMqttRet = prvCoreMqttAgentConnect( xCleanSession );
+                if( esp_tls_get_conn_sockfd( pxNetworkContext->pxTls, &lSockFd ) == ESP_OK )
+                {
+                    eMqttRet = prvCoreMqttAgentConnect( xCleanSession );
+                }
+                else
+                {
+                    eMqttRet = MQTTBadParameter;
+                }
 
                 if( eMqttRet != MQTTSuccess )
                 {
@@ -741,6 +758,8 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                 xTlsDisconnect( pxNetworkContext );
                 xBackoffRet = prvBackoffForRetry( &xReconnectParams );
             }
+
+
         } while( ( eMqttRet != MQTTSuccess ) && ( xBackoffRet == pdPASS ) );
 
         if( eMqttRet == MQTTSuccess )
@@ -753,10 +772,56 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                                 CORE_MQTT_AGENT_CONNECTED_BIT );
             xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_CONNECTED_EVENT );
         }
+
+        if( eMqttRet == MQTTSuccess )
+        {
+            while( xEventGroupWaitBits( xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdFALSE, 0 ) != CORE_MQTT_AGENT_DISCONNECTED_BIT )
+            {
+                fd_set readSet;
+                fd_set errorSet;
+
+                FD_ZERO( &readSet );
+                FD_SET( lSockFd, &readSet );
+
+                FD_ZERO( &errorSet );
+                FD_SET( lSockFd, &errorSet );
+
+                struct timeval timeout = { .tv_usec = 10000, .tv_sec = 0 };
+
+                if( select( lSockFd + 1, &readSet, NULL, &errorSet, &timeout ) > 0 )
+                {
+                    if( FD_ISSET( lSockFd, &readSet ) )
+                    {
+                        MQTTAgentCommandInfo_t xCommandInfo =
+                        {
+                            .blockTimeMs = 0,
+                            .cmdCompleteCallback = processLoopCompleteCallback,
+                            .pCmdCompleteCallbackContext = ( void * ) xTaskGetCurrentTaskHandle(),
+                        };
+                        ESP_LOGI( TAG, "Sending ProcessLoop request." );
+
+                        ( void ) MQTTAgent_ProcessLoop( &xGlobalMqttAgentContext, &xCommandInfo );
+                        ( void ) ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS( 10000 ) );
+                        ESP_LOGI( TAG, "ProcessLoop complete." );
+
+                    }
+                    else if ( FD_ISSET( lSockFd, &errorSet ) )
+                    {
+                        xEventGroupClearBits( xNetworkEventGroup,
+                                  CORE_MQTT_AGENT_CONNECTED_BIT );
+                        xEventGroupSetBits( xNetworkEventGroup,
+                                            CORE_MQTT_AGENT_DISCONNECTED_BIT );
+                        xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_DISCONNECTED_EVENT );
+                    }
+                }
+                vTaskDelay( 1 );
+            }
+        }
     }
 
     vTaskDelete( NULL );
 }
+
 
 static void prvWifiEventHandler( void * pvHandlerArg,
                                  esp_event_base_t xEventBase,
