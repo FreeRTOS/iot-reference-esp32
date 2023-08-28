@@ -17,6 +17,11 @@ Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), 
   - `Component config > ESP Secure Cert Manager -> Enable support for legacy formats`. 
   - Reference: https://github.com/FreeRTOS/iot-reference-esp32c3/issues/37
 
+- Issues with git submodule 
+  - Run `git submodule update --recursive`, or
+  - Run `git clone <repo> --recursive`
+  
+
 ## Steps
 
 ### 2 Demo setup
