@@ -1,6 +1,6 @@
 #
 # Automatically generated file. DO NOT EDIT.
-# Espressif IoT Development Framework (ESP-IDF)  Project Configuration
+# Espressif IoT Development Framework (ESP-IDF) 5.1.1 Project Configuration
 #
 CONFIG_SOC_ADC_SUPPORTED=y
 CONFIG_SOC_DEDICATED_GPIO_SUPPORTED=y
@@ -462,6 +462,7 @@ CONFIG_GRI_MQTT_ENDPOINT="a3dvihr7cl0cbk-ats.iot.us-east-1.amazonaws.com"
 CONFIG_GRI_MQTT_PORT=8883
 CONFIG_GRI_THING_NAME="ExampleThing"
 CONFIG_GRI_OUTPUT_CERTS_KEYS=y
+CONFIG_GRI_TRANSPORT_TIMEOUT_MS=1000
 
 #
 # coreMQTT-Agent Manager Configurations
@@ -1913,9 +1914,9 @@ CONFIG_MQTT_SEND_TIMEOUT_MS=20000
 # Logging
 #
 CONFIG_CORE_MQTT_LOG_ERROR=y
-# CONFIG_CORE_MQTT_LOG_WARN is not set
+CONFIG_CORE_MQTT_LOG_WARN=y
 CONFIG_CORE_MQTT_LOG_INFO=y
-# CONFIG_CORE_MQTT_LOG_DEBUG is not set
+CONFIG_CORE_MQTT_LOG_DEBUG=y
 # end of Logging
 # end of coreMQTT
 

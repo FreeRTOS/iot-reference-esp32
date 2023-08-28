@@ -4,73 +4,73 @@ Here there are some steps from [Getting Started Guide](GettingStartedGuide.md), 
 
 ## Useful Commands
 - Find used port by ESP32C3: `ls /dev/tty.*`, e.g.:  /dev/tty.usbserial-1430
+  ```
+  ls /dev/tty.*
+  ```
 
 ## Issues
 
 - esptool.py: line 7: import: command not found
-  - Run `get_idf`
-
+  ```bash
+  get_idf
+  ```
 - zsh: command not found: esptool.py
-  - Run `get_idf`
-
-- Enable support for legacy formats in ESP Secure Cert Manager. 
-  - `Component config > ESP Secure Cert Manager -> Enable support for legacy formats`. 
-  - Reference: https://github.com/FreeRTOS/iot-reference-esp32c3/issues/37
-
-- Issues with git submodule 
-  - Run `git submodule update --recursive`, or
-  - Run `git clone <repo> --recursive`
+  ```bash
+  get_idf
+  ```
+- Certs not found. [issue](https://github.com/FreeRTOS/iot-reference-esp32c3/issues/37)
+  ```bash
+  E (687) esp_secure_cert_tlv: Cpuld not find the tlv of type 1
+  E (687) esp_secure_cert_tlv: Cpuld not find header for TLV of type 1
+  ```
+- Enable support for legacy formats in ESP Secure Cert Manager. Run:
+  ```bash
+  idf.py menuconfig
+  ``` 
+  Then enable legacy formats, go to: `Component config > ESP Secure Cert Manager -> Enable support for legacy formats`. 
   
+- Issues with git submodule. [Read](../Readme.md##cloning-the-repository)
+  
+# Getting Started Guide
+
+This is not a re-write of the GettingStartedGuide it only aims to make a better experience and avoid extra steps.
 
 ## Steps
-
 ### 2 Demo setup
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 
-1. Create the esp_secure_crt partition binary.
-
+Exports variables
 ```
-python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
-```
-
-e.g:
-```
-python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p /dev/tty.usbserial-1430 --keep_ds_data_on_host --ca-cert main/certs/AmazonRootCA1.pem --device-cert main/certs/certificate.pem.crt --private-key main/certs/private.pem.key --target_chip esp32c3 --secure_cert_type cust_flash
+export PORT=/dev/tty.usbserial-1440
+export CA_CERT_FILEPATH=main/certs/AmazonRootCA1.pem
+export DEVICE_CERT_FILEPATH=main/certs/certificate.pem.crt
+export PRIVATE_KEY_FILEPATH=main/certs/private.pem.key
 ```
 
-2. Write the esp_secure_crt partition binary (stored in esp_ds_data/esp_secure_crt.bin) to the ESP32-C3's flash by running the following command
-
+Run command to provision the private key
 ```
-esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
-```
-
-e.g:
-```
-esptool.py --no-stub --port /dev/tty.usbserial-1430 write_flash 0xD000 esp_secure_cert_data/esp_secure_cert.bin
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p $PORT --keep_ds_data_on_host --ca-cert $CA_CERT_FILEPATH --device-cert $DEVICE_CERT_FILEPATH --private-key $PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
 ```
 
 ### 3 Build and flash the demo project
 
 1. Run the following command to build and flash the demo project:
 
+Exports variables
 ```
-idf.py -p PORT flash monitor
+export PORT=/dev/tty.usbserial-1440
+export CA_CERT_FILEPATH=main/certs/AmazonRootCA1.pem
+export DEVICE_CERT_FILEPATH=main/certs/certificate.pem.crt
+export PRIVATE_KEY_FILEPATH=main/certs/private.pem.key
 ```
-
-e.g:
 ```
-idf.py -p /dev/tty.usbserial-1430 flash monitor
+idf.py -p $PORT flash monitor
 ```
 
 2. If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials
 
 ```
-parttool.py -p PORT erase_partition --partition-name=nvs
-```
-
-e.g:
-```
-parttool.py -p /dev/tty.usbserial-1430  erase_partition --partition-name=nvs
+parttool.py -p $PORT erase_partition --partition-name=nvs
 ```
 
 ### 5 Perform firmware Over-the-Air Updates with AWS IoT
