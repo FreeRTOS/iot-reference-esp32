@@ -39,27 +39,27 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 
 ### 1.1 Hardware Requirements
 
-* Micro USB cable.
-* ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://www.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitC-02?qs=stqOd1AaK7%2F1Q62ysr4CMA%3D%3D)).
-* Personal Computer with Linux, macOS, or Windows.
-* WiFi access point with access to the internet.
+- Micro USB cable.
+- ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://www.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitC-02?qs=stqOd1AaK7%2F1Q62ysr4CMA%3D%3D)).
+- Personal Computer with Linux, macOS, or Windows.
+- WiFi access point with access to the internet.
 
 ### 1.2 Software Requirements
 
-* ESP-IDF 4.4.3 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
-* [Python3](https://www.python.org/downloads/)
-    and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/) to use the AWS CLI to import certificates and perform OTA Job set up. Pip is included when you install
-    from Python 3.10.
-* [OpenSSL](https://www.openssl.org/) to create the OTA signing
-    key and certificate. If you have git installed on your machine, you can also use the openssl.exe that comes with the git installation.
-* [AWS CLI Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-    to import your code-signing certificate, private key, and certificate chain into the AWS Certificate Manager,
-    and to set up an OTA firmware update job. Refer to
-    [Installing or updating the latest version of the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-    for installation instructions. After installation, follow the steps in
-    [Configuration basics](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
-    to configure the basic settings (security credentials, the default AWS output format and the default AWS Region)
-    that AWS CLI uses to interact with AWS. (If you don't have an AWS account and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before following the Configuration basics for the AWS CLI.)
+- ESP-IDF 4.4.3 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
+- [Python3](https://www.python.org/downloads/)
+  and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/) to use the AWS CLI to import certificates and perform OTA Job set up. Pip is included when you install
+  from Python 3.10.
+- [OpenSSL](https://www.openssl.org/) to create the OTA signing
+  key and certificate. If you have git installed on your machine, you can also use the openssl.exe that comes with the git installation.
+- [AWS CLI Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+  to import your code-signing certificate, private key, and certificate chain into the AWS Certificate Manager,
+  and to set up an OTA firmware update job. Refer to
+  [Installing or updating the latest version of the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+  for installation instructions. After installation, follow the steps in
+  [Configuration basics](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+  to configure the basic settings (security credentials, the default AWS output format and the default AWS Region)
+  that AWS CLI uses to interact with AWS. (If you don't have an AWS account and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before following the Configuration basics for the AWS CLI.)
 
 ## 2 Demo setup
 
@@ -69,10 +69,11 @@ To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). The g
 After you have followed the instructions in the AWS IoT Core Setup Guide, you will have created a **device Endpoint**, an AWS IoT **thing**, a **PEM-encoded device certificate**, a **PEM-encoded private key**, and a **PEM-encoded root CA certificate**. (An explanation of these entities is given in the Setup Guide.) The root CA certificate can also be downloaded [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem). Your ESP23-C3 board must now be provisioned with these entities in order for it to connect securely with AWS IoT Core.
 
 ### 2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint
+
 The demo will connect to the AWS IoT device Endpoint that you configure here.
 
 1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be found under the ESP-IDF directory, has been run, or that you are using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, do ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The `SDK Configuration editor` window should pop up after a moment.
-(Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
+   (Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
 2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
@@ -80,27 +81,20 @@ The demo will connect to the AWS IoT device Endpoint that you configure here.
 6. Go back to main menu, Save and Exit.
 
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
-The key and certificates which will be used to establish a secure TLS connection will be stored in a special flash partition.
 
-1. Create the `esp_secure_crt` partition binary.
-```
-python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
-```
-Replace:
-**PORT** with the serial port to which the ESP32-C3 board is connected.
-**CA_CERT_FILEPATH** with the file path to the **PEM-encoded root CA certificate**.
-**DEVICE_CERT_FILEPATH** with the file path to the **PEM-encoded device certificate**.
-**PRIVATE_KEY_FILEPATH** with the file path to the **PEM-encoded private key**.
-For convenience sake, you could place your key and certificate files under the 'main/certs' directory.
+The key and certificates which will be used to establish a secure TLS connection will be stored in a special flash partition. Run the following command to create and flash the certificate partition.
 
-You will see a message that says "--configure_ds option not set. Configuring without use of DS peripheral.". Ignore this message.
-The partition binary will be created here: "esp_ds_data/esp_secure_crt.bin".
+```sh
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
+```
 
-2. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
-```
-esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
-```
-Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
+Remember to replace
+`PORT` with the serial port to which the ESP32-C3 board is connected,
+`CA_CERT_FILEPATH` with the file path to the PEM-encoded root CA certificate,
+`DEVICE_CERT_FILEPATH` with the file path to the PEM-encoded device certificate,
+and `PRIVATE_KEY_FILEPATH` with the file path to the PEM-encoded private key.
+
+> **NOTE:** For convenience sake, you could place your key and certificate files under the `main/certs` directory.
 
 ## 3 Build and flash the demo project
 
@@ -109,13 +103,16 @@ Before you build and flash the demo project, if you are setting up the ESP32-C3 
 Espressif provides BLE and SoftAP provisioning mobile apps which are available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble) for Android or the [Apple App Store](https://apps.apple.com/app/esp-ble-provisioning/id1473590141) for iOS. Download the appropriate app to your phone before proceeding.
 
 Run the following command to build and flash the demo project:
+
 ```
 idf.py -p PORT flash monitor
 ```
+
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
 
 If you are setting up the ESP32-C3 for the first time, the device will go though the Wi-Fi provisioning workflow and you will have to use the app you previously downloaded to scan the QR code and follow the instructions that follow. Once the device is provisioned successfully with the required Wi-Fi credentials, the demo will proceed. If previously Wi-Fi provisioned, the device will not go through the Wi-Fi provisioning workflow again.
 Note: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials, you will have to erase the nvs flash partition where the Wi-Fi credentials are stored, otherwise the device will presume that it has already been provisioned. In this situation, use the following command to erase the nvs partition.
+
 ```
 parttool.py -p PORT erase_partition --partition-name=nvs
 ```
@@ -123,6 +120,7 @@ parttool.py -p PORT erase_partition --partition-name=nvs
 ## 4 Monitoring the demo
 
 1. On the serial terminal console, confirm that the TLS connection was successful and that MQTT messages are published.
+
 ```
 I (1843) core_mqtt_agent_network_manager: WiFi connected.
 I (1843) app_wifi: Connected with IP Address:10.0.0.9
@@ -141,7 +139,7 @@ I (2873) sub_pub_unsub_demo: coreMQTT-Agent connected.
 I (2883) temp_sub_pub_demo: coreMQTT-Agent connected.
 I (2893) ota_over_mqtt_demo: coreMQTT-Agent connected. Resuming OTA agent.
 I (2893) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
-I (2903) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id 
+I (2903) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id
 1
 I (3153) coreMQTT: Packet received. ReceivedBytes=3.
 I (3153) temp_pub_sub_demo: Received subscribe ack for topic /filter/Publisher0 containing ID 1
@@ -153,22 +151,22 @@ I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 3. To change the LED power state, under "Publish to a topic" publish one of the following JSON payloads to the `/filter/TempSubPubLED` topic:
 
 To turn the LED on:
+
 ```json
 {
-    "led":
-    {
-        "power": 1
-    }
+  "led": {
+    "power": 1
+  }
 }
 ```
 
 To turn the LED off:
+
 ```json
 {
-    "led":
-    {
-        "power": 0
-    }
+  "led": {
+    "power": 0
+  }
 }
 ```
 
@@ -177,23 +175,27 @@ To turn the LED off:
 This demo uses the OTA client library and the AWS IoT OTA service for code signing and secure download of firmware updates.
 
 ### 5.1 Setup pre-requisites for OTA cloud resources
+
 Before you create an OTA job, the following resources are required. This is a one time setup required for performing OTA firmware updates. Make a note of the names of the resources you create, as you will need to provide them during subsequent configuration steps.
 
-* An Amazon S3 bucket to store your updated firmware. S3 is an AWS Service that enables you to store files in the cloud that can be accessed by you or other services. This is used by the OTA Update Manager Service to store the firmware image in an S3 “bucket” before sending it to the device. [Create an Amazon S3 Bucket to Store Your Update](https://docs.aws.amazon.com/freertos/latest/userguide/dg-ota-bucket.html).
-* An OTA Update Service role. By default, the OTA Update Manager cloud service does not have permission to access the S3 bucket that will contain the firmware image. An OTA Service Role is required to allow the OTA Update Manager Service to read and write to the S3 bucket. [Create an OTA Update Service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html).
-* An OTA user policy. An OTA User Policy is required to give your AWS account permissions to interact with the AWS services required for creating an OTA Update. [Create an OTA User Policy](https://docs.aws.amazon.com/freertos/latest/userguide/create-ota-user-policy.html).
-* [Create a code-signing certificate](https://docs.aws.amazon.com/freertos/latest/userguide/ota-code-sign-cert-win.html). The demos support a code-signing certificate with an ECDSA P-256 key and SHA-256 hash to perform OTA updates.
-* [Grant access to Code Signing for AWS IoT](https://docs.aws.amazon.com/freertos/latest/userguide/code-sign-policy.html).
+- An Amazon S3 bucket to store your updated firmware. S3 is an AWS Service that enables you to store files in the cloud that can be accessed by you or other services. This is used by the OTA Update Manager Service to store the firmware image in an S3 “bucket” before sending it to the device. [Create an Amazon S3 Bucket to Store Your Update](https://docs.aws.amazon.com/freertos/latest/userguide/dg-ota-bucket.html).
+- An OTA Update Service role. By default, the OTA Update Manager cloud service does not have permission to access the S3 bucket that will contain the firmware image. An OTA Service Role is required to allow the OTA Update Manager Service to read and write to the S3 bucket. [Create an OTA Update Service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html).
+- An OTA user policy. An OTA User Policy is required to give your AWS account permissions to interact with the AWS services required for creating an OTA Update. [Create an OTA User Policy](https://docs.aws.amazon.com/freertos/latest/userguide/create-ota-user-policy.html).
+- [Create a code-signing certificate](https://docs.aws.amazon.com/freertos/latest/userguide/ota-code-sign-cert-win.html). The demos support a code-signing certificate with an ECDSA P-256 key and SHA-256 hash to perform OTA updates.
+- [Grant access to Code Signing for AWS IoT](https://docs.aws.amazon.com/freertos/latest/userguide/code-sign-policy.html).
 
 ### 5.2 Provision the project with the code-signing public key certificate
-The code-signing public key certificate will be used by the application binary, i.e. the demo, to authenticate a binary that was downloaded for an update. (This downloaded firmware would have been signed by the certificate's corresponding private key.) 
+
+The code-signing public key certificate will be used by the application binary, i.e. the demo, to authenticate a binary that was downloaded for an update. (This downloaded firmware would have been signed by the certificate's corresponding private key.)
 
 Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step to 'main/certs/aws_codesign.crt'
 
 The demo will read the certificate 'aws_codesign.crt' from your host filesystem and save it in memory.
 
-### 5.3 Build an application binary with a higher version number, to be downloaded and activated on the device 
+### 5.3 Build an application binary with a higher version number, to be downloaded and activated on the device
+
 To perform an OTA firmware update, you must go through these steps:
+
 1. Increment the version of the binary and create the signed binary image.
 2. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
 3. Restore the original version (lower version number) and flash this to the device.
@@ -202,30 +204,36 @@ The version of the new image must be later than the current image on the board o
 
 The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notfication, the device will then start downloading the new firmware.
 
-Create a binary with a higher version number. 
+Create a binary with a higher version number.
+
 1. Run `idf.py menuconfig`.
 2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Under `Enable OTA demo`, go to `OTA demo configurations`.
 4. Set the `Application version build` number to '1'.
 5. Go back to main menu, Save and exit.
 6. Run the following command to only build the demo project.
+
 ```
 idf.py build
 ```
+
 If successful, there will be a new binary under the 'build' directory - build/FeaturedFreeRTOSIoTIntegration.bin. Copy this binary to another location, otherwise it will be overwritten in the next step.
 
 ### 5.4 Build and flash the device with a binary with a lower version number
+
 1. Follow the same steps in 5.3 starting with running idf.py menuconfig, but this time, set the `Application version build` number to '0'.
 2. Build and flash this new application binary with a lower version number.
+
 ```
 idf.py -p PORT flash monitor
 ```
 
 ### 5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job
+
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
-Choose 'Create a job'.
+   Choose 'Create a job'.
 2. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose 'Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
-3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices. 
+3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices.
 4. Under 'Select the protocol for file transfer', choose 'MQTT'.
 5. Under 'Sign and choose your file', choose 'Sign a new file for me'.
 6. Under 'Code signing profile', choose 'Create a new profile'.
@@ -246,6 +254,7 @@ Choose 'Create a job'.
 ### 5.6 Monitor OTA
 
 Once the job is created successfully, the demo should start downloading the firmware in chunks. For example:
+
 ```
 I (196573) ota_over_mqtt_demo: OTA Event processing completed. Freeing the event buffer to pool.
 I (196583) AWS_OTA: Current State=[WaitingForFileBlock], Event=[ReceivedFileBlock], New state=[WaitingForFileBlock]
@@ -290,17 +299,17 @@ I (340070) ota_over_mqtt_demo: Sent PUBLISH packet to broker $aws/things/thing_e
 
 I (340100) ota_over_mqtt_demo: Received OtaJobEventActivate callback from OTA Agent.
 I (340110) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2ced8h (184024) map
-I (340140) esp_image: segment 1: paddr=001dcf00 vaddr=3fc91800 size=03118h ( 12568) 
+I (340140) esp_image: segment 1: paddr=001dcf00 vaddr=3fc91800 size=03118h ( 12568)
 I (340150) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=d86e8h (886504) map
-I (340260) esp_image: segment 3: paddr=002b8710 vaddr=3fc94918 size=0048ch (  1164) 
-I (340260) esp_image: segment 4: paddr=002b8ba4 vaddr=40380000 size=116dch ( 71388) 
-I (340280) esp_image: segment 5: paddr=002ca288 vaddr=50000010 size=00010h (    16) 
+I (340260) esp_image: segment 3: paddr=002b8710 vaddr=3fc94918 size=0048ch (  1164)
+I (340260) esp_image: segment 4: paddr=002b8ba4 vaddr=40380000 size=116dch ( 71388)
+I (340280) esp_image: segment 5: paddr=002ca288 vaddr=50000010 size=00010h (    16)
 I (340280) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2ced8h (184024) map
-I (340310) esp_image: segment 1: paddr=001dcf00 vaddr=3fc91800 size=03118h ( 12568) 
+I (340310) esp_image: segment 1: paddr=001dcf00 vaddr=3fc91800 size=03118h ( 12568)
 I (340310) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=d86e8h (886504) map
-I (340430) esp_image: segment 3: paddr=002b8710 vaddr=3fc94918 size=0048ch (  1164) 
-I (340430) esp_image: segment 4: paddr=002b8ba4 vaddr=40380000 size=116dch ( 71388) 
-I (340440) esp_image: segment 5: paddr=002ca288 vaddr=50000010 size=00010h (    16) 
+I (340430) esp_image: segment 3: paddr=002b8710 vaddr=3fc94918 size=0048ch (  1164)
+I (340430) esp_image: segment 4: paddr=002b8ba4 vaddr=40380000 size=116dch ( 71388)
+I (340440) esp_image: segment 5: paddr=002ca288 vaddr=50000010 size=00010h (    16)
 I (340490) ota_over_mqtt_demo:  Received: 283   Queued: 283   Processed: 283   Dropped: 0
 I (341000) wifi:state: run -> init (0)
 I (341000) wifi:pm stop, total sleep time: 271785664 us / 337788344 us
@@ -375,7 +384,7 @@ I (460) sleep: Configure to isolate all GPIO pins in sleep state
 I (467) sleep: Enable automatic switching of GPIO sleep configuration
 I (474) coexist: coexist rom version 9387209
 I (479) cpu_start: Starting scheduler.
-I (484) main: 
+I (484) main:
 ...
 I (884) app_driver: Initializing Temperature sensor
 I (914) ota_over_mqtt_demo: OTA over MQTT demo, Application version 0.0.1
@@ -428,7 +437,7 @@ I (1194) wifi:connected with Stranger 5, aid = 12, channel 6, BW20, bssid = 8c:6
 I (1194) wifi:security: WPA2-PSK, phy: bgn, rssi: -55
 I (1194) wifi:pm start, type: 1
 
-I (1194) wifi:set rx beacon pti, rx_bcn_pti: 14, bcn_timeout: 14, mt_pti: 25000, mt_time: 10000       
+I (1194) wifi:set rx beacon pti, rx_bcn_pti: 14, bcn_timeout: 14, mt_pti: 25000, mt_time: 10000
 W (1204) wifi:<ba-add>idx:1 (ifx:0, 8c:6a:8d:fc:31:8e), tid:6, ssn:0, winSize:64
 I (1284) wifi:BcnInt:102400, DTIM:1
 I (1924) core_mqtt_agent_manager: WiFi connected.
@@ -449,90 +458,91 @@ I (3294) core_mqtt_agent_manager: coreMQTT-Agent connected.
 I (3294) temp_sub_pub_and_led_control_demo: coreMQTT-Agent connected.
 I (3304) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id 1
 I (3444) coreMQTT: Packet received. ReceivedBytes=3.
-I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOta/jobs/notify-next. 
+I (3444) ota_over_mqtt_demo: Subscribed to topic $aws/things/thing_esp32c3_nonOta/jobs/notify-next.
 ```
 
 ## 6 Run FreeRTOS Integration Test
 
 ### 6.1 Prerequisite
+
 - Follow the [OTA update with AWS IoT Guide](#5-perform-firmware-over-the-air-updates-with-aws-iot) to create an OTA update and verify the digital signature, checksum and version number of the new image. If firmware update is verified, you can run the tests on your device.
 - Run `idf.py menuconfig`.
 - Under `Featured FreeRTOS IoT Integration`, choose `Run qualification test`.
 - Under `Component config -> Unity unit testing library`, choose `Include Unity test fixture`.
 
-*Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c).*
+_Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c)._
 
 ### 6.2 Steps for each test case
 
 1. Device Advisor Test
-    - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) in the console.
-    - Find the Device Advisor test endpoint for your account
-    - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Device Advisor Test`.
-    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-      - Set `Endpoint for MQTT Broker to use` to Device Avdisor test endpoint
-      - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
-    - Build and run.
-    - See Device Advisor test result in the console.
+   - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) in the console.
+   - Find the Device Advisor test endpoint for your account
+   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Device Advisor Test`.
+   - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
+     - Set `Endpoint for MQTT Broker to use` to Device Avdisor test endpoint
+     - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
+   - Build and run.
+   - See Device Advisor test result in the console.
 2. MQTT Test
-    - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `MQTT Test`.
-    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-      - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
-      - Set `Client Identifier for MQTT Test`
-    - Build and run.
-    - See test result on target output.
-    - Example output
-        ```
-        I (821) qual_main: Run qualification test.
-        ...
-        -----------------------
-        8 Tests 0 Failures 0 Ignored
-        OK
-        I (84381) qual_main: End qualification test.
-        ```
+   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `MQTT Test`.
+   - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
+     - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
+     - Set `Client Identifier for MQTT Test`
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
+     I (821) qual_main: Run qualification test.
+     ...
+     -----------------------
+     8 Tests 0 Failures 0 Ignored
+     OK
+     I (84381) qual_main: End qualification test.
+     ```
 3. Transport Interface Test
-    - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start an echo server.
-    - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Transport Interface Test`.
-    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-      - Set `Echo Server Domain Name/IP for Transport Interface Test`
-      - Set `Port for Echo Server to use`
-    - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
-    - Build and run.
-    - See test result on target output.
-    - Example output
-        ```
-        I (855) qual_main: Run qualification test.
-        ...
-        -----------------------
-        14 Tests 0 Failures 0 Ignored
-        OK
-        I (612755) qual_main: End qualification test.
-        ```
+   - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start an echo server.
+   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Transport Interface Test`.
+   - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
+     - Set `Echo Server Domain Name/IP for Transport Interface Test`
+     - Set `Port for Echo Server to use`
+   - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
+     I (855) qual_main: Run qualification test.
+     ...
+     -----------------------
+     14 Tests 0 Failures 0 Ignored
+     OK
+     I (612755) qual_main: End qualification test.
+     ```
 4. OTA PAL Test
-    - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `OTA PAL Test`.
-    - Build and run.
-    - See test result on target output.
-    - Example output
-        ```
-        I (905) qual_main: Run qualification test.
-        ...
-        -----------------------
-        15 Tests 0 Failures 0 Ignored
-        OK
-        I (113755) qual_main: End qualification test.
-        ```
+   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `OTA PAL Test`.
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
+     I (905) qual_main: Run qualification test.
+     ...
+     -----------------------
+     15 Tests 0 Failures 0 Ignored
+     OK
+     I (113755) qual_main: End qualification test.
+     ```
 5. Core PKCS11 Test
-    - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `CorePKCS#11 Test`.
-    - Build and run.
-    - See test result on target output.
-    - Example output
-        ```
-        I (858) qual_main: Run qualification test.
-        ...
-        -----------------------
-        17 Tests 0 Failures 0 Ignored
-        OK
-        I (7518) qual_main: End qualification test.
-        ```
+   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `CorePKCS#11 Test`.
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
+     I (858) qual_main: Run qualification test.
+     ...
+     -----------------------
+     17 Tests 0 Failures 0 Ignored
+     OK
+     I (7518) qual_main: End qualification test.
+     ```
 
 ## 7 Run AWS IoT Device Tester
 
@@ -541,6 +551,7 @@ This repository can be tested using [AWS IoT Device Tester for FreeRTOS (IDT)](h
 IDT runs a suite of tests that include testing the device's transport interface layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test cases, the IDT binary will make a copy of the source code, update the header files in the project, then compile the project and flash the resulting image to your board. Finally, IDT will read serial output from the board and communicate with the AWS IoT cloud to ensure that test cases are passing.
 
 ### 7.1 Prerequisite
+
 - Follow the [OTA update with AWS IoT Guide](#5-perform-firmware-over-the-air-updates-with-aws-iot) to create an OTA update and verify the digital signature, checksum and version number of the new image. If firmware update is verified, you can run the tests on your device.
 - Run `idf.py menuconfig`.
 - Under `Featured FreeRTOS IoT Integration`, choose `Run qualification test`.
@@ -548,7 +559,7 @@ IDT runs a suite of tests that include testing the device's transport interface 
 - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, **DISABLE** all the tests.
 - Run `idf.py fullclean` to clear local CMAKE cache.
 
-*Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c).*
+_Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c)._
 
 ### 7.2 Download AWS IoT Device Tester
 
@@ -560,25 +571,28 @@ Follow [the instructions to setup your AWS account](https://docs.aws.amazon.com/
 
 Extract IDT for FreeRTOS to a location on the file system
 
-* The `devicetester-extract-location/bin` directory holds the IDT binary, which is the entry point used to run IDT
-* The `devicetester-extract-location/results` directory holds logs that are generated every time you run IDT.
-* The `devicetester-extract-location/configs` directory holds configuration files that are required to setup IDT
+- The `devicetester-extract-location/bin` directory holds the IDT binary, which is the entry point used to run IDT
+- The `devicetester-extract-location/results` directory holds logs that are generated every time you run IDT.
+- The `devicetester-extract-location/configs` directory holds configuration files that are required to setup IDT
 
 Before running IDT, the files in `devicetester-extract-location/configs` need to be updated. We have pre-defined configures available in the [idt_config](https://github.com/FreeRTOS/iot-reference-esp32c3/tree/main/idt_config). Copy these templates to `devicetester-extract-location/configs`, and the rest of this section will walk through the remaining values that need to be filled in.
 
 You need to configure your AWS credentials for IDT.
-* In `config.json`, update the `profile` and `awsRegion` fields
+
+- In `config.json`, update the `profile` and `awsRegion` fields
 
 You need to specify the device details for IDT.
-* In `device.json`, update `serialPort` to the serial port of your board as from [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
+
+- In `device.json`, update `serialPort` to the serial port of your board as from [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
 
 You need to configure IDT the build, flash and test settings.
-* In `build.bat` / `build.sh`, update ESP_IDF_PATH, and ESP_IDF_FRAMEWORK_PATH
-* In `flash.bat` / `flash.sh`, update ESP_IDF_PATH, ESP_IDF_FRAMEWORK_PATH, and NUM_COMPORT
-* In `userdata.json`, update `sourcePath` to the absolute path to the root of this repository.
-* In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
-.](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
-* Run all the steps to create a [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
+
+- In `build.bat` / `build.sh`, update ESP_IDF_PATH, and ESP_IDF_FRAMEWORK_PATH
+- In `flash.bat` / `flash.sh`, update ESP_IDF_PATH, ESP_IDF_FRAMEWORK_PATH, and NUM_COMPORT
+- In `userdata.json`, update `sourcePath` to the absolute path to the root of this repository.
+- In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
+  .](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
+- Run all the steps to create a [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
 
 ### 7.4 Running the FreeRTOS qualification 2.0 suite
 
