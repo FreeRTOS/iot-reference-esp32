@@ -1,5 +1,6 @@
 # Installation
-*CMake & CMake Tools extensionsate not compatile with Espressif IDF extension*
+*CMake extension is compatile with Espressif IDF extension*
+*CMake Tools extension is not compatile with Espressif IDF extension*
 
 ### Steps
 1. Install VS Code plugin. [Link](https://github.com/espressif/vscode-esp-idf-extension/blob/master/docs/tutorial/install.md)
