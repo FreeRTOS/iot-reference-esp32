@@ -31,6 +31,11 @@ Flash firmware and open monitor
 idf.py -p $PORT flash monitor
 ```
 
+All in one command: Flash firmware and open monitor
+```
+idf.py -p $(ls /dev/tty.usb*) flash monitor
+```
+
 ### If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials
 
 Exports variables
