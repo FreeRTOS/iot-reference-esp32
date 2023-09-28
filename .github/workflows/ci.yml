@@ -52,6 +52,21 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - env:
+          bashPass: \033[32;1mPASSED -
+          bashInfo: \033[33;1mINFO -
+          bashFail: \033[31;1mFAILED -
+          bashEnd:  \033[0m
+          stepName: Perform Recursive Clone of esp-aws-iot
+        name: ${{ env.stepName }}
+        shell: bash
+        run: |
+          # ${{ env.stepName }}
+          echo -e "::group::${{ env.bashInfo }} ${{ env.stepName }} ${{ env.bashEnd }}"
+          git submodule update --checkout --init --recursive
+          echo -e "::endgroup::"
+          echo -e "${{ env.bashPass }} ${{ env.stepName }} ${{ env.bashEnd }}"
+
       - name: Run manifest verifier
         uses: FreeRTOS/CI-CD-GitHub-Actions/manifest-verifier@main
         with:
