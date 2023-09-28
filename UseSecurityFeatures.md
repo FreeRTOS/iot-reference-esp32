@@ -28,11 +28,12 @@ refer to Espressif's documentation on
 The key and certificates which will be used to establish a secure TLS
 connection will be encrypted and stored in a special flash partition.
 
+1. Download the necessary components by running `idf.py reconfigure`
 1. Create the `esp_secure_crt` partition binary. If this is the first time
 running this command, an eFuse block in the ESP32-C3 will be burnt with a
  generated key and this **CANNOT** be reversed:
 ```
-python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
 ```
 Replace:
 **PORT** with the serial port to which the ESP32-C3 board is connected.
@@ -42,9 +43,9 @@ Replace:
 
 Type in BURN when prompted to.
 
-2. Write the `esp_secure_crt` partition binary (stored in `esp_ds_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
+2. Write the `esp_secure_crt` partition binary (stored in `esp_secure_cert_data/esp_secure_crt.bin`) to the ESP32-C3's flash by running the following command:
 ```
-esptool.py --no-stub --port PORT write_flash 0xD000 esp_ds_data/esp_secure_cert.bin
+esptool.py --no-stub --port PORT write_flash 0xD000 esp_secure_cert_data/esp_secure_cert.bin
 ```
 Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
 

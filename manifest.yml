@@ -15,9 +15,3 @@ dependencies:
       type: "git"
       url: "https://github.com/espressif/esp-aws-iot.git"
       path: "components/esp-aws-iot"
-  - name: "esp_secure_cert_mgr"
-    version: "v2.2.0"
-    repository:
-      type: "git"
-      url: "https://github.com/espressif/esp_secure_cert_mgr.git"
-      path: "components/esp_secure_cert_mgr"
