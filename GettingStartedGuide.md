@@ -40,7 +40,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 ### 1.1 Hardware Requirements
 
 - Micro USB cable.
-- ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://www.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitC-02?qs=stqOd1AaK7%2F1Q62ysr4CMA%3D%3D)).
+- ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
 - Personal Computer with Linux, macOS, or Windows.
 - WiFi access point with access to the internet.
 

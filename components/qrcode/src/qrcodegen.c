@@ -1552,6 +1552,6 @@ static int numCharCountBits( enum qrcodegen_Mode mode,
 
         default:
             assert( false );
-            return -1;                        /* Dummy value */
+            return -1; /* Dummy value */
     }
 }

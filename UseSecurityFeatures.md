@@ -20,12 +20,26 @@ In the [Getting Started Guide](GettingStartedGuide.md), one would have setup the
 9. Go back to `Security features`.
 10. Go back to main menu, Save and Exit.
 
-**NOTE**: This enables Flash Encryption in **Development Mode**. For production devices, refer to Espressif's documentation on [**Release Mode** for Flash Encryption](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html#release-mode)
+**NOTE**: This enables Flash Encryption in **Development Mode**. For production devices,
+refer to Espressif's documentation on
+[**Release Mode** for Flash Encryption](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/flash-encryption.html#release-mode)
 
 ## 4 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
-The key and certificates which will be used to establish a secure TLS connection will be encrypted and stored in a special flash partition.
+The key and certificates which will be used to establish a secure TLS
+connection will be encrypted and stored in a special flash partition.
 
-1. Create the `esp_secure_crt` partition binary. If this is the first time running this command, an eFuse block in the ESP32-C3 will be burnt with a generated key and this **CANNOT** be reversed:
+**NOTE**: You will need to download the
+[esp_secure_cert_mgr](https://github.com/espressif/esp_secure_cert_mgr/tree/v2.2.0)
+repository to perform these actions.
+
+This can be done with the following command:
+```
+git clone --branch v2.2.0 https://github.com/espressif/esp_secure_cert_mgr.git components/esp_secure_cert_mgr
+```
+
+1. Create the `esp_secure_crt` partition binary. If this is the first time
+running this command, an eFuse block in the ESP32-C3 will be burnt with a
+ generated key and this **CANNOT** be reversed:
 ```
 python components/esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
 ```
@@ -45,12 +59,21 @@ Replace **PORT** with the serial port to which the ESP32-C3 board is connected.
 
 ## 5 Configure Secure Boot
 
-1. For Secure Boot, an RSA 3072 private key must be generated which will be used to sign the secondary bootloader and the application binary. Please refer to the Secure Boot section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for further details. The private key can be generated with the following command:
+1. For Secure Boot, an RSA 3072 private key must be generated which will be
+used to sign the secondary bootloader and the application binary. Please refer
+to the Secure Boot section in the
+[Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu/)
+on FreeRTOS.org for further details. The private key can be generated with the
+following command:
 ```
 openssl genrsa -out secure_boot_signing_key.pem 3072
 ```
-This will output `secure_boot_signing_key.pem`, which can be renamed as you see fit. Keep this key in a safe place as it will be necessary for signing binaries in the future.
-Note: If you have installed openssl and the openssl command fails with a command not found error, please ensure you have the openssl path exported when using your terminal/command prompt.
+This will output `secure_boot_signing_key.pem`, which can be renamed as you see
+fit. Keep this key in a safe place as it will be necessary for signing binaries
+in the future.
+Note: If you have installed openssl and the openssl command fails with a command
+not found error, please ensure you have the openssl path exported when using your
+terminal/command prompt.
 
 2. Run `idf.py menuconfig`
 3. Select `Security features`.
@@ -59,7 +82,9 @@ Note: If you have installed openssl and the openssl command fails with a command
 6. Set `Secure boot private signing key` to the path to the RSA 3072 private key you generated in step 1.
 7. Go back to main menu, Save and Exit.
 
-**NOTE**: This covers setting up Secure Boot with a single private key, but up to 3 private keys can be used. Refer to Espressif's documentation on [Secure Boot V2](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html).
+**NOTE**: This covers setting up Secure Boot with a single private key, but
+up to 3 private keys can be used. Refer to Espressif's documentation on
+[Secure Boot V2](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html).
 
 ### 5.1 Build and flash the Secure Boot enabled bootloader
 1. Build the bootloader by running the following command:
@@ -76,15 +101,25 @@ Secure boot enabled, so bootloader not flashed automatically.
         C:/Users/user/.espressif/python_env/idf4.4_py3.8_env/Scripts/python.exe  C:/Users/user/Desktop/esp-idf-6/components/esptool_py/esptool/esptool.py --chip esp32c3 --port=(PORT) --baud=(BAUD) --before=default_reset --after=no_reset --no-stub write_flash --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0 C:/FreeRTOS-Repositories/lab-iot-reference-esp32c3/build/bootloader/bootloader.bin
 ==============================================================================
 ```
-2. Flash the bootloader by copying and pasting the command under "Secure boot enabled, so bootloader not flashed automatically," (the second block of text) replacing:
-**PORT** with the serial port to which the ESP32-C3 is connected. (Do not include the opening and closing braces around PORT in the command)
+2. Flash the bootloader by copying and pasting the command under "Secure boot
+enabled, so bootloader not flashed automatically," (the second block of text)
+replacing:
+**PORT** with the serial port to which the ESP32-C3 is connected. (Do not include
+the opening and closing braces around PORT in the command)
 **BAUD** with 460800.
 
 ## 6 Build and flash the demo project
 
-With Secure Boot enabled, application binaries must be signed before being flashed. With the configurations set in this document, this is automatically done any time a new application binary is built. Binaries are automatically signed using the RSA key we generated and configured in section 2.2 (Configure Secure Boot).
+With Secure Boot enabled, application binaries must be signed before being
+flashed. With the configurations set in this document, this is automatically
+done any time a new application binary is built. Binaries are automatically
+signed using the RSA key we generated and configured in section 2.2
+(Configure Secure Boot).
 
-If flash encryption is enabled, the bootloader will generate the private key used to encrypt flash and store it in the ESP32-C3's eFuse. It will then encrypt the bootloader, the partition table, all `app` partitions, and all partitions marked `encrypted` in the partition table.
+If flash encryption is enabled, the bootloader will generate the private key
+used to encrypt flash and store it in the ESP32-C3's eFuse. It will then encrypt
+the bootloader, the partition table, all `app` partitions, and all partitions
+marked `encrypted` in the partition table.
 
 Run the following command to build and flash the demo project:
 ```
@@ -92,11 +127,15 @@ idf.py -p PORT flash monitor
 ```
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
 
-**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use `encrypted-flash` to flash the board AFTER this step i.e. with subsequent flashes. If flashing to an encrypted part of flash with `esptool.py`, you must also add the `--encrypt` option.
+**NOTE**: If Flash Encryption was enabled, instead of `flash`, you must use
+`encrypted-flash` to flash the board AFTER this step i.e. with subsequent flashes.
+If flashing to an encrypted part of flash with `esptool.py`, you must also add the
+`--encrypt` option.
 
 ## 7 Monitoring the demo
 
-1. On the serial terminal console, confirm that the TLS connection was successful and that MQTT messages are published.
+1. On the serial terminal console, confirm that the TLS connection was
+successful and that MQTT messages are published.
 ```
 I (1843) core_mqtt_agent_network_manager: WiFi connected.
 I (1843) app_wifi: Connected with IP Address:10.0.0.9
@@ -123,8 +162,12 @@ I (3163) temp_pub_sub_demo: Sending publish request to agent with message "{"tem
 I (3183) temp_pub_sub_demo: Task Publisher0 waiting for publish 0 to complete.
 ```
 
-2. On the AWS IoT console, select "Test" then select "MQTT test client". Under "Subscribe to a topic", type "#" (# is to select all topics. You can also enter a specific topic such as /filter/Publisher0), click on "Subscribe", and confirm that the MQTT messages from the device are received.
-3. To change the LED power state, under "Publish to a topic" publish one of the following JSON payloads to the `/filter/TempSubPubLED` topic:
+2. On the AWS IoT console, select "Test" then select "MQTT test client". Under
+"Subscribe to a topic", type "#" (# is to select all topics. You can also enter a
+specific topic such as /filter/Publisher0), click on "Subscribe", and confirm that
+the MQTT messages from the device are received.
+3. To change the LED power state, under "Publish to a topic" publish one of the
+following JSON payloads to the `/filter/TempSubPubLED` topic:
 
 To turn the LED on:
 ```json
@@ -148,7 +191,8 @@ To turn the LED off:
 
 ## 8 Perform firmware Over-the-Air Updates with AWS IoT
 
-In the previous [Getting Started Guide](GettingStartedGuide.md), you would have setup the required OTA cloud resources.
+In the previous [Getting Started Guide](GettingStartedGuide.md),
+you would have setup the required OTA cloud resources.
 
 ### 8.1 Build an application binary with a higher version number, to be downloaded and activated on the device
 
@@ -162,7 +206,9 @@ Create a binary with a higher version number.
 ```
 idf.py build
 ```
-If successful, there will be a new binary under the 'build' directory - build/GoldenReferenceIntegration.bin. Copy this binary to another location, else it will be overwritten in the next step.
+If successful, there will be a new binary under the 'build' directory - build/
+GoldenReferenceIntegration.bin. Copy this binary to another location, else it will
+be overwritten in the next step.
 
 ### 8.2 Build and flash the device with a binary with a lower version number
 1. Follow the same steps in 8.1, but this time, set the `Application version build` number to '0'.
@@ -170,20 +216,30 @@ If successful, there will be a new binary under the 'build' directory - build/Go
 ```
 idf.py -p PORT encrypted-flash monitor
 ```
-**NOTE**: Since Flash Encryption was enabled in the previous steps, instead of `flash`, we use `encrypted-flash` to flash the board for this step.
+**NOTE**: Since Flash Encryption was enabled in the previous steps, instead of
+`flash`, we use `encrypted-flash` to flash the board for this step.
 
 ### 8.3 Upload the binary with the higher version number (created in step 8.1) and create an OTA Update Job
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
 Choose 'Create a job'.
-2. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose 'Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
-3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you would have created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices.
+2. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose
+'Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
+3. You can deploy an OTA update to a single device or a group of devices.
+Under 'Devices to update', select the Thing you would have created earlier.
+You can find it listed under AWS IoT->Manage->Things. If you are updating a
+group of devices, select the check box next to the thing group associated
+with your devices.
 4. Under 'Select the protocol for file transfer', choose 'MQTT'.
 5. Under 'Sign and choose your file', choose 'Sign a new file for me'.
-6. Under 'Code signing profile', choose the code signing profile you would have created earlier.
-7. Under 'File', choose 'Upload a new file' then click 'Choose file'. A file browser pops up. Select the signed binary image with the higher version number.
-8. Under 'File upload location in S3', click 'Browse S3', then select the S3 bucket that you had earlier created for this job. Click 'Choose'
+6. Under 'Code signing profile', choose the code signing profile you would have
+created earlier.
+7. Under 'File', choose 'Upload a new file' then click 'Choose file'. A file
+browser pops up. Select the signed binary image with the higher version number.
+8. Under 'File upload location in S3', click 'Browse S3', then select the S3 bucket
+that you had earlier created for this job. Click 'Choose'
 9. Under 'Path name of file on device', type 'NA'
-10. Under 'IAM role for OTA update job', choose the role that you created earlier for the OTA update from the drop down list.
+10. Under 'IAM role for OTA update job', choose the role that you created
+earlier for the OTA update from the drop down list.
 11. Click 'Next', then click on 'Create job'. Confirm if the job was created successfully.
 
 ### 8.4 Monitor OTA
@@ -205,7 +261,7 @@ I (197603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   Dropped: 0
 ```
 
-Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image, during which the Secure Boot sequence is executed. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/ESP32C3) on FreeRTOS.org for more details.
+Once all the firmware image chunks are downloaded and the signature is validated, the device reboots with the new image, during which the Secure Boot sequence is executed. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu/) on FreeRTOS.org for more details.
 You can see the new version number of the demo binary. Look for the string "Application version"
 
 ```

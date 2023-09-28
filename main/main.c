@@ -208,7 +208,7 @@ static BaseType_t prvInitializeNetworkContext( void )
             ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
             xRet = pdFAIL;
         }
-    #else  /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+    #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
         xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKey,
                                                    &xNetworkContext.pcClientKeySize );
 

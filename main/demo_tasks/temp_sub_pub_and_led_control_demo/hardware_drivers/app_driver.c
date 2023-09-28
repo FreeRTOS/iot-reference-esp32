@@ -59,7 +59,7 @@ static esp_err_t led_init()
                 .resolution_hz = 10 * 1000 * 1000, /* 10MHz */
             };
             ret = led_strip_new_rmt_device( &strip_config, &rmt_config, &led_strip );
-        #else  /* if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 5, 0, 0 ) */
+        #else /* if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 5, 0, 0 ) */
             led_strip = led_strip_init( 0, GRI_LED_GPIO, 1 );
         #endif /* if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 5, 0, 0 ) */
     #elif CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO
