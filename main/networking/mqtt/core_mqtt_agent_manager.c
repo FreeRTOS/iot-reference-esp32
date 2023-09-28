@@ -365,6 +365,7 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
                                                pxPublishInfo );
 
     #if CONFIG_GRI_ENABLE_OTA_DEMO
+
         /*
          * Check if the incoming publish is for OTA agent.
          */
@@ -406,7 +407,7 @@ static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComman
         for( lIndex = 0; lIndex < pxSubscribeArgs->numSubscriptions; lIndex++ )
         {
             /* This demo doesn't attempt to resubscribe in the event that a SUBACK failed. */
-            if( pxReturnInfo->pSubackCodes != NULL && pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure )
+            if( ( pxReturnInfo->pSubackCodes != NULL ) && ( pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure ) )
             {
                 ESP_LOGE( TAG,
                           "Failed to resubscribe to topic %.*s.",
@@ -679,7 +680,7 @@ static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams 
         xReturnStatus = pdPASS;
 
         ESP_LOGI( TAG,
-                  "Retry attempt %"PRIu32".",
+                  "Retry attempt %" PRIu32 ".",
                   pxRetryParams->attemptsDone );
     }
 
@@ -758,8 +759,6 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                 xTlsDisconnect( pxNetworkContext );
                 xBackoffRet = prvBackoffForRetry( &xReconnectParams );
             }
-
-
         } while( ( eMqttRet != MQTTSuccess ) && ( xBackoffRet == pdPASS ) );
 
         if( eMqttRet == MQTTSuccess )
@@ -794,8 +793,8 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                     {
                         MQTTAgentCommandInfo_t xCommandInfo =
                         {
-                            .blockTimeMs = 0,
-                            .cmdCompleteCallback = processLoopCompleteCallback,
+                            .blockTimeMs                 = 0,
+                            .cmdCompleteCallback         = processLoopCompleteCallback,
                             .pCmdCompleteCallbackContext = ( void * ) xTaskGetCurrentTaskHandle(),
                         };
                         ESP_LOGI( TAG, "Sending ProcessLoop request." );
@@ -803,17 +802,17 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
                         ( void ) MQTTAgent_ProcessLoop( &xGlobalMqttAgentContext, &xCommandInfo );
                         ( void ) ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS( 10000 ) );
                         ESP_LOGI( TAG, "ProcessLoop complete." );
-
                     }
-                    else if ( FD_ISSET( lSockFd, &errorSet ) )
+                    else if( FD_ISSET( lSockFd, &errorSet ) )
                     {
                         xEventGroupClearBits( xNetworkEventGroup,
-                                  CORE_MQTT_AGENT_CONNECTED_BIT );
+                                              CORE_MQTT_AGENT_CONNECTED_BIT );
                         xEventGroupSetBits( xNetworkEventGroup,
                                             CORE_MQTT_AGENT_DISCONNECTED_BIT );
                         xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_DISCONNECTED_EVENT );
                     }
                 }
+
                 vTaskDelay( 1 );
             }
         }
@@ -903,7 +902,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
             break;
 
         default:
-            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %" PRIu32 "",
                       lEventId );
             break;
     }

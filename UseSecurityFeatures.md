@@ -84,7 +84,7 @@ Secure boot enabled, so bootloader not flashed automatically.
 
 With Secure Boot enabled, application binaries must be signed before being flashed. With the configurations set in this document, this is automatically done any time a new application binary is built. Binaries are automatically signed using the RSA key we generated and configured in section 2.2 (Configure Secure Boot).
 
-If flash encryption is enabled, the bootloader will generate the private key used to encrypt flash and store it in the ESP32-C3's eFuse. It will then encrypt the bootloader, the partition table, all `app` partitions, and all partitions marked `encrypted` in the partition table. 
+If flash encryption is enabled, the bootloader will generate the private key used to encrypt flash and store it in the ESP32-C3's eFuse. It will then encrypt the bootloader, the partition table, all `app` partitions, and all partitions marked `encrypted` in the partition table.
 
 Run the following command to build and flash the demo project:
 ```
@@ -115,7 +115,7 @@ I (2873) sub_pub_unsub_demo: coreMQTT-Agent connected.
 I (2883) temp_sub_pub_demo: coreMQTT-Agent connected.
 I (2893) ota_over_mqtt_demo: coreMQTT-Agent connected. Resuming OTA agent.
 I (2893) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
-I (2903) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id 
+I (2903) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id
 1
 I (3153) coreMQTT: Packet received. ReceivedBytes=3.
 I (3153) temp_pub_sub_demo: Received subscribe ack for topic /filter/Publisher0 containing ID 1
@@ -150,9 +150,9 @@ To turn the LED off:
 
 In the previous [Getting Started Guide](GettingStartedGuide.md), you would have setup the required OTA cloud resources.
 
-### 8.1 Build an application binary with a higher version number, to be downloaded and activated on the device 
+### 8.1 Build an application binary with a higher version number, to be downloaded and activated on the device
 
-Create a binary with a higher version number. 
+Create a binary with a higher version number.
 1. Run `idf.py menuconfig`
 2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Under `Enable OTA demo` go to `OTA demo configurations`
@@ -176,7 +176,7 @@ idf.py -p PORT encrypted-flash monitor
 1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
 Choose 'Create a job'.
 2. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose 'Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
-3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you would have created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices. 
+3. You can deploy an OTA update to a single device or a group of devices. Under 'Devices to update', select the Thing you would have created earlier. You can find it listed under AWS IoT->Manage->Things. If you are updating a group of devices, select the check box next to the thing group associated with your devices.
 4. Under 'Select the protocol for file transfer', choose 'MQTT'.
 5. Under 'Sign and choose your file', choose 'Sign a new file for me'.
 6. Under 'Code signing profile', choose the code signing profile you would have created earlier.
@@ -246,24 +246,24 @@ I (800064) coreMQTT: Packet received. ReceivedBytes=96.
 I (800094) coreMQTT: De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 I (800104) coreMQTT: State record updated. New state=MQTTPublishDone.
 W (800114) core_mqtt_agent_manager: WARN:  Received an unsolicited publish from topic $aws/things/thing_esp32c3_nonOta/jobs/AFR_OTA-c3-29440/update/accepted
-I (800124) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536) 
+I (800124) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536)
 I (800134) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352) map
-I (800264) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) 
-I (800264) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) 
-I (800284) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) 
-I (800284) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (800264) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676)
+I (800264) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456)
+I (800284) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16)
+I (800284) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428)
 I (800284) esp_image: Verifying image signature...
 I (800294) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
 I (800304) secure_boot_v2: #0 app key digest == #0 trusted key digest
 I (800304) secure_boot_v2: Verifying with RSA-PSS...
 I (800354) secure_boot_v2: Signature verified successfully!
 I (800354) esp_image: segment 0: paddr=001b0020 vaddr=3c0e0020 size=2e280h (189056) map
-I (800384) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536) 
+I (800384) esp_image: segment 1: paddr=001de2a8 vaddr=3fc91800 size=01d70h (  7536)
 I (800384) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352) map
-I (800524) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) 
-I (800524) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) 
-I (800534) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) 
-I (800534) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (800524) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676)
+I (800524) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456)
+I (800534) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16)
+I (800534) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428)
 I (800544) esp_image: Verifying image signature...
 I (800544) secure_boot_v2: Take trusted digest key(s) from eFuse block(s)
 I (800554) secure_boot_v2: #0 app key digest == #0 trusted key digest
@@ -289,7 +289,7 @@ ESP-ROM:esp32c3-api1-20210207
 Build:Feb  7 2021
 rst:0x3 (RTC_SW_SYS_RST),boot:0xc (SPI_FAST_FLASH_BOOT)
 Saved PC:0x403805d8
-0x403805d8: esp_restart_noos_dig at C:/Users/wallit/Work/.espressif/frameworks/esp-idf-v4.4/components/esp_system/esp_system.c:46 
+0x403805d8: esp_restart_noos_dig at C:/Users/wallit/Work/.espressif/frameworks/esp-idf-v4.4/components/esp_system/esp_system.c:46
 (discriminator 1)
 
 SPIWP:0xee
@@ -324,7 +324,7 @@ I (259) esp_image: segment 2: paddr=001e0020 vaddr=42000020 size=db530h (898352)
 I (421) esp_image: segment 3: paddr=002bb558 vaddr=3fc93570 size=01a14h (  6676) load
 I (422) esp_image: segment 4: paddr=002bcf74 vaddr=40380000 size=11720h ( 71456) load
 I (441) esp_image: segment 5: paddr=002ce69c vaddr=50000010 size=00010h (    16) load
-I (441) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428) 
+I (441) esp_image: segment 6: paddr=002ce6b4 vaddr=00000000 size=0191ch (  6428)
 I (448) esp_image: Verifying image signature...
 I (452) secure_boot_v2: Verifying with RSA-PSS...
 I (460) secure_boot_v2: Signature verified successfully!
@@ -354,7 +354,7 @@ I (595) sleep: Configure to isolate all GPIO pins in sleep state
 I (602) sleep: Enable automatic switching of GPIO sleep configuration
 I (609) coexist: coexist rom version 9387209
 I (614) cpu_start: Starting scheduler.
-I (619) main: 
+I (619) main:
 ...
 I (869) app_driver: Initializing Temperature sensor
 I (909) ota_over_mqtt_demo: OTA over MQTT demo, Application version 0.0.1
@@ -364,7 +364,7 @@ I (929) esp_ota_ops: aws_esp_ota_get_boot_flags: 1
 I (929) esp_ota_ops: [1] aflags/seq:0x1/0x2, pflags/seq:0x2/0x1
 I (939) AWS_OTA: Current State=[RequestingJob], Event=[Start], New state=[RequestingJob]
 I (949) net80211: net80211 rom version: 9387209
-I (919) temp_sub_pub_and_led_control_demo: Sending subscribe request to agent for topic filter: /filter/TempSubPubLED with id 1   
+I (919) temp_sub_pub_and_led_control_demo: Sending subscribe request to agent for topic filter: /filter/TempSubPubLED with id 1
 I (959) ota_over_mqtt_demo:  Received: 0   Queued: 0   Processed: 0   Dropped: 0
 I (969) wifi:wifi driver task: 3fcbcd44, prio:23, stack:6656, core=0
 I (979) system_api: Base MAC address is not set
@@ -426,6 +426,6 @@ I (3199) sub_pub_unsub_demo: coreMQTT-Agent connected.
 I (3209) ota_over_mqtt_demo: coreMQTT-Agent connected. Resuming OTA agent.
 I (3209) core_mqtt_agent_manager: coreMQTT-Agent connected.
 I (3219) temp_sub_pub_and_led_control_demo: coreMQTT-Agent connected.
-I (3229) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id 
+I (3229) sub_pub_unsub_demo: Task "SubPub0" sending subscribe request to coreMQTT-Agent for topic filter: /filter/SubPub0 with id
 ```
 

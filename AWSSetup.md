@@ -4,12 +4,12 @@ In case you already have an AWS account and user created, you can skip steps 1 a
 ## 1 Sign up for an AWS account
 
 1. Open https://portal.aws.amazon.com/billing/signup.
-2. Follow the online instructions. **NOTE:** Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad. 
+2. Follow the online instructions. **NOTE:** Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad.
 3. Make a note of your AWS account number as it will be needed for the following steps.
 
 ## 2 Create an Administrator IAM user and grant it permissions
 
-It’s strongly recommended that you adhere to the best practice of using the `Administrator` IAM user. The following steps show you how to create and securely lock away the root user credentials. One should only sign in as the root user to perform a few [account and service management tasks](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root). 
+It’s strongly recommended that you adhere to the best practice of using the `Administrator` IAM user. The following steps show you how to create and securely lock away the root user credentials. One should only sign in as the root user to perform a few [account and service management tasks](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root).
 
 1. Sign in to the [IAM console](https://console.aws.amazon.com/iam/) as the account owner by choosing **Root user** and entering your AWS account email address. On the next page, enter your password.
 2. On the navigation bar, click your account name, and then click Account.
@@ -31,7 +31,7 @@ It’s strongly recommended that you adhere to the best practice of using the `A
 ![image](https://user-images.githubusercontent.com/23126711/165860249-faa9da14-cd2e-4e33-b1a1-97f279149dee.png)
 ![image](https://user-images.githubusercontent.com/23126711/165860274-6a3e30f3-a32d-4c49-806d-600b5e571e11.png)
 
-8. For **User name**, enter `Administrator`. Select the check box next to **AWS Management Console access**. Then select **Custom password**, and then enter your new password in the text box. 
+8. For **User name**, enter `Administrator`. Select the check box next to **AWS Management Console access**. Then select **Custom password**, and then enter your new password in the text box.
 9. (Optional) By default, AWS requires the new user to create a new password when first signing in. You can clear the check box next to **User must create a new password at next sign-in** to allow the new user to reset their password after they sign in.
 
 ![image](https://user-images.githubusercontent.com/23126711/165860310-579a0be4-8082-49c0-a6a9-1a7cf40b7088.png)
@@ -112,7 +112,7 @@ Your board must be registered with AWS IoT to communicate with the AWS Cloud. To
         "Effect": "Allow",
         "Action": "iot:Connect",
         "Resource":"arn:aws:iot:aws-region:aws-account-id:*"
-    }, 
+    },
     {
         "Effect": "Allow",
         "Action": "iot:Publish",

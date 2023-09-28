@@ -162,9 +162,9 @@ static BaseType_t prvInitializeNetworkContext( void )
     if( xEspErrRet == ESP_OK )
     {
         #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %"PRIu32"\n%s",
+            ESP_LOGI( TAG, "\nDevice Cert: \nLength: %" PRIu32 "\n%s",
                       xNetworkContext.pcClientCertSize,
-                      xNetworkContext.pcClientCert);
+                      xNetworkContext.pcClientCert );
         #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
     }
     else
@@ -182,7 +182,7 @@ static BaseType_t prvInitializeNetworkContext( void )
     if( xEspErrRet == ESP_OK )
     {
         #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-            ESP_LOGI( TAG, "\nCA Cert: \nLength: %"PRIu32"\n%s",
+            ESP_LOGI( TAG, "\nCA Cert: \nLength: %" PRIu32 "\n%s",
                       xNetworkContext.pcServerRootCASize,
                       xNetworkContext.pcServerRootCA );
         #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
@@ -196,6 +196,7 @@ static BaseType_t prvInitializeNetworkContext( void )
     }
 
     #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+
         /* If the digital signature peripheral is being used, get the digital
          * signature peripheral context from esp_secure_crt_mgr and put into
          * network context. */
@@ -207,14 +208,14 @@ static BaseType_t prvInitializeNetworkContext( void )
             ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
             xRet = pdFAIL;
         }
-    #else
+    #else  /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
         xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKey,
-                                                   &xNetworkContext.pcClientKeySize);
+                                                   &xNetworkContext.pcClientKeySize );
 
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %"PRIu32"\n%s",
+                ESP_LOGI( TAG, "\nPrivate Key: \nLength: %" PRIu32 "\n%s",
                           xNetworkContext.pcClientKeySize,
                           xNetworkContext.pcClientKey );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
@@ -258,8 +259,8 @@ static void prvStartEnabledDemos( void )
         #if CONFIG_GRI_ENABLE_OTA_DEMO
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                 ESP_LOGI( TAG, "\nCS Cert: \nLength: %zu\n%s",
-                        strlen( pcAwsCodeSigningCertPem ),
-                        pcAwsCodeSigningCertPem );
+                          strlen( pcAwsCodeSigningCertPem ),
+                          pcAwsCodeSigningCertPem );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
 
             if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
@@ -269,8 +270,8 @@ static void prvStartEnabledDemos( void )
             else
             {
                 ESP_LOGE( TAG,
-                        "Failed to set the code signing certificate for the AWS OTA "
-                        "library. OTA demo will not be started." );
+                          "Failed to set the code signing certificate for the AWS OTA "
+                          "library. OTA demo will not be started." );
             }
         #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
@@ -283,7 +284,7 @@ static void prvStartEnabledDemos( void )
         if( xResult != pdPASS )
         {
             ESP_LOGE( TAG, "Failed to initialize and start coreMQTT-Agent network "
-                        "manager." );
+                           "manager." );
 
             configASSERT( xResult == pdPASS );
         }
@@ -291,15 +292,14 @@ static void prvStartEnabledDemos( void )
 
     #if CONFIG_GRI_RUN_QUALIFICATION_TEST
         /* Disable some logs to avoid failure on IDT log parser. */
-        esp_log_level_set("esp_ota_ops", ESP_LOG_NONE);
-        esp_log_level_set("esp-tls-mbedtls", ESP_LOG_NONE);
-        esp_log_level_set("AWS_OTA", ESP_LOG_NONE);
+        esp_log_level_set( "esp_ota_ops", ESP_LOG_NONE );
+        esp_log_level_set( "esp-tls-mbedtls", ESP_LOG_NONE );
+        esp_log_level_set( "AWS_OTA", ESP_LOG_NONE );
 
         if( ( xResult = xQualificationStart() ) != pdPASS )
         {
             ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xResult );
         }
-
         configASSERT( xResult == pdPASS );
     #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 }
@@ -355,4 +355,3 @@ void app_main( void )
     app_wifi_init();
     app_wifi_start( POP_TYPE_MAC );
 }
-

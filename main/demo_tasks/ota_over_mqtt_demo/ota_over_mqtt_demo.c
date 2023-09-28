@@ -1045,7 +1045,7 @@ static void prvOTADemoTask( void * pvParam )
             OTA_GetStatistics( &otaStatistics );
 
             ESP_LOGI( TAG,
-                      " Received: %"PRIu32"   Queued: %"PRIu32"   Processed: %"PRIu32"   Dropped: %"PRIu32"",
+                      " Received: %" PRIu32 "   Queued: %" PRIu32 "   Processed: %" PRIu32 "   Dropped: %" PRIu32 "",
                       otaStatistics.otaPacketsReceived,
                       otaStatistics.otaPacketsQueued,
                       otaStatistics.otaPacketsProcessed,
@@ -1116,7 +1116,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
             break;
 
         default:
-            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %" PRIu32 "",
                       lEventId );
             break;
     }

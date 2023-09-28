@@ -32,15 +32,15 @@
 
 /* Configuration wrapper. */
 #if GRI_QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR
-    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING     ( 1 )
+    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING    ( 1 )
 #else
-    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING     ( 0 )
+    #define QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING    ( 0 )
 #endif /* GRI_QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR */
 
 #if GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM
-    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING         ( 1 )
+    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING    ( 1 )
 #else
-    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING         ( 0 )
+    #define QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING    ( 0 )
 #endif /* GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM */
 /* Configuration wrapper. */
 
@@ -53,7 +53,7 @@
  *
  * #define FORCE_GENERATE_NEW_KEY_PAIR   0
  */
-#define FORCE_GENERATE_NEW_KEY_PAIR   QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING
+#define FORCE_GENERATE_NEW_KEY_PAIR    QUALIFICATION_FORCE_GENERATE_NEW_KEY_PAIR_SETTING
 
 
 /**
@@ -69,16 +69,16 @@
  *
  * #define MQTT_SERVER_PORT       (8883)
  */
-#define MQTT_SERVER_PORT       CONFIG_GRI_QUALIFICATION_MQTT_PORT
+#define MQTT_SERVER_PORT                     CONFIG_GRI_QUALIFICATION_MQTT_PORT
 
 /**
  * @brief The client identifier for MQTT test.
  *
  * #define MQTT_TEST_CLIENT_IDENTIFIER    "PLACE_HOLDER"
  */
-#define MQTT_TEST_CLIENT_IDENTIFIER     CONFIG_GRI_QUALIFICATION_CLIENT_IDENTIFIER
+#define MQTT_TEST_CLIENT_IDENTIFIER          CONFIG_GRI_QUALIFICATION_CLIENT_IDENTIFIER
 
- /**
+/**
  * @brief Timeout for MQTT_ProcessLoop() function in milliseconds.
  * The timeout value is appropriately chosen for receiving an incoming
  * PUBLISH message and ack responses for QoS 1 and QoS 2 communications
@@ -86,29 +86,29 @@
  *
  * #define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS  ( 700 )
  */
-#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS     CONFIG_GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    CONFIG_GRI_QUALIFICATION_PROCESS_LOOP_TIMEOUT_MS
 
- /**
+/**
  * @brief Network buffer size specified in bytes. Must be large enough to hold the maximum
  * anticipated MQTT payload.
  *
  * #define MQTT_TEST_NETWORK_BUFFER_SIZE			( 5000 )
  */
-#define MQTT_TEST_NETWORK_BUFFER_SIZE			( CONFIG_GRI_QUALIFICATION_NETWORK_BUFFER_SIZE )
+#define MQTT_TEST_NETWORK_BUFFER_SIZE        ( CONFIG_GRI_QUALIFICATION_NETWORK_BUFFER_SIZE )
 
 /**
  * @brief Endpoint of the echo server to connect to in transport interface test.
  *
  * #define ECHO_SERVER_ENDPOINT   "PLACE_HOLDER"
  */
-#define ECHO_SERVER_ENDPOINT   CONFIG_GRI_QUALIFICATION_ECHO_SERVER
+#define ECHO_SERVER_ENDPOINT                 CONFIG_GRI_QUALIFICATION_ECHO_SERVER
 
 /**
  * @brief Port of the echo server to connect to in transport interface test.
  *
  * #define ECHO_SERVER_PORT       (9000)
  */
-#define ECHO_SERVER_PORT       CONFIG_GRI_QUALIFICATION_ECHO_SERVER_PORT
+#define ECHO_SERVER_PORT                     CONFIG_GRI_QUALIFICATION_ECHO_SERVER_PORT
 
 /**
  * @brief Root certificate of the echo server.
@@ -195,7 +195,7 @@
  *
  * #define IOT_THING_NAME  "PLACE_HOLDER"
  */
-#define IOT_THING_NAME      CONFIG_GRI_QUALIFICATION_THING_NAME
+#define IOT_THING_NAME                                   CONFIG_GRI_QUALIFICATION_THING_NAME
 
 /**
  * @brief 1 if using PKCS #11 to access the code sign certificate from NVM.
@@ -207,23 +207,23 @@
  *
  * #define OTA_APP_VERSION_MAJOR                            0
  */
-#define OTA_APP_VERSION_MAJOR CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
+#define OTA_APP_VERSION_MAJOR                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
 
 /**
  * @brief Major version for OTA E2E test.
  *
  * #define OTA_APP_VERSION_MINOR                            9
  */
-#define OTA_APP_VERSION_MINOR CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
+#define OTA_APP_VERSION_MINOR                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
 
 /**
  * @brief Major version for OTA E2E test.
  *
  * #define OTA_APP_VERSION_BUILD                            1
  */
-#define OTA_APP_VERSION_BUILD CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
+#define OTA_APP_VERSION_BUILD                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
 
-#define OUTGOING_PUBLISH_RECORD_COUNT ( 10 )
-#define INCOMING_PUBLISH_RECORD_COUNT ( 10 )
+#define OUTGOING_PUBLISH_RECORD_COUNT                    ( 10 )
+#define INCOMING_PUBLISH_RECORD_COUNT                    ( 10 )
 
 #endif /* TEST_PARAM_CONFIG_H */
