@@ -566,7 +566,7 @@ BaseType_t xQualificationStart( void )
                               1,
                               NULL ) ) != pdPASS )
     {
-        ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xRet );
+        ESP_LOGE( TAG, "Failed to start Qualification task: errno=%d", xRet );
 
         configASSERT( 0 );
     }

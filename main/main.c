@@ -298,7 +298,7 @@ static void prvStartEnabledDemos( void )
 
         if( ( xResult = xQualificationStart() ) != pdPASS )
         {
-            ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xResult );
+            ESP_LOGE( TAG, "Failed to start Qualification task: errno=%d", xResult );
         }
         configASSERT( xResult == pdPASS );
     #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
