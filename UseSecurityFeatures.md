@@ -28,15 +28,6 @@ refer to Espressif's documentation on
 The key and certificates which will be used to establish a secure TLS
 connection will be encrypted and stored in a special flash partition.
 
-**NOTE**: You will need to download the
-[esp_secure_cert_mgr](https://github.com/espressif/esp_secure_cert_mgr/tree/v2.2.0)
-repository to perform these actions.
-
-This can be done with the following command:
-```
-git clone --branch v2.2.0 https://github.com/espressif/esp_secure_cert_mgr.git components/esp_secure_cert_mgr
-```
-
 1. Create the `esp_secure_crt` partition binary. If this is the first time
 running this command, an eFuse block in the ESP32-C3 will be burnt with a
  generated key and this **CANNOT** be reversed:
