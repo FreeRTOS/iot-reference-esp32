@@ -82,6 +82,7 @@ The demo will connect to the AWS IoT device Endpoint that you configure here.
 5. Set `Thing name` to your **Thing Name**.
 6. If you are using the `ESP32` chip you may experience buffer overflow, feel free to decrease the task's buffer size of the demo or `coreMQTT-Agent network buffer size` to fit your use case.
 7. You may also increase the `Timeout for receiving CONNACK in milliseconds` if you are experiencing timeout issues.
+8. Furthermore you may want to use the Amazon's FreeRTOS that can be enabled from `Component config > FreeRTOS > Kernel> Run the Amazon SMP FreeRTOS kernel instead (FEATURE UNDER DEVELOPMENT)`
 8. Go back to main menu, Save and Exit.
 
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
