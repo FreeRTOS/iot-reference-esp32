@@ -73,6 +73,7 @@ After you have followed the instructions in the AWS IoT Core Setup Guide, you wi
 ### 2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint
 
 The demo will connect to the AWS IoT device Endpoint that you configure here.
+> Note: remember to set your build target using `idf.py set-target <target>` 
 
 1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be found under the ESP-IDF directory, has been run, or that you are using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, do ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The `SDK Configuration editor` window should pop up after a moment.
    (Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
