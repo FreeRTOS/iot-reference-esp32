@@ -310,7 +310,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
 
         default:
             ESP_LOGE( TAG,
-                      "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
+                      "coreMQTT-Agent event handler received unexpected event: %" PRIu32 "",
                       lEventId );
             break;
     }
@@ -499,7 +499,7 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
                              portMAX_DELAY );
 
         ESP_LOGI( TAG,
-                  "Task \"%s\" sending publish request to coreMQTT-Agent with message \"%s\" on topic \"%s\" with ID %"PRIu32".",
+                  "Task \"%s\" sending publish request to coreMQTT-Agent with message \"%s\" on topic \"%s\" with ID %" PRIu32 ".",
                   pcTaskGetName( xCommandContext.xTaskToNotify ),
                   pcPayload,
                   pcTopicName,
@@ -520,7 +520,7 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
             /* For QoS 1 and 2, wait for the publish acknowledgment.  For QoS0,
              * wait for the publish to be sent. */
             ESP_LOGI( TAG,
-                      "Task \"%s\" waiting for publish %"PRIu32" to complete.",
+                      "Task \"%s\" waiting for publish %" PRIu32 " to complete.",
                       pcTaskGetName( xCommandContext.xTaskToNotify ),
                       ulPublishMessageId );
 
@@ -540,13 +540,13 @@ static void prvPublishToTopic( MQTTQoS_t xQoS,
             ( ulNotifiedValue != ulPublishMessageId ) )
         {
             ESP_LOGW( TAG,
-                      "Error or timed out waiting for ack for publish message %"PRIu32". Re-attempting publish.",
+                      "Error or timed out waiting for ack for publish message %" PRIu32 ". Re-attempting publish.",
                       ulPublishMessageId );
         }
         else
         {
             ESP_LOGI( TAG,
-                      "Publish %"PRIu32" succeeded for task \"%s\".",
+                      "Publish %" PRIu32 " succeeded for task \"%s\".",
                       ulPublishMessageId,
                       pcTaskGetName( xCommandContext.xTaskToNotify ) );
         }
@@ -618,7 +618,7 @@ static void prvSubscribeToTopic( IncomingPublishCallbackContext_t * pxIncomingPu
                              portMAX_DELAY );
 
         ESP_LOGI( TAG,
-                  "Task \"%s\" sending subscribe request to coreMQTT-Agent for topic filter: %s with id %"PRIu32"",
+                  "Task \"%s\" sending subscribe request to coreMQTT-Agent for topic filter: %s with id %" PRIu32 "",
                   pcTaskGetName( xCommandContext.xTaskToNotify ),
                   pcTopicFilter,
                   ulSubscribeMessageId );
@@ -649,13 +649,13 @@ static void prvSubscribeToTopic( IncomingPublishCallbackContext_t * pxIncomingPu
             ( ulNotifiedValue != ulSubscribeMessageId ) )
         {
             ESP_LOGW( TAG,
-                      "Error or timed out waiting for ack to subscribe message %"PRIu32". Re-attempting subscribe.",
+                      "Error or timed out waiting for ack to subscribe message %" PRIu32 ". Re-attempting subscribe.",
                       ulSubscribeMessageId );
         }
         else
         {
             ESP_LOGI( TAG,
-                      "Subscribe %"PRIu32" for topic filter %s succeeded for task \"%s\".",
+                      "Subscribe %" PRIu32 " for topic filter %s succeeded for task \"%s\".",
                       ulSubscribeMessageId,
                       pcTopicFilter,
                       pcTaskGetName( xCommandContext.xTaskToNotify ) );
@@ -725,7 +725,7 @@ static void prvUnsubscribeToTopic( MQTTQoS_t xQoS,
                              pdTRUE,
                              portMAX_DELAY );
         ESP_LOGI( TAG,
-                  "Task \"%s\" sending unsubscribe request to coreMQTT-Agent for topic filter: %s with id %"PRIu32"",
+                  "Task \"%s\" sending unsubscribe request to coreMQTT-Agent for topic filter: %s with id %" PRIu32 "",
                   pcTaskGetName( xCommandContext.xTaskToNotify ),
                   pcTopicFilter,
                   ulUnsubscribeMessageId );
@@ -756,13 +756,13 @@ static void prvUnsubscribeToTopic( MQTTQoS_t xQoS,
             ( ulNotifiedValue != ulUnsubscribeMessageId ) )
         {
             ESP_LOGW( TAG,
-                      "Error or timed out waiting for ack to unsubscribe message %"PRIu32". Re-attempting subscribe.",
+                      "Error or timed out waiting for ack to unsubscribe message %" PRIu32 ". Re-attempting subscribe.",
                       ulUnsubscribeMessageId );
         }
         else
         {
             ESP_LOGI( TAG,
-                      "Unsubscribe %"PRIu32" for topic filter %s succeeded for task \"%s\".",
+                      "Unsubscribe %" PRIu32 " for topic filter %s succeeded for task \"%s\".",
                       ulUnsubscribeMessageId,
                       pcTopicFilter,
                       pcTaskGetName( xCommandContext.xTaskToNotify ) );

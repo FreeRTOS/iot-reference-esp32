@@ -34,32 +34,32 @@
     #include "test_execution_config.h"
     #include "test_param_config.h"
 
-    /* Common config */
+/* Common config */
     #if ( MQTT_TEST_ENABLED == 1 )
-        #define CONFIG_GRI_THING_NAME                       ( MQTT_TEST_CLIENT_IDENTIFIER )
+        #define CONFIG_GRI_THING_NAME                    ( MQTT_TEST_CLIENT_IDENTIFIER )
     #elif ( OTA_E2E_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
-        #define CONFIG_GRI_THING_NAME                       ( IOT_THING_NAME )
+        #define CONFIG_GRI_THING_NAME                    ( IOT_THING_NAME )
     #else
-        #define CONFIG_GRI_THING_NAME                       "noUse"
+        #define CONFIG_GRI_THING_NAME                    "noUse"
     #endif
-    #define CONFIG_GRI_MQTT_ENDPOINT                    ( MQTT_SERVER_ENDPOINT )
-    #define CONFIG_GRI_MQTT_PORT                        ( MQTT_SERVER_PORT )
+    #define CONFIG_GRI_MQTT_ENDPOINT                     ( MQTT_SERVER_ENDPOINT )
+    #define CONFIG_GRI_MQTT_PORT                         ( MQTT_SERVER_PORT )
 
     #if !defined( CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR )
-        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR       ( OTA_APP_VERSION_MAJOR )
+        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR    ( OTA_APP_VERSION_MAJOR )
     #endif /* CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR */
 
     #if !defined( CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR )
-        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR       ( OTA_APP_VERSION_MINOR )
+        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR    ( OTA_APP_VERSION_MINOR )
     #endif /* CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR */
 
     #if !defined( CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD )
-        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD       ( OTA_APP_VERSION_BUILD )
+        #define CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD    ( OTA_APP_VERSION_BUILD )
     #endif /* CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD */
 
     #if ( OTA_E2E_TEST_ENABLED == 1 )
         /* Enable OTA demo. */
-        #define CONFIG_GRI_ENABLE_OTA_DEMO ( 1 )
+        #define CONFIG_GRI_ENABLE_OTA_DEMO    ( 1 )
     #endif /* OTA_E2E_TEST_ENABLED == 1 */
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 

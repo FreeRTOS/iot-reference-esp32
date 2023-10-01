@@ -1,7 +1,7 @@
 # Name,   Type, SubType, Offset,  Size, Flags
 # Note: if you change the phy_init or app partition offset, make sure to change the offset in Kconfig.projbuild
 esp_secure_cert, 0x3F,    ,     0xD000,   0x2000,     encrypted
-nvs,             data, nvs,     0x13000,  0x6000,   
+nvs,             data, nvs,     0x13000,  0x6000,
 otadata,         data, ota,     0x19000,  0x2000,     encrypted
 phy_init,        data, phy,     0x1b000,  0x1000,     encrypted
 ota_0,           app,  ota_0,   0x20000,  0x190000,   encrypted

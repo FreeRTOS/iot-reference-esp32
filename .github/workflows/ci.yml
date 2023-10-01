@@ -1,0 +1,121 @@
+name: "CI Checks"
+
+env:
+  bashPass: \033[32;1mPASSED -
+  bashInfo: \033[33;1mINFO -
+  bashFail: \033[31;1mFAILED -
+  bashEnd:  \033[0m
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  demo-builds:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - env:
+          bashPass: \033[32;1mPASSED -
+          bashInfo: \033[33;1mINFO -
+          bashFail: \033[31;1mFAILED -
+          bashEnd:  \033[0m
+          stepName: Perform Recursive Clone of esp-aws-iot
+        name: ${{ env.stepName }}
+        shell: bash
+        run: |
+          # ${{ env.stepName }}
+          echo -e "::group::${{ env.bashInfo }} ${{ env.stepName }} ${{ env.bashEnd }}"
+          git submodule update --checkout --init --recursive
+          echo -e "::endgroup::"
+          echo -e "${{ env.bashPass }} ${{ env.stepName }} ${{ env.bashEnd }}"
+
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.0
+          target: esp32c3
+          path: './'
+
+  spell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone This Repo
+        uses: actions/checkout@v3
+      - name: Run spellings check
+        uses: FreeRTOS/CI-CD-Github-Actions/spellings@main
+        with:
+          path: ./
+
+  formatting:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check formatting
+        uses: FreeRTOS/CI-CD-Github-Actions/formatting@main
+        with:
+          path: ./
+
+  link-verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check Links
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: FreeRTOS/CI-CD-Github-Actions/link-verifier@main
+        with:
+          path: ./
+
+  verify-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - env:
+          bashPass: \033[32;1mPASSED -
+          bashInfo: \033[33;1mINFO -
+          bashFail: \033[31;1mFAILED -
+          bashEnd:  \033[0m
+          stepName: Perform Recursive Clone of esp-aws-iot
+        name: ${{ env.stepName }}
+        shell: bash
+        run: |
+          # ${{ env.stepName }}
+          echo -e "::group::${{ env.bashInfo }} ${{ env.stepName }} ${{ env.bashEnd }}"
+          git submodule update --checkout --init --recursive
+          echo -e "::endgroup::"
+          echo -e "${{ env.bashPass }} ${{ env.stepName }} ${{ env.bashEnd }}"
+
+      - name: Run manifest verifier
+        uses: FreeRTOS/CI-CD-GitHub-Actions/manifest-verifier@main
+        with:
+          path: ./
+          fail-on-incorrect-version: true
+
+  git-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Checkout awslabs/git-secrets
+        uses: actions/checkout@v3
+        with:
+          repository: awslabs/git-secrets
+          ref: master
+          path: git-secrets
+      - name: Install git-secrets
+        run: cd git-secrets && sudo make install && cd ..
+      - name: Run git-secrets
+        run: |
+          git-secrets --register-aws
+          git-secrets --scan

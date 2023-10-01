@@ -364,6 +364,7 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
                                                pxPublishInfo );
 
     #if CONFIG_GRI_ENABLE_OTA_DEMO
+
         /*
          * Check if the incoming publish is for OTA agent.
          */
@@ -405,7 +406,7 @@ static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComman
         for( lIndex = 0; lIndex < pxSubscribeArgs->numSubscriptions; lIndex++ )
         {
             /* This demo doesn't attempt to resubscribe in the event that a SUBACK failed. */
-            if( pxReturnInfo->pSubackCodes != NULL && pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure )
+            if( ( pxReturnInfo->pSubackCodes != NULL ) && ( pxReturnInfo->pSubackCodes[ lIndex ] == MQTTSubAckFailure ) )
             {
                 ESP_LOGE( TAG,
                           "Failed to resubscribe to topic %.*s.",
@@ -677,7 +678,7 @@ static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams 
         xReturnStatus = pdPASS;
 
         ESP_LOGI( TAG,
-                  "Retry attempt %"PRIu32".",
+                  "Retry attempt %" PRIu32 ".",
                   pxRetryParams->attemptsDone );
     }
 
@@ -838,7 +839,7 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
             break;
 
         default:
-            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %"PRIu32"",
+            ESP_LOGE( TAG, "coreMQTT-Agent event handler received unexpected event: %" PRIu32 "",
                       lEventId );
             break;
     }

@@ -40,7 +40,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 ### 1.1 Hardware Requirements
 
 - Micro USB cable.
-- ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://www.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitC-02?qs=stqOd1AaK7%2F1Q62ysr4CMA%3D%3D)).
+- ESP32-C3 board (e.g [ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
 - Personal Computer with Linux, macOS, or Windows.
 - WiFi access point with access to the internet.
 
@@ -202,7 +202,7 @@ To perform an OTA firmware update, you must go through these steps:
 
 The version of the new image must be later than the current image on the board or else OTA will not proceed.
 
-The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notfication, the device will then start downloading the new firmware.
+The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notification, the device will then start downloading the new firmware.
 
 Create a binary with a higher version number.
 
@@ -477,14 +477,14 @@ _Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be 
 1. Device Advisor Test
    - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) in the console.
    - Find the Device Advisor test endpoint for your account
-   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Device Advisor Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Device Advisor Test`.
    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-     - Set `Endpoint for MQTT Broker to use` to Device Avdisor test endpoint
+     - Set `Endpoint for MQTT Broker to use` to Device Advisor test endpoint
      - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
    - Build and run.
    - See Device Advisor test result in the console.
 2. MQTT Test
-   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `MQTT Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `MQTT Test`.
    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
      - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
      - Set `Client Identifier for MQTT Test`
@@ -501,7 +501,7 @@ _Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be 
      ```
 3. Transport Interface Test
    - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start an echo server.
-   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Transport Interface Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Transport Interface Test`.
    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
      - Set `Echo Server Domain Name/IP for Transport Interface Test`
      - Set `Port for Echo Server to use`
@@ -518,7 +518,7 @@ _Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be 
      I (612755) qual_main: End qualification test.
      ```
 4. OTA PAL Test
-   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `OTA PAL Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `OTA PAL Test`.
    - Build and run.
    - See test result on target output.
    - Example output
@@ -531,7 +531,7 @@ _Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be 
      I (113755) qual_main: End qualification test.
      ```
 5. Core PKCS11 Test
-   - Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `CorePKCS#11 Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `CorePKCS#11 Test`.
    - Build and run.
    - See test result on target output.
    - Example output
@@ -556,7 +556,7 @@ IDT runs a suite of tests that include testing the device's transport interface 
 - Run `idf.py menuconfig`.
 - Under `Featured FreeRTOS IoT Integration`, choose `Run qualification test`.
 - Under `Component config -> Unity unit testing library`, choose `Include Unity test fixture`.
-- Under `Freatured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, **DISABLE** all the tests.
+- Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, **DISABLE** all the tests.
 - Run `idf.py fullclean` to clear local CMAKE cache.
 
 _Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c)._

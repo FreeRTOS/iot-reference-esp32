@@ -11,10 +11,10 @@
 #include <inttypes.h>
 
 /* Random number generator include. */
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-#include "esp_random.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 5, 0, 0 )
+    #include "esp_random.h"
 #else
-#include "esp_system.h"
+    #include "esp_system.h"
 #endif
 
 
@@ -36,7 +36,7 @@ extern uint32_t MqttTestGetTimeMs( void );
 
 int FRTest_GenerateRandInt()
 {
-    return (int) esp_random();
+    return ( int ) esp_random();
 }
 
 /*-----------------------------------------------------------*/
@@ -104,7 +104,7 @@ int FRTest_ThreadTimedJoin( FRTestThreadHandle_t threadHandle,
 
     if( xReturned != pdTRUE )
     {
-        ESP_LOGW( TAG, "Waiting thread exist failed after %"PRIu32" %d. Task abort.", timeoutMs, xReturned );
+        ESP_LOGW( TAG, "Waiting thread exist failed after %" PRIu32 " %d. Task abort.", timeoutMs, xReturned );
 
         /* Return negative value to indicate error. */
         retValue = -1;
