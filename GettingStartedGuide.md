@@ -80,8 +80,9 @@ The demo will connect to the AWS IoT device Endpoint that you configure here.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
 5. Set `Thing name` to your **Thing Name**.
-6. If you are using `ESP32` chip you may experience buffer overflow, feel free to decrease task's buffer size of the demo or `coreMQTT-Agent network buffer size` to fit your usecase.
-7. Go back to main menu, Save and Exit.
+6. If you are using the `ESP32` chip you may experience buffer overflow, feel free to decrease the task's buffer size of the demo or `coreMQTT-Agent network buffer size` to fit your use case.
+7. You may also increase the `Timeout for receiving CONNACK in milliseconds` if you are experiencing timeout issues.
+8. Go back to main menu, Save and Exit.
 
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 
