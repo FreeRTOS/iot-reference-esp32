@@ -45,6 +45,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 - WiFi access point with access to the internet.
 
 ### 1.2 Software Requirements
+> **NOTE:** For convenience sake, there is an esp-idf v5.1.1 submoduled at the root of the directory, other versions on esp-idf may also be used but does not guarantee full compatibility.
 
 - ESP-IDF 4.4.3 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
 - [Python3](https://www.python.org/downloads/)
@@ -60,6 +61,7 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
   [Configuration basics](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
   to configure the basic settings (security credentials, the default AWS output format and the default AWS Region)
   that AWS CLI uses to interact with AWS. (If you don't have an AWS account and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before following the Configuration basics for the AWS CLI.)
+
 
 ## 2 Demo setup
 
@@ -78,7 +80,8 @@ The demo will connect to the AWS IoT device Endpoint that you configure here.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
 5. Set `Thing name` to your **Thing Name**.
-6. Go back to main menu, Save and Exit.
+6. If you are using `ESP32` chip you may experience buffer overflow, feel free to decrease task's buffer size of the demo or `coreMQTT-Agent network buffer size` to fit your usecase.
+7. Go back to main menu, Save and Exit.
 
 ### 2.3 Provision the ESP32-C3 with the private key, device certificate and CA certificate in Development Mode
 
