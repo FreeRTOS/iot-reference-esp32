@@ -42,6 +42,7 @@ coverity
 ctest
 cust
 espressif
+fctry
 getpacketid
 gpio
 isystem

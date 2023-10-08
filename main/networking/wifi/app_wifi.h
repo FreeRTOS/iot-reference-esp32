@@ -13,7 +13,7 @@ typedef enum
 {
     /** Use MAC address to generate PoP */
     POP_TYPE_MAC,
-    /** Use random stream generated and stored in factory partition during claiming process as PoP */
+    /** Use random stream generated and stored in the fctry partition during claiming process as PoP */
     POP_TYPE_RANDOM
 } app_wifi_pop_type_t;
 
