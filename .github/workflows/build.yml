@@ -1,4 +1,4 @@
-name: "CI Checks"
+name: "Demo Build Checks"
 
 env:
   bashPass: \033[32;1mPASSED -
