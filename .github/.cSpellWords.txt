@@ -16,6 +16,9 @@ CSDK
 ctest
 cust
 DCMOCK
+decihours
+Decihours
+DECIHOURS
 DNDEBUG
 DTIM
 DTM
@@ -46,6 +49,9 @@ mypy
 Nayuki
 netif
 NETIF
+nondet
+Nondet
+NONDET
 noos
 otademoconfig
 OTAE
@@ -66,9 +72,15 @@ SPIWP
 subpubunsubconfig
 tsens
 UNACKED
+unpadded
+Unpadded
+UNPADDED
 UNSUB
 UNSUBACK
 unsubscriptions
 utest
+vect
+Vect
+VECT
 Wunused
 Yscwc
