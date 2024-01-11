@@ -101,7 +101,7 @@ esp_err_t app_driver_led_on()
             led_strip->refresh( led_strip, 100 );
         #endif
     #elif CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO
-        ret = gpio_set_level( GRI_LED_GPIO, 0 );
+        ret = gpio_set_level( GRI_LED_GPIO, 1 );
     #endif /* ifdef CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_RMT */
     return ret;
 }
@@ -117,7 +117,7 @@ esp_err_t app_driver_led_off()
             led_strip->clear( led_strip, 50 );
         #endif
     #elif CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO
-        ret = gpio_set_level( GRI_LED_GPIO, 1 );
+        ret = gpio_set_level( GRI_LED_GPIO, 0 );
     #endif
     return ret;
 }
