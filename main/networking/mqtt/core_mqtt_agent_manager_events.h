@@ -25,26 +25,26 @@
  */
 
 #ifndef CORE_MQTT_AGENT_MANAGER_EVENTS_H
-#define CORE_MQTT_AGENT_MANAGER_EVENTS_H
+    #define CORE_MQTT_AGENT_MANAGER_EVENTS_H
 
-#include "esp_event.h"
+    #include "esp_event.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
-ESP_EVENT_DECLARE_BASE( CORE_MQTT_AGENT_EVENT );
+    ESP_EVENT_DECLARE_BASE( CORE_MQTT_AGENT_EVENT );
 
-enum
-{
-    CORE_MQTT_AGENT_CONNECTED_EVENT,
-    CORE_MQTT_AGENT_DISCONNECTED_EVENT,
-    CORE_MQTT_AGENT_OTA_STARTED_EVENT,
-    CORE_MQTT_AGENT_OTA_STOPPED_EVENT
-};
+    enum
+    {
+        CORE_MQTT_AGENT_CONNECTED_EVENT,
+        CORE_MQTT_AGENT_DISCONNECTED_EVENT,
+        CORE_MQTT_AGENT_OTA_STARTED_EVENT,
+        CORE_MQTT_AGENT_OTA_STOPPED_EVENT
+    };
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 
 #endif /* CORE_MQTT_AGENT_MANAGER_EVENTS_H */

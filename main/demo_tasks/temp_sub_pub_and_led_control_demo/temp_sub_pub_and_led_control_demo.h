@@ -25,19 +25,19 @@
  */
 
 #ifndef TEMP_SUB_PUB_AND_LED_CONTROL_DEMO_H
-#define TEMP_SUB_PUB_AND_LED_CONTROL_DEMO_H
+    #define TEMP_SUB_PUB_AND_LED_CONTROL_DEMO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
 /**
  * @brief This function starts the Temp Sub Pub and LED Control demo.
  */
-void vStartTempSubPubAndLEDControlDemo( void );
+    void vStartTempSubPubAndLEDControlDemo( void );
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 
 #endif /* TEMP_SUB_PUB_AND_LED_CONTROL_DEMO_H */

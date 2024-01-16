@@ -25,15 +25,15 @@
  */
 
 #ifndef CORE_MQTT_AGENT_NETWORK_MANAGER_H
-#define CORE_MQTT_AGENT_NETWORK_MANAGER_H
+    #define CORE_MQTT_AGENT_NETWORK_MANAGER_H
 
-#include "network_transport.h"
-#include "freertos/FreeRTOS.h"
-#include "esp_event.h"
+    #include "network_transport.h"
+    #include "freertos/FreeRTOS.h"
+    #include "esp_event.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
 /**
  * @brief Register an event handler with coreMQTT-Agent events.
@@ -42,7 +42,7 @@ extern "C" {
  *
  * @return pdPASS if successful, pdFAIL otherwise.
  */
-BaseType_t xCoreMqttAgentManagerRegisterHandler( esp_event_handler_t xEventHandler );
+    BaseType_t xCoreMqttAgentManagerRegisterHandler( esp_event_handler_t xEventHandler );
 
 /**
  * @brief Start the coreMQTT-Agent manager.
@@ -55,7 +55,7 @@ BaseType_t xCoreMqttAgentManagerRegisterHandler( esp_event_handler_t xEventHandl
  *
  * @return pdPASS if successful, pdFAIL otherwise.
  */
-BaseType_t xCoreMqttAgentManagerStart( NetworkContext_t * pxNetworkContextIn );
+    BaseType_t xCoreMqttAgentManagerStart( NetworkContext_t * pxNetworkContextIn );
 
 /**
  * @brief Posts a coreMQTT-Agent event to the default event loop.
@@ -64,10 +64,10 @@ BaseType_t xCoreMqttAgentManagerStart( NetworkContext_t * pxNetworkContextIn );
  *
  * @return pdPASS if successful, pdFAIL otherwise.
  */
-BaseType_t xCoreMqttAgentManagerPost( int32_t lEventId );
+    BaseType_t xCoreMqttAgentManagerPost( int32_t lEventId );
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 
 #endif /* CORE_MQTT_AGENT_NETWORK_MANAGER_H */
