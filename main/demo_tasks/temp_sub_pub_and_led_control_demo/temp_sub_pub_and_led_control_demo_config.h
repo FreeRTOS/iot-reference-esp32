@@ -30,6 +30,10 @@
 /* ESP-IDF sdkconfig include. */
 #include <sdkconfig.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Size of statically allocated buffers for holding topic names and
  * payloads.
@@ -64,5 +68,9 @@
  * @brief The task stack size of temperature pub sub and LED control task.
  */
 #define temppubsubandledcontrolconfigTASK_STACK_SIZE                        ( ( unsigned int ) ( CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_TASK_STACK_SIZE ) )
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TEMP_SUB_PUB_AND_LED_CONTROL_DEMO_CONFIG_H */

@@ -42,6 +42,10 @@
     #define SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS    10U
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Callback function called when receiving a publish.
  *
@@ -118,5 +122,9 @@ void removeSubscription( SubscriptionElement_t * pxSubscriptionList,
  */
 bool handleIncomingPublishes( SubscriptionElement_t * pxSubscriptionList,
                               MQTTPublishInfo_t * pxPublishInfo );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUBSCRIPTION_MANAGER_H */

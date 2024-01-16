@@ -34,6 +34,10 @@
     #include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief The thing name of the device.
  */
@@ -92,5 +96,9 @@
 #define APP_VERSION_MAJOR                     ( CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR )
 #define APP_VERSION_MINOR                     ( CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR )
 #define APP_VERSION_BUILD                     ( CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD )
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* OTA_OVER_MQTT_DEMO_CONFIG_H */
