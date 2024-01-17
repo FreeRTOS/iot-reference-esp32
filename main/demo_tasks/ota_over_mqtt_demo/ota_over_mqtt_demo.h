@@ -25,21 +25,21 @@
  */
 
 #ifndef OTA_OVER_MQTT_DEMO_H
-    #define OTA_OVER_MQTT_DEMO_H
+#define OTA_OVER_MQTT_DEMO_H
 
-    #include "freertos/FreeRTOS.h"
-    #include "core_mqtt_agent.h"
+#include "freertos/FreeRTOS.h"
+#include "core_mqtt_agent.h"
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         extern "C" {
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
 /**
  * @brief Starts the OTA codesigning demo.
  */
-    void vStartOTACodeSigningDemo( void );
+void vStartOTACodeSigningDemo( void );
 
 /**
  * @brief Default callback used to receive default messages for OTA.
@@ -54,13 +54,13 @@
  *
  * @return true if the message is processed by OTA.
  */
-    bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
-                             MQTTPublishInfo_t * pxPublishInfo );
+bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
+                         MQTTPublishInfo_t * pxPublishInfo );
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         } /* extern "C" */
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
 #endif /* OTA_OVER_MQTT_DEMO_H */

@@ -29,24 +29,24 @@
  * @brief Functions for managing MQTT subscriptions.
  */
 #ifndef SUBSCRIPTION_MANAGER_H
-    #define SUBSCRIPTION_MANAGER_H
+#define SUBSCRIPTION_MANAGER_H
 
 /* core MQTT include. */
-    #include "core_mqtt.h"
+#include "core_mqtt.h"
 
 /**
  * @brief Maximum number of subscriptions maintained by the subscription manager
  * simultaneously in a list.
  */
-    #ifndef SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS
-        #define SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS    10U
-    #endif
+#ifndef SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS
+    #define SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS    10U
+#endif
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         extern "C" {
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
 /**
  * @brief Callback function called when receiving a publish.
@@ -54,8 +54,8 @@
  * @param[in] pvIncomingPublishCallbackContext The incoming publish callback context.
  * @param[in] pxPublishInfo Deserialized publish information.
  */
-    typedef void (* IncomingPubCallback_t )( void * pvIncomingPublishCallbackContext,
-                                             MQTTPublishInfo_t * pxPublishInfo );
+typedef void (* IncomingPubCallback_t )( void * pvIncomingPublishCallbackContext,
+                                         MQTTPublishInfo_t * pxPublishInfo );
 
 /**
  * @brief An element in the list of subscriptions.
@@ -69,13 +69,13 @@
  * copied in the subscription manager and hence the topic filter strings need to
  * stay in scope until unsubscribed.
  */
-    typedef struct subscriptionElement
-    {
-        IncomingPubCallback_t pxIncomingPublishCallback;
-        void * pvIncomingPublishCallbackContext;
-        uint16_t usFilterStringLength;
-        const char * pcSubscriptionFilterString;
-    } SubscriptionElement_t;
+typedef struct subscriptionElement
+{
+    IncomingPubCallback_t pxIncomingPublishCallback;
+    void * pvIncomingPublishCallbackContext;
+    uint16_t usFilterStringLength;
+    const char * pcSubscriptionFilterString;
+} SubscriptionElement_t;
 
 /**
  * @brief Add a subscription to the subscription list.
@@ -92,11 +92,11 @@
  *
  * @return `true` if subscription added or exists, `false` if insufficient memory.
  */
-    bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
-                          const char * pcTopicFilterString,
-                          uint16_t usTopicFilterLength,
-                          IncomingPubCallback_t pxIncomingPublishCallback,
-                          void * pvIncomingPublishCallbackContext );
+bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
+                      const char * pcTopicFilterString,
+                      uint16_t usTopicFilterLength,
+                      IncomingPubCallback_t pxIncomingPublishCallback,
+                      void * pvIncomingPublishCallbackContext );
 
 /**
  * @brief Remove a subscription from the subscription list.
@@ -108,9 +108,9 @@
  * @param[in] pcTopicFilterString Topic filter of subscription.
  * @param[in] usTopicFilterLength Length of topic filter.
  */
-    void removeSubscription( SubscriptionElement_t * pxSubscriptionList,
-                             const char * pcTopicFilterString,
-                             uint16_t usTopicFilterLength );
+void removeSubscription( SubscriptionElement_t * pxSubscriptionList,
+                         const char * pcTopicFilterString,
+                         uint16_t usTopicFilterLength );
 
 /**
  * @brief Handle incoming publishes by invoking the callbacks registered
@@ -122,13 +122,13 @@
  * @return `true` if an application callback could be invoked;
  *  `false` otherwise.
  */
-    bool handleIncomingPublishes( SubscriptionElement_t * pxSubscriptionList,
-                                  MQTTPublishInfo_t * pxPublishInfo );
+bool handleIncomingPublishes( SubscriptionElement_t * pxSubscriptionList,
+                              MQTTPublishInfo_t * pxPublishInfo );
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         } /* extern "C" */
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
 #endif /* SUBSCRIPTION_MANAGER_H */

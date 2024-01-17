@@ -12,30 +12,30 @@
 /* limitations under the License. */
 
 #ifndef APP_DRIVER_H_
-    #define APP_DRIVER_H_
+#define APP_DRIVER_H_
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         extern "C" {
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
-    #include "driver/temp_sensor.h"
-    #include "driver/gpio.h"
-    #include "led_strip.h"
+#include "driver/temp_sensor.h"
+#include "driver/gpio.h"
+#include "led_strip.h"
 
-    esp_err_t app_driver_init();
+esp_err_t app_driver_init();
 
-    float app_driver_temp_sensor_read_celsius();
+float app_driver_temp_sensor_read_celsius();
 
-    esp_err_t app_driver_led_on();
+esp_err_t app_driver_led_on();
 
-    esp_err_t app_driver_led_off();
+esp_err_t app_driver_led_off();
 
-    /* *INDENT-OFF* */
+/* *INDENT-OFF* */
     #ifdef __cplusplus
         }  /* extern "C" */
     #endif
-    /* *INDENT-ON* */
+/* *INDENT-ON* */
 
 #endif /* APP_DRIVER_H_ */
