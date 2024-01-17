@@ -34,9 +34,11 @@
         #include "qualification_wrapper_config.h"
     #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-    extern "C" {
+        extern "C" {
     #endif
+    /* *INDENT-ON* */
 
 /**
  * @brief Size of statically allocated buffers for holding topic names and
@@ -79,8 +81,10 @@
  */
     #define subpubunsubconfigTASK_STACK_SIZE                         ( ( unsigned int ) ( CONFIG_GRI_SUB_PUB_UNSUB_DEMO_TASK_STACK_SIZE ) )
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-}
+        } /* extern "C" */
     #endif
+    /* *INDENT-ON* */
 
 #endif /* SUB_PUB_UNSUB_DEMO_CONFIG_H */

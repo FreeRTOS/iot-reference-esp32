@@ -42,9 +42,11 @@
         #define SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS    10U
     #endif
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-    extern "C" {
+        extern "C" {
     #endif
+    /* *INDENT-ON* */
 
 /**
  * @brief Callback function called when receiving a publish.
@@ -123,8 +125,10 @@
     bool handleIncomingPublishes( SubscriptionElement_t * pxSubscriptionList,
                                   MQTTPublishInfo_t * pxPublishInfo );
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-}
+        } /* extern "C" */
     #endif
+    /* *INDENT-ON* */
 
 #endif /* SUBSCRIPTION_MANAGER_H */

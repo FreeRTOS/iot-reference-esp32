@@ -29,9 +29,11 @@
 
     #include "esp_event.h"
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-    extern "C" {
+        extern "C" {
     #endif
+    /* *INDENT-ON* */
 
     ESP_EVENT_DECLARE_BASE( CORE_MQTT_AGENT_EVENT );
 
@@ -43,8 +45,10 @@
         CORE_MQTT_AGENT_OTA_STOPPED_EVENT
     };
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-}
+        } /* extern "C" */
     #endif
+    /* *INDENT-ON* */
 
 #endif /* CORE_MQTT_AGENT_MANAGER_EVENTS_H */

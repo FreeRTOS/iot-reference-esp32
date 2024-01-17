@@ -14,9 +14,11 @@
 #ifndef APP_DRIVER_H_
     #define APP_DRIVER_H_
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-    extern "C" {
+        extern "C" {
     #endif
+    /* *INDENT-ON* */
 
     #include "driver/temp_sensor.h"
     #include "driver/gpio.h"
@@ -30,8 +32,10 @@
 
     esp_err_t app_driver_led_off();
 
+    /* *INDENT-OFF* */
     #ifdef __cplusplus
-}
+        }  /* extern "C" */
     #endif
+    /* *INDENT-ON* */
 
 #endif /* APP_DRIVER_H_ */
