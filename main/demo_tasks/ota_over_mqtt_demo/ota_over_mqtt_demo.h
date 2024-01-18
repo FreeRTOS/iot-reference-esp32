@@ -30,6 +30,12 @@
 #include "freertos/FreeRTOS.h"
 #include "core_mqtt_agent.h"
 
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+/* *INDENT-ON* */
+
 /**
  * @brief Starts the OTA codesigning demo.
  */
@@ -50,5 +56,11 @@ void vStartOTACodeSigningDemo( void );
  */
 bool vOTAProcessMessage( void * pvIncomingPublishCallbackContext,
                          MQTTPublishInfo_t * pxPublishInfo );
+
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        } /* extern "C" */
+    #endif
+/* *INDENT-ON* */
 
 #endif /* OTA_OVER_MQTT_DEMO_H */
