@@ -50,11 +50,11 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 configure, build, and flash the project. To setup for the ESP32-C3,
 follow Espressif's
 [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
-  
+
     **NOTE:** As of December 15h 2023 ESP-IDF V4.4.3 is no longer supported. For
     more information refer to the
     [ESP-IDF Release Support Schedule](https://github.com/espressif/esp-idf#esp-idf-release-support-schedule)
-  
+
 - [Python3](https://www.python.org/downloads/)
   and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/)
   to use the AWS CLI to import certificates and perform OTA Job set up. Pip is
@@ -106,7 +106,7 @@ ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are
 using the Espressif IDF extension, do ->View->Command Palette->Search for
 `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The
 `SDK Configuration editor` window should pop up after a moment.
-  
+
     (**Note**: If running menuconfig from within a VS Code command prompt, 'j' and
     'k' may have to be used in place of the 'up' and 'down' arrow keys.
     Alternately, one can use a command prompt/terminal outside of the VS Code
