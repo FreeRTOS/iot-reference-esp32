@@ -122,15 +122,30 @@ using the Espressif IDF extension, do ->View->Command Palette->Search for
 
 The key and certificates which will be used to establish a secure TLS connection will be stored in a special flash partition. Run the following command to create and flash the certificate partition.
 
-```sh
-python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip esp32c3 --secure_cert_type cust_flash
-```
+The following values will be needed:
 
-Remember to replace
-`PORT` with the serial port to which the ESP32-C3 board is connected,
-`CA_CERT_FILEPATH` with the file path to the PEM-encoded root CA certificate,
-`DEVICE_CERT_FILEPATH` with the file path to the PEM-encoded device certificate,
-and `PRIVATE_KEY_FILEPATH` with the file path to the PEM-encoded private key.
+- `PORT`: The serial port to which the ESP32-C3 board is connected
+
+- `CA_CERT_FILEPATH`: The file path to the PEM-encoded root CA certificate,
+
+- `DEVICE_CERT_FILEPATH`: The file path to the PEM-encoded device certificate
+
+- `PRIVATE_KEY_FILEPATH`: The file path to the PEM-encoded private key.
+
+- `KEY_ALG_INFO`: The type of key algorithm being used. In the
+format Algorithm Size,
+
+  - **NOTE:** If using the
+    [AWS IoT Generated Credentials](https://docs.aws.amazon.com/iot/latest/developerguide/device-certs-create.html)
+    this value will be `rsa 2048`
+
+**NOTE** The list of chip types can be found by running `idf.py list-targets`
+The directly supported chips are the `esp32c3`, `esp32s3`, and `esp32c2`
+
+```sh
+idf.py set-target CHIP_TYPE;
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip CHIP_TYPE --secure_cert_type cust_flash --priv_key_algo KEY_ALG_INFO
+```
 
 > **NOTE:** For convenience sake, you could place your key and certificate files under the `main/certs` directory.
 
@@ -142,16 +157,30 @@ Espressif provides BLE and SoftAP provisioning mobile apps which are available o
 
 Run the following command to build and flash the demo project:
 
-```
-idf.py -p PORT flash monitor
+**NOTE** The list of chip types can be found by running `idf.py list-targets`
+The directly supported chips are the `esp32c3`, `esp32s3`, and `esp32c2`
+
+```sh
+idf.py set-target CHIP_TYPE;
+idf.py -p PORT flash monitor;
 ```
 
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
 
-If you are setting up the ESP32-C3 for the first time, the device will go though the Wi-Fi provisioning workflow and you will have to use the app you previously downloaded to scan the QR code and follow the instructions that follow. Once the device is provisioned successfully with the required Wi-Fi credentials, the demo will proceed. If previously Wi-Fi provisioned, the device will not go through the Wi-Fi provisioning workflow again.
-Note: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a different network and wish to re-provision with new network credentials, you will have to erase the nvs flash partition where the Wi-Fi credentials are stored, otherwise the device will presume that it has already been provisioned. In this situation, use the following command to erase the nvs partition.
+If you are setting up the ESP32-C3 for the first time, the device will go though
+the Wi-Fi provisioning workflow and you will have to use the app you previously
+downloaded to scan the QR code and follow the instructions that follow. Once the
+device is provisioned successfully with the required Wi-Fi credentials, the
+demo will proceed. If previously Wi-Fi provisioned, the device will not go
+through the Wi-Fi provisioning workflow again.
 
-```
+**Note**: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a
+different network and wish to re-provision with new network credentials, you
+will have to erase the nvs flash partition where the Wi-Fi credentials are
+stored, otherwise the device will presume that it has already been provisioned.
+In this situation, use the following command to erase the nvs partition.
+
+```sh
 parttool.py -p PORT erase_partition --partition-name=nvs
 ```
 
@@ -214,21 +243,43 @@ This demo uses the OTA client library and the AWS IoT OTA service for code signi
 
 ### 5.1 Setup pre-requisites for OTA cloud resources
 
-Before you create an OTA job, the following resources are required. This is a one time setup required for performing OTA firmware updates. Make a note of the names of the resources you create, as you will need to provide them during subsequent configuration steps.
+Before you create an OTA job, the following resources are required. This is a
+one time setup required for performing OTA firmware updates. Make a note of the
+names of the resources you create, as you will need to provide them during
+subsequent configuration steps.
 
-- An Amazon S3 bucket to store your updated firmware. S3 is an AWS Service that enables you to store files in the cloud that can be accessed by you or other services. This is used by the OTA Update Manager Service to store the firmware image in an S3 “bucket” before sending it to the device. [Create an Amazon S3 Bucket to Store Your Update](https://docs.aws.amazon.com/freertos/latest/userguide/dg-ota-bucket.html).
-- An OTA Update Service role. By default, the OTA Update Manager cloud service does not have permission to access the S3 bucket that will contain the firmware image. An OTA Service Role is required to allow the OTA Update Manager Service to read and write to the S3 bucket. [Create an OTA Update Service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html).
-- An OTA user policy. An OTA User Policy is required to give your AWS account permissions to interact with the AWS services required for creating an OTA Update. [Create an OTA User Policy](https://docs.aws.amazon.com/freertos/latest/userguide/create-ota-user-policy.html).
-- [Create a code-signing certificate](https://docs.aws.amazon.com/freertos/latest/userguide/ota-code-sign-cert-win.html). The demos support a code-signing certificate with an ECDSA P-256 key and SHA-256 hash to perform OTA updates.
+- An Amazon S3 bucket to store your updated firmware. S3 is an AWS Service that
+enables you to store files in the cloud that can be accessed by you or other
+services. This is used by the OTA Update Manager Service to store the firmware
+image in an S3 “bucket” before sending it to the device.
+[Create an Amazon S3 Bucket to Store Your Update](https://docs.aws.amazon.com/freertos/latest/userguide/dg-ota-bucket.html).
+
+- An OTA Update Service role. By default, the OTA Update Manager cloud service
+does not have permission to access the S3 bucket that will contain the firmware
+image. An OTA Service Role is required to allow the OTA Update Manager Service
+to read and write to the S3 bucket.
+[Create an OTA Update Service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html).
+
+- An OTA user policy. An OTA User Policy is required to give your AWS account
+permissions to interact with the AWS services required for creating an OTA Update.
+[Create an OTA User Policy](https://docs.aws.amazon.com/freertos/latest/userguide/create-ota-user-policy.html).
+- [Create a code-signing certificate](https://docs.aws.amazon.com/freertos/latest/userguide/ota-code-sign-cert-win.html).
+The demos support a code-signing certificate with an ECDSA P-256 key and
+SHA-256 hash to perform OTA updates.
 - [Grant access to Code Signing for AWS IoT](https://docs.aws.amazon.com/freertos/latest/userguide/code-sign-policy.html).
 
 ### 5.2 Provision the project with the code-signing public key certificate
 
-The code-signing public key certificate will be used by the application binary, i.e. the demo, to authenticate a binary that was downloaded for an update. (This downloaded firmware would have been signed by the certificate's corresponding private key.)
+The code-signing public key certificate will be used by the application binary,
+i.e. the demo, to authenticate a binary that was downloaded for an update.
+(This downloaded firmware would have been signed by the certificate's
+corresponding private key.)
 
-Copy the public key certificate that you would have created in the 'Create a code-signing certificate' step to 'main/certs/aws_codesign.crt'
+Copy the public key certificate that you would have created in the 'Create a
+code-signing certificate' step to 'main/certs/aws_codesign.crt'
 
-The demo will read the certificate 'aws_codesign.crt' from your host filesystem and save it in memory.
+The demo will read the certificate 'aws_codesign.crt' from your host filesystem
+and save it in memory.
 
 ### 5.3 Build an application binary with a higher version number, to be downloaded and activated on the device
 
@@ -238,9 +289,12 @@ To perform an OTA firmware update, you must go through these steps:
 2. Upload this image to an S3 bucket and create an OTA Update Job on the AWS IoT console.
 3. Restore the original version (lower version number) and flash this to the device.
 
-The version of the new image must be later than the current image on the board or else OTA will not proceed.
+The version of the new image must be later than the current image on the board
+or else OTA will not proceed.
 
-The OTA Update Job will send a notification to an MQTT topic that the device will be listening to. When it receives an OTA update notification, the device will then start downloading the new firmware.
+The OTA Update Job will send a notification to an MQTT topic that the device
+will be listening to. When it receives an OTA update notification, the device
+will then start downloading the new firmware.
 
 Create a binary with a higher version number.
 
@@ -255,14 +309,17 @@ Create a binary with a higher version number.
 idf.py build
 ```
 
-If successful, there will be a new binary under the 'build' directory - build/FeaturedFreeRTOSIoTIntegration.bin. Copy this binary to another location, otherwise it will be overwritten in the next step.
+If successful, there will be a new binary under the 'build' directory -
+build/FeaturedFreeRTOSIoTIntegration.bin. Copy this binary to another
+location, otherwise it will be overwritten in the next step.
 
 ### 5.4 Build and flash the device with a binary with a lower version number
 
-1. Follow the same steps in 5.3 starting with running idf.py menuconfig, but this time, set the `Application version build` number to '0'.
+1. Follow the same steps in 5.3 starting with running idf.py menuconfig, but
+this time, set the `Application version build` number to '0'.
 2. Build and flash this new application binary with a lower version number.
 
-```
+```sh
 idf.py -p PORT flash monitor
 ```
 
