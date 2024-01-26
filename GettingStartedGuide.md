@@ -46,34 +46,72 @@ Once completed, one can progress to the [Use Security Features](UseSecurityFeatu
 
 ### 1.2 Software Requirements
 
-- ESP-IDF 4.4.3 or higher to configure, build, and flash the project. To setup for the ESP32-C3, follow Espressif's [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
+- [ESP-IDF 5.0](https://github.com/espressif/esp-idf/tree/v5.0) or higher to
+configure, build, and flash the project. To setup for the ESP32-C3,
+follow Espressif's
+[Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
+  
+    **NOTE:** As of December 15h 2023 ESP-IDF V4.4.3 is no longer supported. For
+    more information refer to the
+    [ESP-IDF Release Support Schedule](https://github.com/espressif/esp-idf#esp-idf-release-support-schedule)
+  
 - [Python3](https://www.python.org/downloads/)
-  and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/) to use the AWS CLI to import certificates and perform OTA Job set up. Pip is included when you install
+  and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/)
+  to use the AWS CLI to import certificates and perform OTA Job set up. Pip is
+  included when you install
   from Python 3.10.
 - [OpenSSL](https://www.openssl.org/) to create the OTA signing
-  key and certificate. If you have git installed on your machine, you can also use the openssl.exe that comes with the git installation.
+  key and certificate. If you have git installed on your machine,
+  you can also use the openssl.exe that comes with the git installation.
 - [AWS CLI Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-  to import your code-signing certificate, private key, and certificate chain into the AWS Certificate Manager,
-  and to set up an OTA firmware update job. Refer to
-  [Installing or updating the latest version of the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+  to import your code-signing certificate, private key, and certificate chain into
+  the AWS Certificate Manager,
+  and to set up an OTA firmware update job. Refer to the AWS User Guide for
+  Installing or updating the latest version of the AWS CLI
+  [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
   for installation instructions. After installation, follow the steps in
   [Configuration basics](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
-  to configure the basic settings (security credentials, the default AWS output format and the default AWS Region)
-  that AWS CLI uses to interact with AWS. (If you don't have an AWS account and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before following the Configuration basics for the AWS CLI.)
+  to configure the basic settings (security credentials, the default AWS output
+  format and the default AWS Region)
+  that AWS CLI uses to interact with AWS. (If you don't have an AWS account
+  and user, follow steps 1 and 2 in the AWS IoT Core Setup Guide below before
+ following the Configuration basics for the AWS CLI.)
 
 ## 2 Demo setup
 
 ### 2.1 Setup AWS IoT Core
 
-To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md). The guide shows you how to sign up for an AWS account, create a user, and register your device with AWS IoT Core.
-After you have followed the instructions in the AWS IoT Core Setup Guide, you will have created a **device Endpoint**, an AWS IoT **thing**, a **PEM-encoded device certificate**, a **PEM-encoded private key**, and a **PEM-encoded root CA certificate**. (An explanation of these entities is given in the Setup Guide.) The root CA certificate can also be downloaded [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem). Your ESP23-C3 board must now be provisioned with these entities in order for it to connect securely with AWS IoT Core.
+To setup AWS IoT Core, follow the [AWS IoT Core Setup Guide](AWSSetup.md).
+The guide shows you how to sign up for an AWS account, create a user, and
+register your device with AWS IoT Core.
+
+After you have followed the instructions in the AWS IoT Core Setup Guide, you
+will have created a **device Endpoint**, an AWS IoT **thing**, a
+**PEM-encoded device certificate**, a **PEM-encoded private key**, and a
+**PEM-encoded root CA certificate**. (An explanation of these entities is
+given in the [AWS IoT Core Setup Guide](AWSSetup.md).)The AWS Root CA
+certificate can also be downloaded
+[here](https://www.amazontrust.com/repository/AmazonRootCA1.pem).
+Your ESP23-C3 board must now be provisioned with these entities in order
+for it to connect securely with AWS IoT Core.
 
 ### 2.2 Configure the project with the AWS IoT Thing Name and AWS device Endpoint
 
 The demo will connect to the AWS IoT device Endpoint that you configure here.
 
-1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be found under the ESP-IDF directory, has been run, or that you are using the ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are using the Espressif IDF extension, do ->View->Command Palette->Search for `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The `SDK Configuration editor` window should pop up after a moment.
-   (Note: If running menuconfig from within a VS Code command prompt, 'j' and 'k' may have to be used in place of the 'up' and 'down' arrow keys. Alternately, one can use a command prompt/terminal outside of the VS Code editor).
+1. From a terminal/command prompt, run `idf.py menuconfig`. This assumes the
+ESP-IDF environment is exported-- i.e. that export.bat/export.sh, which can be
+found under the ESP-IDF directory, has been run, or that you are using the
+ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are
+using the Espressif IDF extension, do ->View->Command Palette->Search for
+`ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The
+`SDK Configuration editor` window should pop up after a moment.
+  
+    (**Note**: If running menuconfig from within a VS Code command prompt, 'j' and
+    'k' may have to be used in place of the 'up' and 'down' arrow keys.
+    Alternately, one can use a command prompt/terminal outside of the VS Code
+    editor).
+
 2. Select `Featured FreeRTOS IoT Integration` from the menu.
 3. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 4. Set `Port for MQTT Broker to use` to `8883`.
