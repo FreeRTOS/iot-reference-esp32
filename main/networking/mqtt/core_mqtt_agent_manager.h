@@ -31,6 +31,12 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_event.h"
 
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+/* *INDENT-ON* */
+
 /**
  * @brief Register an event handler with coreMQTT-Agent events.
  *
@@ -61,5 +67,11 @@ BaseType_t xCoreMqttAgentManagerStart( NetworkContext_t * pxNetworkContextIn );
  * @return pdPASS if successful, pdFAIL otherwise.
  */
 BaseType_t xCoreMqttAgentManagerPost( int32_t lEventId );
+
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        } /* extern "C" */
+    #endif
+/* *INDENT-ON* */
 
 #endif /* CORE_MQTT_AGENT_NETWORK_MANAGER_H */

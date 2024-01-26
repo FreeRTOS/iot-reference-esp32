@@ -8,6 +8,12 @@
 #pragma once
 #include <esp_err.h>
 
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
+
 /** Types of Proof of Possession */
 typedef enum
 {
@@ -23,3 +29,9 @@ esp_err_t app_wifi_start( app_wifi_pop_type_t pop_type );
 esp_err_t app_wifi_connect();
 bool app_wifi_is_connected();
 void vWaitOnWifiConnected( void );
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    } /* extern "C" */
+#endif
+/* *INDENT-ON* */

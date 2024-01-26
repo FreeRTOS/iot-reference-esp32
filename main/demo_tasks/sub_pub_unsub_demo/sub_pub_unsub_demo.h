@@ -27,9 +27,21 @@
 #ifndef SUB_PUB_UNSUB_DEMO_H
 #define SUB_PUB_UNSUB_DEMO_H
 
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+/* *INDENT-ON* */
+
 /**
  * @brief This function starts the SubPubUnsub demo.
  */
 void vStartSubscribePublishUnsubscribeDemo( void );
+
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        } /* extern "C" */
+    #endif
+/* *INDENT-ON* */
 
 #endif /* SUB_PUB_UNSUB_DEMO_H */

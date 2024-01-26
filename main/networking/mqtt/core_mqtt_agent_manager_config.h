@@ -34,6 +34,12 @@
     #include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+/* *INDENT-ON* */
+
 /**
  * @brief The thing name of the device.
  */
@@ -99,5 +105,11 @@
  * @brief The task priority of the coreMQTT-Agent task.
  */
 #define configMQTT_AGENT_TASK_PRIORITY                  ( CONFIG_GRI_MQTT_AGENT_TASK_PRIORITY )
+
+/* *INDENT-OFF* */
+    #ifdef __cplusplus
+        } /* extern "C" */
+    #endif
+/* *INDENT-ON* */
 
 #endif /* CORE_MQTT_AGENT_MANAGER_CONFIG_H */
