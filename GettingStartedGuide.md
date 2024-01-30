@@ -103,7 +103,7 @@ for it to connect securely with AWS IoT Core.
 The demo will connect to the AWS IoT device Endpoint that you configure here.
 
 1. From a terminal/command prompt navigate to the root directory of this repository
-1. Run `idf.py --list-targets` 
+1. Run `idf.py --list-targets`
     - The directly supported chips are the `esp32c3`, `esp32s3`, and `esp32c2`
 1. Set the corret chip type by running `idf.py set-target <CHIP_TYPE>`;
 1. run `idf.py menuconfig`. This assumes the
@@ -157,16 +157,16 @@ python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_sec
 Before you build and flash the demo project, if you are setting up the ESP32-C3
 for the first time, the board will have to be provisioned with Wi-Fi credentials
 to be able to use your Wi-Fi network to connect to the internet. This can be done
-via BLE or SoftAP. BLE is the default, but can be changed via menuconfig -
-Featured FreeRTOS IoT Integration -> Show provisioning QR code -> 
- Provisioning Transport method.
+via BLE or SoftAP. BLE is the default, but can be changed by running
+`idf.py menuconfig` then selecting: Featured FreeRTOS IoT Integration
+-> Show provisioning QR code -> Provisioning Transport method.
 
 Espressif provides BLE and SoftAP provisioning mobile apps which are available
-on the 
+on the
 [Google Play Store](https://play.google.com/store/apps/details?id=com.espressif.provble)
 for Android or the
 [Apple App Store](https://apps.apple.com/app/esp-ble-provisioning/id1473590141)
- for iOS. Download the appropriate app to your phone before proceeding.
+for iOS. Download the appropriate app to your phone before proceeding.
 
 Run the following command to build and flash the demo project:
 
