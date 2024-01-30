@@ -20,9 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         esp_idf_version:
-          - v4.4.1
           - v5.0
           - v5.1.2
+          - release-v5.2
+          - latest
         esp_target:
           - esp32
           - esp32s2
