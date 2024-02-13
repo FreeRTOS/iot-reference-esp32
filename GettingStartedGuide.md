@@ -136,7 +136,10 @@ following command to create and flash the certificate partition.
 
 The following values will be needed:
 
-- `PORT`: The serial port to which the ESP32-C3 board is connected
+- `PORT`: The serial port to which the ESP32-C3 board is connected. You can
+refer to this
+[guide](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/establish-serial-connection.html)
+for information about finding what value this should be.
 
 - `CA_CERT_FILEPATH`: The file path to the PEM-encoded root CA certificate,
 
@@ -183,7 +186,6 @@ The directly supported chips are the ones listed in
   when using an unsupported ESP chip.
 
 ```sh
-idf.py set-target CHIP_TYPE;
 idf.py -p PORT flash monitor;
 ```
 
