@@ -56,7 +56,7 @@ To setup for the ESP32-C3, follow Espressif's
 [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
 
   - The versions of `ESP-IDF` supported by this repository are the ones supported by
-    [Epressif's GitHub Build Action](https://github.com/espressif/esp-idf-ci-action?tab=readme-ov-file)
+    [Espressif's GitHub Build Action](https://github.com/espressif/esp-idf-ci-action?tab=readme-ov-file)
   - To see the currently supported `ESP-IDF` versions please refer to the list in
     [build.yml](./.github/workflows/build.yml#L22).
 
@@ -622,8 +622,8 @@ disabled when running the qualification test. You can change the log level by
 ### 6.2 Steps for each test case
 
 1. Device Advisor Test
-    - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) in the 
-      console.
+    - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html)
+       in the console.
     - Find the Device Advisor test endpoint for your account
     - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
       choose `Device Advisor Test`.
@@ -762,7 +762,7 @@ Extract IDT for FreeRTOS to a location on the file system
   that are required to setup IDT
 
 Before running IDT, the files in `devicetester-extract-location/configs` need
-to be updated. We have pre-defined configures available in the 
+to be updated. We have pre-defined configures available in the
 [idt_config](https://github.com/FreeRTOS/iot-reference-esp32c3/tree/main/idt_config).
 Copy these templates to `devicetester-extract-location/configs`, and the rest of
 this section will walk through the remaining values that need to be filled in.
@@ -773,7 +773,7 @@ You need to configure your AWS credentials for IDT.
 
 You need to specify the device details for IDT.
 
-- In `device.json`, update `serialPort` to the serial port of your board as from 
+- In `device.json`, update `serialPort` to the serial port of your board as from
 [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode).
 Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`.
 Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when
@@ -794,7 +794,7 @@ You need to configure IDT the build, flash and test settings.
 
 ### 7.4 Running the FreeRTOS qualification 2.0 suite
 
-With configuration complete, IDT can be run for an individual test group, a 
+With configuration complete, IDT can be run for an individual test group, a
 test case, or the entire qualification suite.
 
 List all the available test groups, run:
