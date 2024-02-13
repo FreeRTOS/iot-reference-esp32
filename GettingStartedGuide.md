@@ -44,7 +44,8 @@ Once completed, one can progress to the
 ### 1.1 Hardware Requirements
 
 - Micro USB cable.
-- ESP32-C3, ESP32-C3, or a, ESP32-S3 board (e.g [ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
+- ESP32-C3, ESP32-C3, or a, ESP32-S3 board (e.g
+[ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
 - Personal Computer with Linux, MacOS, or Windows.
 - WiFi access point with access to the internet.
 
