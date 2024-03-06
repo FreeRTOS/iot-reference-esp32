@@ -565,6 +565,7 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
             {
                 ESP_LOGE( TAG, "Failed to set image state as accepted with error %d.", err );
             }
+
             /* Signal coreMQTT-Agent network manager that an OTA job has stopped. */
             xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_OTA_STOPPED_EVENT );
             break;
