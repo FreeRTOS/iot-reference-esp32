@@ -44,25 +44,20 @@ Once completed, one can progress to the
 ### 1.1 Hardware Requirements
 
 - Micro USB cable.
-- ESP32-C3, ESP32-C3, or a, ESP32-S3 board (e.g
-[ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
+- ESP32-C3, ESP32-C3, or a, ESP32-S3 board (e.g [ESP32-C3-DevKitC-02](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/hw-reference/esp32c3/user-guide-devkitc-02.html)).
 - Personal Computer with Linux, MacOS, or Windows.
 - WiFi access point with access to the internet.
 
 ### 1.2 Software Requirements
 
-- [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started):
-This is used to configure, build, and flash the project.
-To setup for the ESP32-C3, follow Espressif's
+- [ESP-IDF 5.0](https://github.com/espressif/esp-idf/tree/v5.0) or higher to
+configure, build, and flash the project. To setup for the ESP32-C3,
+follow Espressif's
 [Getting Started Guide for the ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html).
 
-  - The versions of `ESP-IDF` supported by this repository are the ones supported by
-    [Espressif's GitHub Build Action](https://github.com/espressif/esp-idf-ci-action?tab=readme-ov-file)
-  - To see the currently supported `ESP-IDF` versions please refer to the list in
-    [build.yml](./.github/workflows/build.yml#L22).
-
-    **NOTE:** Please do not submit a bug report due to build errors or demo failures
-    when using an unsupported version of `ESP-IDF`.
+    **NOTE:** As of December 15h 2023 ESP-IDF V4.4.3 is no longer supported. For
+    more information refer to the
+    [ESP-IDF Release Support Schedule](https://github.com/espressif/esp-idf#esp-idf-release-support-schedule)
 
 - [Python3](https://www.python.org/downloads/)
   and the Package Installer for Python [pip](https://pip.pypa.io/en/stable/installation/)
@@ -118,10 +113,10 @@ ESP-IDF command prompt/terminal. For Visual Studio (VS) Code users who are
 using the Espressif IDF extension, do ->View->Command Palette->Search for
 `ESP-IDF: SDK Configuration editor (menuconfig)` and select the command. The
 `SDK Configuration editor` window should pop up after a moment.
-    - **Note**: If running menuconfig from within a VS Code command prompt, 'j'
+    - (**Note**: If running menuconfig from within a VS Code command prompt, 'j'
         and 'k' may have to be used in place of the 'up' and 'down' arrow keys.
         Alternately, one can use a command prompt/terminal outside of the VS
-        Code editor.
+         Code editor).
 1. Select `Featured FreeRTOS IoT Integration` from the menu.
 1. Set `Endpoint for MQTT Broker to use` to your **AWS device Endpoint**.
 1. Set `Port for MQTT Broker to use` to `8883`.
@@ -136,16 +131,15 @@ following command to create and flash the certificate partition.
 
 The following values will be needed:
 
-- `PORT`: The serial port to which the ESP32-C3 board is connected. You can
-refer to this
-[guide](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/establish-serial-connection.html)
-for information about finding what value this should be.
+- `PORT`: The serial port to which the ESP32-C3 board is connected
 
 - `CA_CERT_FILEPATH`: The file path to the PEM-encoded root CA certificate,
 
 - `DEVICE_CERT_FILEPATH`: The file path to the PEM-encoded device certificate
 
 - `PRIVATE_KEY_FILEPATH`: The file path to the PEM-encoded private key.
+
+- `CHIP_TYPE`: The chip type of the target.
 
 - `KEY_ALG_INFO`: The type of key algorithm being used. In the
 format Algorithm Size,
@@ -198,7 +192,8 @@ device is provisioned successfully with the required Wi-Fi credentials, the
 demo will proceed. If previously Wi-Fi provisioned, the device will not go
 through the Wi-Fi provisioning workflow again.
 
-**Note**: If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a
+**Note**:
+- If the ESP32-C3 was previously Wi-Fi provisioned, and you are on a
 different network and wish to re-provision with new network credentials, you
 will have to erase the nvs flash partition where the Wi-Fi credentials are
 stored, otherwise the device will presume that it has already been provisioned.
@@ -207,6 +202,8 @@ In this situation, use the following command to erase the nvs partition.
 ```sh
 parttool.py -p PORT erase_partition --partition-name=nvs
 ```
+- Keyboard command `Ctrl + ]` should exit `idf.py monitor`
+when run from a terminal.
 
 ## 4 Monitoring the demo
 
@@ -355,7 +352,7 @@ idf.py -p PORT flash monitor
 
 ### 5.5 Upload the binary with the higher version number (created in step 5.3) and create an OTA Update Job
 
-1. In the navigation pane of the AWS IoT console, choose 'Manage', and then choose 'Jobs'.
+1. In the navigation pane of the AWS IoT console, choose 'Remote actions', and then choose 'Jobs'.
    Choose 'Create a job'.
 1. Next to 'Create a FreeRTOS Over-the-Air (OTA) update job', choose
 `Create FreeRTOS OTA update job'. Provide a name for the job and click on 'Next'.
@@ -625,27 +622,23 @@ disabled when running the qualification test. You can change the log level by
 ### 6.2 Steps for each test case
 
 1. Device Advisor Test
-    - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html)
-       in the console.
-    - Find the Device Advisor test endpoint for your account
-    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
-      choose `Device Advisor Test`.
-    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-      - Set `Endpoint for MQTT Broker to use` to Device Advisor test endpoint
-      - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
-    - Build and run.
-    - See Device Advisor test result in the console.
+   - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html) in the console.
+   - Find the Device Advisor test endpoint for your account
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Device Advisor Test`.
+   - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
+     - Set `Endpoint for MQTT Broker to use` to Device Advisor test endpoint
+     - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
+   - Build and run.
+   - See Device Advisor test result in the console.
 2. MQTT Test
-   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
-    choose `MQTT Test`.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `MQTT Test`.
    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
      - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
      - Set `Client Identifier for MQTT Test`
    - Build and run.
    - See test result on target output.
    - Example output
-
-     ```c
+     ```
      I (821) qual_main: Run qualification test.
      ...
      -----------------------
@@ -653,23 +646,17 @@ disabled when running the qualification test. You can change the log level by
      OK
      I (84381) qual_main: End qualification test.
      ```
-
 3. Transport Interface Test
-    - Follow
-      [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test)
-      to start an echo server.
-    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
-      choose `Transport Interface Test`.
-    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-    - Set `Echo Server Domain Name/IP for Transport Interface Test`
-    - Set `Port for Echo Server to use`
-    - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY
-      in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
-    - Build and run.
-    - See test result on target output.
-    - Example output
-
-     ```c
+   - Follow [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test) to start an echo server.
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `Transport Interface Test`.
+   - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
+     - Set `Echo Server Domain Name/IP for Transport Interface Test`
+     - Set `Port for Echo Server to use`
+   - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
      I (855) qual_main: Run qualification test.
      ...
      -----------------------
@@ -677,15 +664,12 @@ disabled when running the qualification test. You can change the log level by
      OK
      I (612755) qual_main: End qualification test.
      ```
-
 4. OTA PAL Test
-    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
-      choose `OTA PAL Test`.
-    - Build and run.
-    - See test result on target output.
-    - Example output
-
-     ```c
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `OTA PAL Test`.
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
      I (905) qual_main: Run qualification test.
      ...
      -----------------------
@@ -693,15 +677,12 @@ disabled when running the qualification test. You can change the log level by
      OK
      I (113755) qual_main: End qualification test.
      ```
-
 5. Core PKCS11 Test
-    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
-      choose `CorePKCS#11 Test`.
-    - Build and run.
-    - See test result on target output.
-    - Example output
-
-     ```c
+   - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, choose `CorePKCS#11 Test`.
+   - Build and run.
+   - See test result on target output.
+   - Example output
+     ```
      I (858) qual_main: Run qualification test.
      ...
      -----------------------
@@ -712,44 +693,24 @@ disabled when running the qualification test. You can change the log level by
 
 ## 7 Run AWS IoT Device Tester
 
-This repository can be tested using
-[AWS IoT Device Tester for FreeRTOS (IDT)](https://aws.amazon.com/freertos/device-tester/).
-IDT is a downloadable tool that can be used to exercise a device integration with
-FreeRTOS to validate functionality and compatibility with Amazon IoT cloud.
-Passing the test suite provided by IDT is also required to qualify a device for
-the [Amazon Partner Device Catalogue](https://devices.amazonaws.com/).
+This repository can be tested using [AWS IoT Device Tester for FreeRTOS (IDT)](https://aws.amazon.com/freertos/device-tester/). IDT is a downloadable tool that can be used to exercise a device integration with FreeRTOS to validate functionality and compatibility with Amazon IoT cloud. Passing the test suite provided by IDT is also required to qualify a device for the [Amazon Partner Device Catalogue](https://devices.amazonaws.com/).
 
-IDT runs a suite of tests that include testing the device's transport interface
-layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test
-cases, the IDT binary will make a copy of the source code, update the header files
-in the project, then compile the project and flash the resulting image to your
-board. Finally, IDT will read serial output from the board and communicate with
-the AWS IoT cloud to ensure that test cases are passing.
+IDT runs a suite of tests that include testing the device's transport interface layer implementation, PKCS11 functionality, and OTA capabilities. In IDT test cases, the IDT binary will make a copy of the source code, update the header files in the project, then compile the project and flash the resulting image to your board. Finally, IDT will read serial output from the board and communicate with the AWS IoT cloud to ensure that test cases are passing.
 
 ### 7.1 Prerequisite
 
-- Follow the
-[OTA update with AWS IoT Guide](#5-perform-firmware-over-the-air-updates-with-aws-iot)
-to create an OTA update and verify the digital signature, checksum and version
-number of the new image. If firmware update is verified, you can run the tests
-on your device.
+- Follow the [OTA update with AWS IoT Guide](#5-perform-firmware-over-the-air-updates-with-aws-iot) to create an OTA update and verify the digital signature, checksum and version number of the new image. If firmware update is verified, you can run the tests on your device.
 - Run `idf.py menuconfig`.
 - Under `Featured FreeRTOS IoT Integration`, choose `Run qualification test`.
 - Under `Component config -> Unity unit testing library`, choose `Include Unity test fixture`.
-- Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
-  **DISABLE** all the tests.
+- Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`, **DISABLE** all the tests.
 - Run `idf.py fullclean` to clear local CMAKE cache.
 
-_Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be
-disabled when running the qualification test. You can change the log level by
-`esp_log_level_set` in [main.c](./main/main.c)._
+_Note: The log of module `esp_ota_ops`, `AWS_OTA` and `esp-tls-mbedtls` will be disabled when running the qualification test. You can change the log level by `esp_log_level_set` in [main.c](./main/main.c)._
 
 ### 7.2 Download AWS IoT Device Tester
 
-The latest version of IDT can be downloaded from the
-[here](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html).
-This repository has been qualified by IDT v4.6.0 and test suite version 2.3.0 for
-[FreeRTOS 202210-LTS](https://github.com/FreeRTOS/FreeRTOS-LTS/tree/202210.01-LTS).
+The latest version of IDT can be downloaded from the [here](https://docs.aws.amazon.com/freertos/latest/userguide/dev-test-versions-afr.html). This repository has been qualified by IDT v4.6.0 and test suite version 2.3.0 for FreeRTOS 202210-LTS.
 
 ### 7.3 Configure AWS IoT Device Tester
 
@@ -757,18 +718,11 @@ Follow [the instructions to setup your AWS account](https://docs.aws.amazon.com/
 
 Extract IDT for FreeRTOS to a location on the file system
 
-- The `devicetester-extract-location/bin` directory holds the IDT binary, which
-  is the entry point used to run IDT
-- The `devicetester-extract-location/results` directory holds logs that are
-  generated every time you run IDT.
-- The `devicetester-extract-location/configs` directory holds configuration files
-  that are required to setup IDT
+- The `devicetester-extract-location/bin` directory holds the IDT binary, which is the entry point used to run IDT
+- The `devicetester-extract-location/results` directory holds logs that are generated every time you run IDT.
+- The `devicetester-extract-location/configs` directory holds configuration files that are required to setup IDT
 
-Before running IDT, the files in `devicetester-extract-location/configs` need
-to be updated. We have pre-defined configures available in the
-[idt_config](https://github.com/FreeRTOS/iot-reference-esp32c3/tree/main/idt_config).
-Copy these templates to `devicetester-extract-location/configs`, and the rest of
-this section will walk through the remaining values that need to be filled in.
+Before running IDT, the files in `devicetester-extract-location/configs` need to be updated. We have pre-defined configures available in the [idt_config](https://github.com/FreeRTOS/iot-reference-esp32c3/tree/main/idt_config). Copy these templates to `devicetester-extract-location/configs`, and the rest of this section will walk through the remaining values that need to be filled in.
 
 You need to configure your AWS credentials for IDT.
 
@@ -776,57 +730,45 @@ You need to configure your AWS credentials for IDT.
 
 You need to specify the device details for IDT.
 
-- In `device.json`, update `serialPort` to the serial port of your board as from
-[PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode).
-Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`.
-Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when
-[Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
+- In `device.json`, update `serialPort` to the serial port of your board as from [PORT](./GettingStartedGuide.md#23-provision-the-esp32-c3-with-the-private-key-device-certificate-and-ca-certificate-in-development-mode). Update `publicKeyAsciiHexFilePath` to the absolute path to `dummyPublicKeyAsciiHex.txt`. Update `publicDeviceCertificateArn` to the ARN of the certificate uploaded when [Setup AWS IoT Core](./GettingStartedGuide.md#21-setup-aws-iot-core).
 
 You need to configure IDT the build, flash and test settings.
 
 - In `build.bat` / `build.sh`, update ESP_IDF_PATH, and ESP_IDF_FRAMEWORK_PATH
 - In `flash.bat` / `flash.sh`, update ESP_IDF_PATH, ESP_IDF_FRAMEWORK_PATH, and NUM_COMPORT
 - In `userdata.json`, update `sourcePath` to the absolute path to the root of this repository.
-- In `userdata.json`, update `signerCertificate` with the ARN of the
-  [Setup pre-requisites for OTA cloud resources](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
-- Run all the steps to create a
-  [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
-  but do NOT provision the key onto your board.
-- Copy the ARN for this certificate in `userdata.json` for the field
-  `untrustedSignerCertificate`.
+- In `userdata.json`, update `signerCertificate` with the ARN of the [Setup pre-requisites for OTA cloud resources
+  .](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources)
+- Run all the steps to create a [second code signing certificate](./GettingStartedGuide.md#51-setup-pre-requisites-for-ota-cloud-resources) but do NOT provision the key onto your board. Copy the ARN for this certificate in `userdata.json` for the field `untrustedSignerCertificate`.
 
 ### 7.4 Running the FreeRTOS qualification 2.0 suite
 
-With configuration complete, IDT can be run for an individual test group, a
-test case, or the entire qualification suite.
+With configuration complete, IDT can be run for an individual test group, a test case, or the entire qualification suite.
 
 List all the available test groups, run:
 
-```sh
+```
 .\devicetester_win_x86-64.exe list-groups
 ```
 
 Run one or more specified test group, run e.g.:
 
-```sh
+```
 .\devicetester_win_x86-64.exe run-suite --group-id FullCloudIoT --group-id OTACore
 ```
 
 Run one or more specified tests, run e.g.:
 
-```sh
+```
 .\devicetester_win_x86-64.exe run-suite --group-id OTADataplaneMQTT --test-id OTAE2EGreaterVersion
 ```
 
 To run the entire qualification suite, run:
 
-```sh
+```
 .\devicetester_win_x86-64.exe run-suite --skip-group-id FullPKCS11_PreProvisioned_RSA --skip-group-id FullPKCS11_Import_RSA --skip-group-id FullPKCS11_Core --skip-group-id FullTransportInterfacePlainText
 ```
 
 For more information, `.\devicetester_win_x86-64.exe help` will show all available commands.
 
-When IDT is run, it generates the `results/uuid` directory that contains the
-logs and other information associated with your test run. See
-[Understanding results and logs](https://docs.aws.amazon.com/freertos/latest/userguide/lts-results-logs.html)
-for more details.
+When IDT is run, it generates the `results/uuid` directory that contains the logs and other information associated with your test run. See [Understanding results and logs](https://docs.aws.amazon.com/freertos/latest/userguide/lts-results-logs.html) for more details.
