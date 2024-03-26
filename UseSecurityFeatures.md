@@ -85,7 +85,11 @@ terminal/command prompt.
 5. Set `Sign binaries during build` to true.
 6. Set `Secure boot private signing key` to the path to the RSA 3072 private
 key you generated in step 1.
-7. Go back to main menu, Save and Exit.
+7. Go back to main menu.
+1. Select `Bootloader config`
+1. Select `Bootloader log verbosity`
+1. Select `Warning` or `Error`
+1. Go back to main menu, Save and Exit.
 
 **NOTE**: This covers setting up Secure Boot with a single private key, but
 up to 3 private keys can be used. Refer to Espressif's documentation on
@@ -113,13 +117,6 @@ replacing:
      (Do not includethe opening and closing braces around PORT in the command)
     - **(BAUD)** with 460800.
 
-**NOTE**: If bootloader image is too big that exceeds bootloader size limit,
-you can [reduce bootloader log level](https://docs.espressif.com/projects/esp-idf/en/release-v4.3/esp32/security/secure-boot-bootloader-size.html). After the configuration change,
-rebuild the bootloader image.
-1. Run `idf.py menuconfig`
-1. Select `Bootloader config`
-1. Select `Bootloader log verbosity`
-1. Select `Warning` or `Error`
 
 ## 6 Build and flash the demo project
 
@@ -278,7 +275,8 @@ I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 
 Once all the firmware image chunks are downloaded and the signature is validated,
 the device reboots with the new image, during which the Secure Boot sequence is
-executed. See the OTA section in the [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu/)
+executed. See the OTA section in the 
+[Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu/)
 on FreeRTOS.org for more details. You can see the new version number of the
 demo binary. Look for the string "Application version"
 
