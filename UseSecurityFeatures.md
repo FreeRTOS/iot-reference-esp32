@@ -85,11 +85,7 @@ terminal/command prompt.
 5. Set `Sign binaries during build` to true.
 6. Set `Secure boot private signing key` to the path to the RSA 3072 private
 key you generated in step 1.
-7. Go back to main menu.
-1. Select `Bootloader config`
-1. Select `Bootloader log verbosity`
-1. Select `Warning` or `Error`
-1. Go back to main menu, Save and Exit.
+7. Go back to main menu, Save and Exit.
 
 **NOTE**: This covers setting up Secure Boot with a single private key, but
 up to 3 private keys can be used. Refer to Espressif's documentation on
