@@ -271,7 +271,7 @@ I (198603) ota_over_mqtt_demo:  Received: 160   Queued: 160   Processed: 160   D
 
 Once all the firmware image chunks are downloaded and the signature is validated,
 the device reboots with the new image, during which the Secure Boot sequence is
-executed. See the OTA section in the 
+executed. See the OTA section in the
 [Featured FreeRTOS IoT Integration page for the ESP32-C3](https://www.freertos.org/featured-freertos-iot-integration-targeting-an-espressif-esp32-c3-risc-v-mcu/)
 on FreeRTOS.org for more details. You can see the new version number of the
 demo binary. Look for the string "Application version"
