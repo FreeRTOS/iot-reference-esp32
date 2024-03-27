@@ -535,6 +535,10 @@ static void prvOtaAppCallback( OtaJobEvent_t event,
              * performed while shutting down please set the second parameter to 0 instead of 1. */
             OTA_Shutdown( 0, 1 );
 
+            /* Notify the coreMQTT-Agent network manager that an OTA job has been terminated.
+             * Please note that due to a critical issue in the OTA PAL (Platform Abstraction Layer),
+             * the OTA service has been shut down and will not function properly after this point. */
+            xCoreMqttAgentManagerPost( CORE_MQTT_AGENT_OTA_STOPPED_EVENT );
 
             break;
 
