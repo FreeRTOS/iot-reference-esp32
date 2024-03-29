@@ -38,7 +38,7 @@ set(IDT_REQUIRES
     coreHTTP
     freertos
     corePKCS11
-    ota-for-aws-iot-embedded-sdk
+    aws-iot-core-mqtt-file-streams-embedded-c
 )
 
 idf_component_register(

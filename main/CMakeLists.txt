@@ -53,7 +53,7 @@ set(MAIN_REQUIRES
     coreJSON
     backoffAlgorithm
     esp_secure_cert_mgr
-    ota-for-aws-iot-embedded-sdk
+    aws-iot-core-mqtt-file-streams-embedded-c
     FreeRTOS-Libraries-Integration-Tests
     unity
     driver
