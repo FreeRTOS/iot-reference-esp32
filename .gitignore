@@ -3,3 +3,5 @@ build/
 main/certs/
 esp_ds_data/
 managed_components/
+sdkconfig
+sdkconfig.old
