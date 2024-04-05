@@ -79,6 +79,19 @@
 extern const char root_cert_auth_start[] asm ( "_binary_root_cert_auth_crt_start" );
 extern const char root_cert_auth_end[]   asm ( "_binary_root_cert_auth_crt_end" );
 
+/**
+ * @brief The PEM-encoded_len device certificate passed in from ./certs/certificate.pem.crt
+ */
+extern const char certificate_start[] asm("_binary_certificate_pem_crt_start");
+extern const char certificate_end[] asm("_binary_certificate_pem_crt_end");
+
+/**
+ * @brief The PEM-encoded_len private key passed in from ./certs/private.pem.key
+ */
+extern const char private_key_start[] asm("_binary_private_pem_key_start");
+extern const char private_key_end[] asm("_binary_private_pem_key_end");
+
+
 /* Global variables ***********************************************************/
 
 /**
@@ -153,10 +166,10 @@ static BaseType_t prvInitializeNetworkContext( void )
     xNetworkContext.pcHostname = CONFIG_GRI_MQTT_ENDPOINT;
     xNetworkContext.xPort = CONFIG_GRI_MQTT_PORT;
 
-    /* Get the device certificate from esp_secure_crt_mgr and put into network
-     * context. */
-    xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCert,
-                                                  &xNetworkContext.pcClientCertSize );
+    /* Putting the device certificate into the network context. */
+    xNetworkContext.pcClientCert = certificate_start;
+    xNetworkContext.pcClientCertSize = certificate_end - certificate_start;
+    xEspErrRet = ESP_OK;
 
     if( xEspErrRet == ESP_OK )
     {
@@ -207,9 +220,10 @@ static BaseType_t prvInitializeNetworkContext( void )
             xRet = pdFAIL;
         }
     #else
-        xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKey,
-                                                   &xNetworkContext.pcClientKeySize);
-
+        xNetworkContext.pcClientKey = private_key_start;
+        xNetworkContext.pcClientKeySize = private_key_end - private_key_start;
+        xEspErrRet = ESP_OK;
+        
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
