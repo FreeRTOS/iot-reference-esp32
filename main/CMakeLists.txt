@@ -75,3 +75,9 @@ endif()
 
 # Root Certificate
 target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.crt" TEXT)
+
+# Private Key
+target_add_binary_data(${COMPONENT_TARGET} "certs/private.pem.key" TEXT)
+
+# Certificate Pem
+target_add_binary_data(${COMPONENT_TARGET} "certs/certificate.pem.crt" TEXT)
