@@ -1,4 +1,4 @@
-# Kelsus Camp
+# Kelsus Camp 2024
 
 - [0. Prerequisites](#0-prerequisites)
   - [0.1 Read README](#01-read-readme)
