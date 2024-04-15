@@ -459,11 +459,11 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
     float temperatureValue;
     MQTTAgentCommandInfo_t xCommandParams = { 0UL };
     char * pcTopicBuffer = topicBuf;
-    const char * pcTaskName;
+    const char * xThingName;
     uint32_t ulPublishPassCounts = 0;
     uint32_t ulPublishFailCounts = 0;
 
-    pcTaskName = pcTaskGetName( xTaskGetCurrentTaskHandle() );
+    xThingName = CONFIG_GRI_THING_NAME;
 
     /* Hardware initialisation */
     app_driver_init();
@@ -482,7 +482,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
     snprintf( pcTopicBuffer,
               temppubsubandledcontrolconfigSTRING_BUFFER_LENGTH,
               "/filter/%s",
-              pcTaskName );
+              xThingName );
 
     /* Subscribe to the same topic to which this task will publish.  That will
      * result in each published message being published from the server back to
@@ -527,7 +527,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
                   "}"                          \
                   "}"                          \
                   ,
-                  pcTaskName,
+                  xThingName,
                   temperatureValue,
                   ulValueToNotify );
 
@@ -564,7 +564,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
          * wait for the publish to be sent. */
         ESP_LOGI( TAG,
                   "Task %s waiting for publish %"PRIu32" to complete.",
-                  pcTaskName,
+                  xThingName,
                   ulValueToNotify );
 
         prvWaitForCommandAcknowledgment( &ulNotification );
