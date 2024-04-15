@@ -34,7 +34,7 @@ Subscribe to `filter/dev-joaquin`, and you will receive a message like this:
 ```json
 {
   "temperatureSensor": {
-    "taskName": "dev-joaquin",
+    "thingName": "dev-joaquin",
     "temperatureValue": 0.000000,
     "iteration": 432
   }

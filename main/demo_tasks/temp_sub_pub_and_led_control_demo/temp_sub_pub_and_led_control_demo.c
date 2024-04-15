@@ -521,7 +521,7 @@ static void prvTempSubPubAndLEDControlTask( void * pvParameters )
                   "{"                          \
                   "\"temperatureSensor\":"     \
                   "{"                          \
-                  " \"taskName\": \"%s\","     \
+                  " \"thingName\": \"%s\","     \
                   " \"temperatureValue\": %f," \
                   " \"iteration\": %"PRIu32""  \
                   "}"                          \
