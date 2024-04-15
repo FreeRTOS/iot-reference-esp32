@@ -5,6 +5,7 @@
   - [0.2 Device WiFi Credentials](#0.2-device-wifi-credentials)
 - [1. Publish to LED handler Topic](#1-publish-to-led-handler-topic)
 - [2. Subscribe to Temperature Topic](#2-subscribe-to-temperature-topic)
+- [3. Clean WiFi Credentials](#3-clean-wifi-credentials)
 
 ## 0. Prerequisites
 
@@ -49,3 +50,8 @@ Subscribe to `filter/dev-joaquin`, and you will receive a message like this:
   }
 }
 ```
+
+## 3. Clean WiFi Credentials
+To clean the WiFi credentials, you need to enable the flag `Erase NVS partition on power on`. 
+
+First you need to run the Espressif Menu Config, open a `ESP-IDF Terminal` and run `idf.py menuconfig` then enable the flag `Erase NVS partition on power on` (APP_NVS_FORCE_ERASE) inside `Kelsus Camp 2024` menu.
