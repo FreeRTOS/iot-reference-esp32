@@ -22,6 +22,12 @@ menu "Featured FreeRTOS IoT Integration"
         default 1 if APP_WIFI_PROV_TRANSPORT_SOFTAP
         default 2 if APP_WIFI_PROV_TRANSPORT_BLE
 
+    config APP_NVS_FORCE_ERASE
+        bool "Erase NVS partition on power on"
+        default n
+        help
+            Erase NVS partition on power on.
+
     config GRI_RUN_QUALIFICATION_TEST
         bool "Run qualification test."
         default n
