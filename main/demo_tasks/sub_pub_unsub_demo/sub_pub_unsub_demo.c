@@ -717,7 +717,7 @@ static void prvUnsubscribeToTopic( MQTTQoS_t xQoS,
                              portMAX_DELAY );
         ESP_LOGI( TAG,
                   "Task \"%s\" sending unsubscribe request to coreMQTT-Agent for topic filter: %s with id %" PRIu32 "",
-                  pcTaskGetName( NULL),
+                  pcTaskGetName( NULL ),
                   pcTopicFilter,
                   ulUnsubscribeMessageId );
 
