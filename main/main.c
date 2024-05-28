@@ -263,9 +263,9 @@ static void prvStartEnabledDemos( void )
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
 
             ESP_LOGI( TAG, "Application version number: %u.%u.%u",
-                            CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR,
-                            CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR,
-                            CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD );
+                      CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR,
+                      CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR,
+                      CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD );
 
             if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
             {

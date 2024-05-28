@@ -738,6 +738,7 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
             if( xTlsRet == TLS_TRANSPORT_SUCCESS )
             {
                 ESP_LOGI( TAG, "TLS connection established." );
+
                 if( esp_tls_get_conn_sockfd( pxNetworkContext->pxTls, &lSockFd ) == ESP_OK )
                 {
                     eMqttRet = prvCoreMqttAgentConnect( xCleanSession );

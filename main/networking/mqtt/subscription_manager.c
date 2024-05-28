@@ -78,7 +78,7 @@ bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
                 if( ( pxSubscriptionList[ lIndex ].pxIncomingPublishCallback == pxIncomingPublishCallback ) &&
                     ( pxSubscriptionList[ lIndex ].pvIncomingPublishCallbackContext == pvIncomingPublishCallbackContext ) )
                 {
-                    // LogWarn( ( "Subscription already exists.\n" ) );
+                    /* LogWarn( ( "Subscription already exists.\n" ) ); */
                     xAvailableIndex = SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS;
                     xReturnStatus = true;
                     break;

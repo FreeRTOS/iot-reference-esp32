@@ -232,7 +232,7 @@ char globalJobId[ MAX_JOB_ID_LENGTH ] = { 0 };
 static OtaDataEvent_t dataBuffers[ otaconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
 static OtaJobEventData_t jobDocBuffer = { 0 };
 static AfrOtaJobDocumentFields_t jobFields = { 0 };
-static uint8_t OtaImageSingatureDecoded[ OTA_MAX_SIGNATURE_SIZE ] = { 0 };
+static uint8_t OtaImageSignatureDecoded[ OTA_MAX_SIGNATURE_SIZE ] = { 0 };
 
 static OtaState_t otaAgentState = OtaAgentStateInit;
 
@@ -698,15 +698,15 @@ static bool convertSignatureToDER( AfrOtaJobDocumentFields_t * jobFields )
     size_t decodedSignatureLength = 0;
 
 
-    Base64Status_t xResult = base64_Decode( OtaImageSingatureDecoded,
-                                            sizeof( OtaImageSingatureDecoded ),
+    Base64Status_t xResult = base64_Decode( OtaImageSignatureDecoded,
+                                            sizeof( OtaImageSignatureDecoded ),
                                             &decodedSignatureLength,
                                             ( const uint8_t * ) jobFields->signature,
                                             jobFields->signatureLen );
 
     if( xResult == Base64Success )
     {
-        jobFields->signature = ( const char * ) OtaImageSingatureDecoded;
+        jobFields->signature = ( const char * ) OtaImageSignatureDecoded;
         jobFields->signatureLen = decodedSignatureLength;
     }
     else
@@ -795,7 +795,7 @@ static bool jobDocumentParser( char * message,
 
     /*
      * AWS IoT Jobs library:
-     * Extracting the OTA job document from the jobs message recevied from AWS IoT core.
+     * Extracting the OTA job document from the jobs message received from AWS IoT core.
      */
     jobDocLength = Jobs_GetJobDocument( message, messageLength, &jobDoc );
 
@@ -815,7 +815,7 @@ static bool jobDocumentParser( char * message,
         } while( fileIndex > 0 );
     }
 
-    /* File index will be -1 if an error occured, and 0 if all files were
+    /* File index will be -1 if an error occurred, and 0 if all files were
      * processed. */
     return fileIndex == 0;
 }
