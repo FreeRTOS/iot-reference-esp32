@@ -35,9 +35,17 @@
 /* Subscription manager header include. */
 #include "subscription_manager.h"
 
-#define LogError( x )
-#define LogWarn( x )
-#define LogDebug( x )
+#ifndef LogError
+    #define LogError( x )
+#endif
+
+#ifndef LogWarn
+    #define LogWarn( x )
+#endif
+
+#ifndef LogDebug
+    #define LogDebug( x )
+#endif
 
 bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
                       const char * pcTopicFilterString,
@@ -78,7 +86,7 @@ bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
                 if( ( pxSubscriptionList[ lIndex ].pxIncomingPublishCallback == pxIncomingPublishCallback ) &&
                     ( pxSubscriptionList[ lIndex ].pvIncomingPublishCallbackContext == pvIncomingPublishCallbackContext ) )
                 {
-                    /* LogWarn( ( "Subscription already exists.\n" ) ); */
+                    LogWarn( ( "Subscription already exists.\n" ) );
                     xAvailableIndex = SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS;
                     xReturnStatus = true;
                     break;
