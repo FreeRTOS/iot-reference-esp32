@@ -3,4 +3,4 @@
 	url = https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests
 [submodule "components/esp-aws-iot"]
 	path = components/esp-aws-iot
-	url = https://github.com/espressif/esp-aws-iot.git
+	url = https://github.com/chinglee-iot/esp-aws-iot.git
