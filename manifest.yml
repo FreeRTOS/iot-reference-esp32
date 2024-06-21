@@ -4,7 +4,7 @@ description: |-
   "Reference IoT integration project using the Espressif ESP32C3 and FreeRTOS LTS libraries"
 dependencies:
   - name: "FreeRTOS-Libraries-Integration-Tests"
-    version: "202210.01"
+    version: "692d509221b7f71d42551ed6c7b8a524b039a44f"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
