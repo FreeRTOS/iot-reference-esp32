@@ -10,8 +10,8 @@ dependencies:
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
       path: "components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests"
   - name: "esp-aws-iot"
-    version: "07417a38e05d0cb44627f96be708e2017fe187a6"
+    version: "3781227fa635a0684433cb0c468b66a54fb9f55a"
     repository:
       type: "git"
-      url: "https://github.com/espressif/esp-aws-iot.git"
+      url: "https://github.com/chinglee-iot/esp-aws-iot.git"
       path: "components/esp-aws-iot"
