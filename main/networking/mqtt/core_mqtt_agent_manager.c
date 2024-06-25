@@ -776,7 +776,7 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
         if( eMqttRet == MQTTSuccess )
         {
-            while( xEventGroupWaitBits( xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdFALSE, 0 ) != CORE_MQTT_AGENT_DISCONNECTED_BIT )
+            while( ( xEventGroupWaitBits( xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdFALSE, 0 ) & CORE_MQTT_AGENT_DISCONNECTED_BIT ) != CORE_MQTT_AGENT_DISCONNECTED_BIT )
             {
                 fd_set readSet;
                 fd_set errorSet;
