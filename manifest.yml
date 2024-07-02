@@ -4,13 +4,13 @@ description: |-
   "Reference IoT integration project using the Espressif ESP32C3 and FreeRTOS LTS libraries"
 dependencies:
   - name: "FreeRTOS-Libraries-Integration-Tests"
-    version: "692d509221b7f71d42551ed6c7b8a524b039a44f"
+    version: "202406.00"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
       path: "components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests"
   - name: "esp-aws-iot"
-    version: "69c4e7df9d4e8461549e6c066f6b397a23843a7d"
+    version: "d202c33cab819b6230bbb58e840de5bdd53cf1cd"
     repository:
       type: "git"
       url: "https://github.com/chinglee-iot/esp-aws-iot.git"
