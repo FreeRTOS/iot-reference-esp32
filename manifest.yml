@@ -1,5 +1,5 @@
 name : "FreeRTOS ESP32C3 Reference Integration"
-version: "202210.01"
+version: "202407.00"
 description: |-
   "Reference IoT integration project using the Espressif ESP32C3 and FreeRTOS LTS libraries"
 dependencies:
