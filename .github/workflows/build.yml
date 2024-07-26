@@ -56,3 +56,4 @@ jobs:
           esp_idf_version: ${{ matrix.esp_idf_version }}
           target: ${{ matrix.esp_target }}
           path: './'
+          command: python -m pip install --upgrade idf-component-manager || idf.py build
