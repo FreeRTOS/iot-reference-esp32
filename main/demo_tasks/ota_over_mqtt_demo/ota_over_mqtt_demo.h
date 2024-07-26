@@ -29,6 +29,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "core_mqtt_agent.h"
+#include "ota_config.h"
 
 /* *INDENT-OFF* */
     #ifdef __cplusplus

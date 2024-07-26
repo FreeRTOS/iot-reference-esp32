@@ -324,6 +324,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
             else
             {
                 xSecondNetworkContext.pcServerRootCA = ( const char * ) root_cert_auth_crt_start;
+                xSecondNetworkContext.pcServerRootCASize = root_cert_auth_crt_end - root_cert_auth_crt_start;
             }
 
             #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL

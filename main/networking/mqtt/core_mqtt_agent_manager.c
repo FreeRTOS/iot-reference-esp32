@@ -737,6 +737,8 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
             if( xTlsRet == TLS_TRANSPORT_SUCCESS )
             {
+                ESP_LOGI( TAG, "TLS connection established." );
+
                 if( esp_tls_get_conn_sockfd( pxNetworkContext->pxTls, &lSockFd ) == ESP_OK )
                 {
                     eMqttRet = prvCoreMqttAgentConnect( xCleanSession );
@@ -774,7 +776,7 @@ static void prvCoreMqttAgentConnectionTask( void * pvParameters )
 
         if( eMqttRet == MQTTSuccess )
         {
-            while( xEventGroupWaitBits( xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdFALSE, 0 ) != CORE_MQTT_AGENT_DISCONNECTED_BIT )
+            while( ( xEventGroupWaitBits( xNetworkEventGroup, CORE_MQTT_AGENT_DISCONNECTED_BIT, pdFALSE, pdFALSE, 0 ) & CORE_MQTT_AGENT_DISCONNECTED_BIT ) != CORE_MQTT_AGENT_DISCONNECTED_BIT )
             {
                 fd_set readSet;
                 fd_set errorSet;
