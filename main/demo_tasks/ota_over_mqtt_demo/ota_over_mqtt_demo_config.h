@@ -92,7 +92,7 @@
 /**
  * @brief The number of OTA data buffer.
  */
-#define otaconfigMAX_NUM_OTA_DATA_BUFFERS     ( CONFIG_GRI_OTA_MAX_NUM_DATA_BUFFERS )
+#define otademoconfigMAX_NUM_OTA_DATA_BUFFERS ( CONFIG_GRI_OTA_MAX_NUM_DATA_BUFFERS )
 
 /**
  * @brief The version for the firmware which is running. OTA agent uses this

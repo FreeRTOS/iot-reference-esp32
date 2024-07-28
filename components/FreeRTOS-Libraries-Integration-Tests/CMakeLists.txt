@@ -7,9 +7,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Libraries-Integration-Tests/src/trans
 # This gives MQTT_TEST_SOURCES, and MQTT_TEST_INCLUDE_DIRS
 include(${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Libraries-Integration-Tests/src/mqtt_test.cmake)
 
-# This gives OTA_PAL_TEST_SOURCES, and OTA_PAL_TEST_INCLUDE_DIRS
-# include(${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Libraries-Integration-Tests/src/ota_pal_test.cmake)
-
 # This gives PKCS11_TEST_SOURCES, and PKCS11_TEST_INCLUDE_DIRS
 include(${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Libraries-Integration-Tests/src/pkcs11_test.cmake)
 

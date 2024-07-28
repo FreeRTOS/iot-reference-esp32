@@ -228,7 +228,7 @@ static uint8_t currentFileId = 0;
 static uint32_t totalBytesReceived = 0;
 char globalJobId[ MAX_JOB_ID_LENGTH ] = { 0 };
 
-static OtaDataEvent_t dataBuffers[ otaconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
+static OtaDataEvent_t dataBuffers[ otademoconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
 static OtaJobEventData_t jobDocBuffer = { 0 };
 static AfrOtaJobDocumentFields_t jobFields = { 0 };
 static uint8_t OtaImageSignatureDecoded[ OTA_MAX_SIGNATURE_SIZE ] = { 0 };
@@ -897,7 +897,7 @@ static uint16_t getFreeOTABuffers( void )
 
     if( xSemaphoreTake( bufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
-        for( ulIndex = 0; ulIndex < otaconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
+        for( ulIndex = 0; ulIndex < otademoconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
         {
             if( dataBuffers[ ulIndex ].bufferUsed == false )
             {
@@ -939,7 +939,7 @@ static OtaDataEvent_t * getOtaDataEventBuffer( void )
 
     if( xSemaphoreTake( bufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
-        for( ulIndex = 0; ulIndex < otaconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
+        for( ulIndex = 0; ulIndex < otademoconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
         {
             if( dataBuffers[ ulIndex ].bufferUsed == false )
             {
