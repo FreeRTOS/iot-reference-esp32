@@ -44,14 +44,6 @@ menu "Featured FreeRTOS IoT Integration"
                 bool "Transport Interface Test."
                 default n
 
-            config GRI_OTA_PAL_TEST_ENABLED
-                bool "OTA PAL Test."
-                default n
-
-            config GRI_OTA_E2E_TEST_ENABLED
-                bool "OTA end-to-end Test."
-                default n
-
             config GRI_CORE_PKCS11_TEST_ENABLED
                 bool "CorePKCS#11 Test."
                 default n
@@ -210,6 +202,10 @@ menu "Featured FreeRTOS IoT Integration"
             config GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE
                 int "OTA demo task stack size."
                 default 3072
+
+            config GRI_OTA_MAX_NUM_DATA_BUFFERS
+                int "OTA buffer number."
+                default 2
 
         endmenu # OTA demo configurations
     endmenu # Qualification Test Configurations
@@ -462,6 +458,10 @@ menu "Featured FreeRTOS IoT Integration"
         config GRI_OTA_DEMO_APP_VERSION_BUILD
             int "Application version build."
             default 0
+
+        config GRI_OTA_MAX_NUM_DATA_BUFFERS
+            int "OTA buffer number."
+            default 2
 
     endmenu # OTA demo configurations
 

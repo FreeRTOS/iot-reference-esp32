@@ -167,7 +167,6 @@
 #define MAX_THING_NAME_SIZE                              128U
 
 #define MAX_JOB_ID_LENGTH                                ( 64U )
-#define MAX_NUM_OF_OTA_DATA_BUFFERS                      ( 2U )
 
 /**
  * @brief Used to clear bits in a task's notification value.
@@ -898,7 +897,7 @@ static uint16_t getFreeOTABuffers( void )
 
     if( xSemaphoreTake( bufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
-        for( ulIndex = 0; ulIndex < MAX_NUM_OF_OTA_DATA_BUFFERS; ulIndex++ )
+        for( ulIndex = 0; ulIndex < otaconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
         {
             if( dataBuffers[ ulIndex ].bufferUsed == false )
             {
@@ -940,7 +939,7 @@ static OtaDataEvent_t * getOtaDataEventBuffer( void )
 
     if( xSemaphoreTake( bufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
-        for( ulIndex = 0; ulIndex < MAX_NUM_OF_OTA_DATA_BUFFERS; ulIndex++ )
+        for( ulIndex = 0; ulIndex < otaconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
         {
             if( dataBuffers[ ulIndex ].bufferUsed == false )
             {
