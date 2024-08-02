@@ -1186,7 +1186,7 @@ static void processOTAEvents( void )
             }
             else
             {
-                uint8_t decodedData[ mqttFileDownloader_CONFIG_BLOCK_SIZE ];
+                static uint8_t decodedData[ mqttFileDownloader_CONFIG_BLOCK_SIZE ];
                 size_t decodedDataLength = 0;
                 MQTTFileDownloaderStatus_t xReturnStatus;
                 int16_t result = -1;
