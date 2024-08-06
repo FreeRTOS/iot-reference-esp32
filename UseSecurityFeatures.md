@@ -55,7 +55,7 @@ running this command, an eFuse block in the ESP32-C3 will be burnt with a
     this value will be `RSA 2048`
 
 ```sh
-python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip CHIP_TYPE --secure_cert_type cust_flash --priv_key_algo PRIVATE_KEY_ALGORITHM
+python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py -p PORT --configure_ds --keep_ds_data_on_host --ca-cert CA_CERT_FILEPATH --device-cert DEVICE_CERT_FILEPATH --private-key PRIVATE_KEY_FILEPATH --target_chip CHIP_TYPE --secure_cert_type cust_flash_tlv --priv_key_algo PRIVATE_KEY_ALGORITHM
 ```
 - Type in **BURN** when prompted to.
 
