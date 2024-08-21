@@ -180,7 +180,7 @@ The directly supported chips are the ones listed in
   when using an unsupported ESP chip.
 
 ```sh
-idf.py -p PORT flash monitor;
+idf.py -p PORT flash monitor
 ```
 
 Replace **PORT** with the serial port to which the ESP32-C3 is connected.
