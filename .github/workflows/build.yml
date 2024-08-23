@@ -50,7 +50,7 @@ jobs:
           echo -e "::endgroup::"
           echo -e "${{ env.bashPass }} ${{ env.stepName }} ${{ env.bashEnd }}"
 
-      - name: Build for demo
+      - name: Build for
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: ${{ matrix.esp_idf_version }}
