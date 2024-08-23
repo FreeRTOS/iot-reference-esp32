@@ -221,6 +221,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         }
 
         #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+
             /* If the digital signature peripheral is being used, get the digital
              * signature peripheral context from esp_secure_crt_mgr and put into
              * network context. */
@@ -233,6 +234,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                 xRet = pdFAIL;
             }
         #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+
             /* If the DS peripheral is not being used, get the device private key from
              * esp_secure_crt_mgr and put into network context. */
 
@@ -305,6 +307,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
             }
 
             #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
+
                 /* If the digital signature peripheral is being used, get the digital
                  * signature peripheral context from esp_secure_crt_mgr and put into
                  * second network context. */
@@ -317,6 +320,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                     xRet = pdFAIL;
                 }
             #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
+
                 /* If the DS peripheral is not being used, get the device private key from
                  * esp_secure_crt_mgr and put into second network context. */
 
