@@ -45,10 +45,6 @@
 /* SubscribePublishUnsubscribeDemo demo includes. */
 #include "sub_pub_unsub_demo.h"
 
-/* OTACodeSigningDemo demo includes. */
-#include "ota_pal.h"
-#include "ota_over_mqtt_demo.h"
-
 /* ESP Secure Certificate Manager include. */
 #include "esp_secure_cert_read.h"
 
@@ -60,11 +56,15 @@
 #include "test_execution_config.h"
 #include "qualification_test.h"
 #include "transport_interface_test.h"
-#include "ota_pal_test.h"
 #include "mqtt_test.h"
 
 #define keyCLIENT_CERTIFICATE_PEM    NULL
 #define keyCLIENT_PRIVATE_KEY_PEM    NULL
+
+/* Use ROOT CA in binary. */
+#ifndef ECHO_SERVER_ROOT_CA
+    #define ECHO_SERVER_ROOT_CA     NULL
+#endif
 
 /* Global variables ***********************************************************/
 
@@ -74,31 +74,10 @@
 static const char * TAG = "qual_main";
 
 /**
- * @brief The AWS code signing certificate passed in from ./certs/aws_codesign.crt
- */
-extern const char pcAwsCodeSigningCertPem[] asm ( "_binary_aws_codesign_crt_start" );
-
-/**
  * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
  */
 extern const uint8_t root_cert_auth_crt_start[] asm ( "_binary_root_cert_auth_crt_start" );
 extern const uint8_t root_cert_auth_crt_end[] asm ( "_binary_root_cert_auth_crt_end" );
-
-/**
- * @brief The code signing certificate from
- * components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests/src/ota/test_files/ecdsa-sha256-signer.crt.pem.test
- */
-const char pcOtaPalTestCodeSigningCertPem[] =                            \
-    "-----BEGIN CERTIFICATE-----\n"                                      \
-    "MIIBXDCCAQOgAwIBAgIJAPMhJT8l0C6AMAoGCCqGSM49BAMCMCExHzAdBgNVBAMM\n" \
-    "FnRlc3Rfc2lnbmVyQGFtYXpvbi5jb20wHhcNMTgwNjI3MjAwNDQyWhcNMTkwNjI3\n" \
-    "MjAwNDQyWjAhMR8wHQYDVQQDDBZ0ZXN0X3NpZ25lckBhbWF6b24uY29tMFkwEwYH\n" \
-    "KoZIzj0CAQYIKoZIzj0DAQcDQgAEyza/tGLVbVxhL41iYtC8D6tGEvAHu498gNtq\n" \
-    "DtPsKaoR3t5xQx+6zdWiCi32fgFT2vkeVAmX3pf/Gl8nIP48ZqMkMCIwCwYDVR0P\n" \
-    "BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMDMAoGCCqGSM49BAMCA0cAMEQCIDkf\n" \
-    "83Oq8sOXhSyJCWAN63gc4vp9//RFCXh/hUXPYcTWAiBgmQ5JV2MZH01Upi2lMflN\n" \
-    "YLbC+lYscwcSlB2tECUbJA==\n"                                         \
-    "-----END CERTIFICATE-----\n";
 
 /**
  * @brief Socket send and receive timeouts to use.  Specified in milliseconds.
@@ -155,7 +134,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
 /*-----------------------------------------------------------*/
 
 #if ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) || \
-    ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
+    ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
     static NetworkContext_t xNetworkContext = { 0 };
 
     static BaseType_t prvInitializeNetworkContext( char * pcServerName,
@@ -384,7 +363,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         return xRet;
     }
 #endif /* ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) ||
-        * ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
+        * ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) */
 /*-----------------------------------------------------------*/
 
 uint32_t MqttTestGetTimeMs( void )
@@ -445,12 +424,6 @@ uint32_t MqttTestGetTimeMs( void )
     }
 #endif /* if ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) */
 
-#if ( OTA_PAL_TEST_ENABLED == 1 )
-    void SetupOtaPalTestParam( OtaPalTestParam_t * pTestParam )
-    {
-        pTestParam->pageSize = 1 << otaconfigLOG2_FILE_BLOCK_SIZE;
-    }
-#endif /* if ( OTA_PAL_TEST_ENABLED == 1 ) */
 /*-----------------------------------------------------------*/
 
 void runQualification( void * pvArgs )
@@ -478,9 +451,9 @@ BaseType_t xQualificationStart( void )
 
     ESP_LOGE( TAG, "Run xQualificationStart" );
 
-    #if ( MQTT_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
+    #if ( MQTT_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
         prvInitializeNetworkContext( MQTT_SERVER_ENDPOINT, MQTT_SERVER_PORT, NULL, keyCLIENT_CERTIFICATE_PEM, keyCLIENT_PRIVATE_KEY_PEM );
-    #endif /* ( MQTT_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
+    #endif /* ( MQTT_TEST_ENABLED == 1 ) || ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) */
 
     #if ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 )
         #if defined( TRANSPORT_CLIENT_PRIVATE_KEY )
@@ -497,7 +470,7 @@ BaseType_t xQualificationStart( void )
         }
     #endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) */
 
-    #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
+    #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
         if( xRet == pdPASS )
         {
             xRet = xCoreMqttAgentManagerStart( &xNetworkContext );
@@ -510,55 +483,7 @@ BaseType_t xQualificationStart( void )
                 configASSERT( xRet == pdPASS );
             }
         }
-    #endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
-
-    #if ( OTA_E2E_TEST_ENABLED == 1 )
-        if( xRet == pdPASS )
-        {
-            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                          strlen( pcAwsCodeSigningCertPem ),
-                          pcAwsCodeSigningCertPem );
-            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-
-            if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
-            {
-                vStartOTACodeSigningDemo();
-            }
-            else
-            {
-                ESP_LOGE( TAG,
-                          "Failed to set the code signing certificate for the AWS OTA "
-                          "library. OTA demo will not be started." );
-
-                configASSERT( 0 );
-            }
-        }
-    #endif /* OTA_E2E_TEST_ENABLED == 1 */
-
-    #if ( OTA_PAL_TEST_ENABLED == 1 )
-        if( xRet == pdPASS )
-        {
-            #if CONFIG_GRI_OUTPUT_CERTS_KEYS
-                ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                          strlen( pcOtaPalTestCodeSigningCertPem ),
-                          pcOtaPalTestCodeSigningCertPem );
-            #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-
-            if( otaPal_SetCodeSigningCertificate( pcOtaPalTestCodeSigningCertPem ) )
-            {
-                /* No need to enable OTA task for OTA PAL test. */
-            }
-            else
-            {
-                ESP_LOGE( TAG,
-                          "Failed to set the code signing certificate for the AWS OTA "
-                          "library. OTA demo will not be started." );
-
-                configASSERT( 0 );
-            }
-        }
-    #endif /* OTA_E2E_TEST_ENABLED == 1 */
+    #endif /* ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) */
 
     if( ( xRet = xTaskCreate( runQualification,
                               "QualTask",
@@ -582,12 +507,4 @@ BaseType_t xQualificationStart( void )
         return 0;
     }
 #endif /* DEVICE_ADVISOR_TEST_ENABLED == 1 */
-/*-----------------------------------------------------------*/
-
-#if ( OTA_E2E_TEST_ENABLED == 1 )
-    int RunOtaE2eDemo( void )
-    {
-        return 0;
-    }
-#endif /* ( OTA_E2E_TEST_ENABLED == 1) */
 /*-----------------------------------------------------------*/

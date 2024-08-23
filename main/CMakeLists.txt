@@ -30,7 +30,6 @@ endif()
 if( CONFIG_GRI_RUN_QUALIFICATION_TEST )
     list(APPEND MAIN_SRCS
         "qualification_app_main.c"
-        "demo_tasks/ota_over_mqtt_demo/ota_over_mqtt_demo.c"
         "demo_tasks/sub_pub_unsub_demo/sub_pub_unsub_demo.c")
 endif()
 

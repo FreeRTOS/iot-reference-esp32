@@ -87,33 +87,10 @@ menu "Featured FreeRTOS IoT Integration"
                 int "Port for Echo Server to use"
                 default 9000
 
-            config GRI_QUALIFICATION_OTA_PAL_CERTIFICATE_FILE
-                string "Path to cert for OTA PAL Test."
-                default ""
-
-            config GRI_QUALIFICATION_OTA_PAL_FIRMWARE_FILE
-                string "Path to store firmware for OTA PAL Test."
-                default "/"
-
-            config GRI_QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM
-                bool "Use File System for OTA PAL Test."
-                default n
-
             config GRI_QUALIFICATION_THING_NAME
                 string "Thing Name for Device Advisor Test/OTA end-to-end Test"
                 default "PLACE_HOLDER"
 
-            config GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
-                int "Application version major for OTA end-to-end Test."
-                default 0
-
-            config GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
-                int "Application version minor for OTA end-to-end Test."
-                default 9
-
-            config GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
-                int "Application version build for OTA end-to-end Test."
-                default 0
         endmenu # "Qualification Parameter Configurations"
 
         menu "Sub pub unsub demo configurations"
