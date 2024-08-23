@@ -17,13 +17,13 @@ See the [Featured IoT Reference Integration page](https://www.freertos.org/featu
 To clone using HTTPS:
 
 ```
- git clone https://github.com/FreeRTOS/iot-reference-esp32c3.git --recurse-submodules
+ git clone https://github.com/FreeRTOS/iot-reference-esp32.git --recurse-submodules
 ```
 
 Using SSH:
 
 ```
- git clone git@github.com:FreeRTOS/iot-reference-esp32c3.git --recurse-submodules
+ git clone git@github.com:FreeRTOS/iot-reference-esp32.git --recurse-submodules
 ```
 
 If you have downloaded the repo without using the --recurse-submodules argument, you should run:
