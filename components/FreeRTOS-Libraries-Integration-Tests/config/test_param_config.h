@@ -149,21 +149,21 @@
  */
 
 
-#define PKCS11_TEST_RSA_KEY_SUPPORT                      ( 1 )
-#define PKCS11_TEST_EC_KEY_SUPPORT                       ( 0 )
-#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT           ( 1 )
-#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT             ( 0 )
-#define PKCS11_TEST_PREPROVISIONED_SUPPORT               ( 0 )
-#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS     pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
-#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS      pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
-#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS     pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
+#define PKCS11_TEST_RSA_KEY_SUPPORT                     ( 1 )
+#define PKCS11_TEST_EC_KEY_SUPPORT                      ( 0 )
+#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT          ( 1 )
+#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT            ( 0 )
+#define PKCS11_TEST_PREPROVISIONED_SUPPORT              ( 0 )
+#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS    pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS     pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS    pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
 
 /**
  * @brief The IoT Thing name for the device for OTA test.
  *
  * #define IOT_THING_NAME  "PLACE_HOLDER"
  */
-#define IOT_THING_NAME                                   CONFIG_GRI_QUALIFICATION_THING_NAME
+#define IOT_THING_NAME                                  CONFIG_GRI_QUALIFICATION_THING_NAME
 
 /**
  * @brief Log macro for MQTT test.
@@ -184,7 +184,7 @@
     #define LogError( x )
 #endif
 
-#define OUTGOING_PUBLISH_RECORD_COUNT                    ( 10 )
-#define INCOMING_PUBLISH_RECORD_COUNT                    ( 10 )
+#define OUTGOING_PUBLISH_RECORD_COUNT    ( 10 )
+#define INCOMING_PUBLISH_RECORD_COUNT    ( 10 )
 
 #endif /* TEST_PARAM_CONFIG_H */
