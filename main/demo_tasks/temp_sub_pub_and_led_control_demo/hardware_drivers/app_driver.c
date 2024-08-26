@@ -6,7 +6,9 @@
 #include "app_driver.h"
 #include "esp_idf_version.h"
 
-static const char * TAG = "app_driver";
+#ifdef APP_SOC_TEMP_SENSOR_SUPPORTED
+    static const char * TAG = "app_driver";
+#endif
 
 #define GRI_LED_GPIO    CONFIG_GRI_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO_LED_GPIO_NUMBER
 

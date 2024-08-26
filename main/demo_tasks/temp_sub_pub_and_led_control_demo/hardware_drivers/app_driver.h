@@ -20,7 +20,7 @@
     #endif
 /* *INDENT-ON* */
 
-#include "driver/temp_sensor.h"
+#include "driver/temperature_sensor.h"
 #include "driver/gpio.h"
 #include "led_strip.h"
 

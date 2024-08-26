@@ -149,81 +149,42 @@
  */
 
 
-#define PKCS11_TEST_RSA_KEY_SUPPORT                      ( 1 )
-#define PKCS11_TEST_EC_KEY_SUPPORT                       ( 0 )
-#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT           ( 1 )
-#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT             ( 0 )
-#define PKCS11_TEST_PREPROVISIONED_SUPPORT               ( 0 )
-#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS     pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
-#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS      pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
-#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS     pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
-
-
-#define OTA_RSA_SHA1                                     1
-#define OTA_RSA_SHA256                                   2
-#define OTA_ECDSA_SHA256                                 3
-
-/**
- * @brief Certificate type for OTA PAL test.
- * Valid options are: OTA_RSA_SHA1, OTA_RSA_SHA256, OTA_ECDSA_SHA256.
- *
- * #define OTA_PAL_TEST_CERT_TYPE OTA_ECDSA_SHA256
- */
-#define OTA_PAL_TEST_CERT_TYPE                           OTA_ECDSA_SHA256
-
-/**
- * @brief Path to cert for OTA test PAL. Used to verify signature.
- * If applicable, the device must be pre-provisioned with this certificate. Please see
- * test/common/ota/test_files for the set of certificates.
- */
-#define OTA_PAL_CERTIFICATE_FILE                         CONFIG_GRI_QUALIFICATION_OTA_PAL_CERTIFICATE_FILE
-
-/**
- * @brief Some devices have a hard-coded name for the firmware image to boot.
- */
-#define OTA_PAL_FIRMWARE_FILE                            CONFIG_GRI_QUALIFICATION_OTA_PAL_FIRMWARE_FILE
-
-/**
- * @brief Some boards OTA PAL layers will use the file names passed into it for the
- * image and the certificates because their non-volatile memory is abstracted by a
- * file system. Set this to 1 if that is the case for your device.
- */
-#define OTA_PAL_USE_FILE_SYSTEM                          QUALIFICATION_OTA_PAL_USE_FILE_SYSTEM_SETTING
+#define PKCS11_TEST_RSA_KEY_SUPPORT                     ( 1 )
+#define PKCS11_TEST_EC_KEY_SUPPORT                      ( 0 )
+#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT          ( 1 )
+#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT            ( 0 )
+#define PKCS11_TEST_PREPROVISIONED_SUPPORT              ( 0 )
+#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS    pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS     pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS    pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
 
 /**
  * @brief The IoT Thing name for the device for OTA test.
  *
  * #define IOT_THING_NAME  "PLACE_HOLDER"
  */
-#define IOT_THING_NAME                                   CONFIG_GRI_QUALIFICATION_THING_NAME
+#define IOT_THING_NAME                                  CONFIG_GRI_QUALIFICATION_THING_NAME
 
 /**
- * @brief 1 if using PKCS #11 to access the code sign certificate from NVM.
+ * @brief Log macro for MQTT test.
  */
-#define OTA_PAL_READ_CERTIFICATE_FROM_NVM_WITH_PKCS11    0
+#ifndef LogDebug
+    #define LogDebug( x )
+#endif
 
-/**
- * @brief Major version for OTA E2E test.
- *
- * #define OTA_APP_VERSION_MAJOR                            0
- */
-#define OTA_APP_VERSION_MAJOR                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MAJOR
+#ifndef LogInfo
+    #define LogInfo( x )
+#endif
 
-/**
- * @brief Major version for OTA E2E test.
- *
- * #define OTA_APP_VERSION_MINOR                            9
- */
-#define OTA_APP_VERSION_MINOR                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_MINOR
+#ifndef LogWarn
+    #define LogWarn( x )
+#endif
 
-/**
- * @brief Major version for OTA E2E test.
- *
- * #define OTA_APP_VERSION_BUILD                            1
- */
-#define OTA_APP_VERSION_BUILD                            CONFIG_GRI_QUALIFICATION_OTA_APP_VERSION_BUILD
+#ifndef LogError
+    #define LogError( x )
+#endif
 
-#define OUTGOING_PUBLISH_RECORD_COUNT                    ( 10 )
-#define INCOMING_PUBLISH_RECORD_COUNT                    ( 10 )
+#define OUTGOING_PUBLISH_RECORD_COUNT    ( 10 )
+#define INCOMING_PUBLISH_RECORD_COUNT    ( 10 )
 
 #endif /* TEST_PARAM_CONFIG_H */
