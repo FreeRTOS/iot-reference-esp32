@@ -24,21 +24,31 @@ jobs:
         with:
           ref: ${{ github.event.inputs.commit_id }}
       - name: Configure git identity
+        env:
+          ACTOR: ${{ github.actor }}
         run: |
-            git config --global user.name ${{ github.actor }}
-            git config --global user.email ${{ github.actor }}@users.noreply.github.com
+            git config --global user.name "$ACTOR"
+            git config --global user.email "$ACTOR"@users.noreply.github.com
       - name: create a new branch that references commit id
-        run: git checkout -b ${{ github.event.inputs.version_number }} ${{ github.event.inputs.commit_id }}
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
+          COMMIT_ID: ${{ github.event.inputs.commit_id }}
+        run: git checkout -b "$VERSION_NUMBER" "$COMMIT_ID"
       - name: Tag Commit and Push to remote
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          git tag ${{ github.event.inputs.version_number }} -a -m "Release ${{ github.event.inputs.version_number }}"
+          git tag "$VERSION_NUMBER" -a -m "Release $VERSION_NUMBER"
           git push origin --tags
       - name: Verify tag on remote
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
+          COMMIT_ID: ${{ github.event.inputs.commit_id }}
         run: |
-          git tag -d ${{ github.event.inputs.version_number }}
+          git tag -d "$VERSION_NUMBER"
           git remote update
-          git checkout tags/${{ github.event.inputs.version_number }}
-          git diff ${{ github.event.inputs.commit_id }} tags/${{ github.event.inputs.version_number }}
+          git checkout tags/"$VERSION_NUMBER"
+          git diff "$COMMIT_ID" tags/"$VERSION_NUMBER"
   create-zip:
     needs: tag-commit
     name: Create ZIP and verify package for release asset.
@@ -53,23 +63,29 @@ jobs:
           path: ${{ github.event.repository.name }}
           submodules: recursive
       - name: Checkout disabled submodules
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          cd ${{ github.event.repository.name }}
+          cd "$REPO_NAME"
           git submodule update --init --checkout --recursive
       - name: Create ZIP
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          zip -r ${{ env.repostiory_zip_name }} ${{ github.event.repository.name }} -x "*.git*"
+          zip -r ${{ env.repostiory_zip_name }} "$REPO_NAME" -x "*.git*"
           ls ./
       - name: Validate created ZIP
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           mkdir zip-check
           mv ${{ env.repostiory_zip_name }} zip-check
           cd zip-check
           unzip ${{ env.repostiory_zip_name }} -d ${{ env.repository_compressed_name }}
           ls ${{ env.repository_compressed_name }}
-          diff -r -x "*.git*" ${{ env.repository_compressed_name }}/${{ github.event.repository.name }}/ ../${{ github.event.repository.name }}/
+          diff -r -x "*.git*" ${{ env.repository_compressed_name }}/"$REPO_NAME"/ ../"$REPO_NAME"/
       - name: Create artifact of ZIP
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.repostiory_zip_name }}
           path: zip-check/${{ env.repostiory_zip_name }}
