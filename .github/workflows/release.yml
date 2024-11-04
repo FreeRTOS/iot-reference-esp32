@@ -85,7 +85,7 @@ jobs:
           ls ${{ env.repository_compressed_name }}
           diff -r -x "*.git*" ${{ env.repository_compressed_name }}/"$REPO_NAME"/ ../"$REPO_NAME"/
       - name: Create artifact of ZIP
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.repostiory_zip_name }}
           path: zip-check/${{ env.repostiory_zip_name }}
