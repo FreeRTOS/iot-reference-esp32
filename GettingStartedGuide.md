@@ -616,7 +616,9 @@ disabled when running the qualification test. You can change the log level by
 
 1. Device Advisor Test
     - Create a [Device Advisor test suite](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor.html)
-       in the console.
+       in the console. Make sure that the region you choose supports the Device Advisor Tests feature.
+    - When asked to select a Device Role, create a new role with the following configurations:
+    ![alt text](./artifacts/device-advisor-tests-role-config.jpg)
     - Find the Device Advisor test endpoint for your account
     - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
       choose `Device Advisor Test`.
@@ -625,14 +627,30 @@ disabled when running the qualification test. You can change the log level by
       - Set `Thing Name for Device Advisor Test/OTA end-to-end Test` to AWS IoT Thing under test.
     - Build and run.
     - See Device Advisor test result in the console.
+    - Example Result
+     ![alt text](./artifacts/device-advisor-tests-result.jpg)
 
 2. MQTT Test
+   - Setup an AWS account and create a new thing. 
+   - Under the "Attach policies to certificate" section create a new policy with all the permissions (this is not suggested for Things associated with production applications, there you should choose only the required permissions):
+    ![alt text](./artifacts/mqtt-thing-cert-policy-permissions.jpg)
    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
     choose `MQTT Test`.
    - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
      - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
      - Set `Client Identifier for MQTT Test`
    - Build and run.
+   - If you have memory leaks reported from unity, it could be due to retained messages. Try clearing the retained messages. Install any MQTT client library (e.g. mosquitto CLI) and publish a message to the test topic with an empty message.
+      ```
+      mosquitto_pub.exe \
+        --cert <device-certifiacte> \
+        --key <device-private-key> \
+        --cafile <server-root-CA> \
+        -h <broker-endpoint> -p 8883 \
+        -t "<test_topic>"
+        -m ""
+        -r
+      ```
    - See test result on target output.
    - Example output
 
@@ -646,16 +664,30 @@ disabled when running the qualification test. You can change the log level by
      ```
 
 3. Transport Interface Test
-    - Follow
+    - Create an EC2 instance and change the security group inbound rules to accept packets from all traffic. 
+    - Clone [FreeRTOS-Libraries-Integration-Tests](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests) in a directory of your choice within your EC2 file system.
+    - Follow the instructions [here](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/tools/echo_server) to generate the self signed certificates. Download the certificates generated for the server to your PC.
+    - Run the go server at `FreeRTOS-Libraries-Integration-Tests/tools/echo_server` with TLS. Follow
       [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test)
       to start an echo server.
+    - In the file [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h) set `ECHO_SERVER_ROOT_CA` to `NULL`
+    - Replace the file `/main/certs/root_cert_auth.crt` with your server’s root-ca certificate that you downloaded but name the file same as before (including the extension `root_cert_auth.crt`).
+    - Use the command below to provision your board with the certificates you downloaded
+        ```
+        python managed_components/espressif__esp_secure_cert_mgr/tools/configure_esp_secure_cert.py \
+          -p COM18 --keep_ds_data_on_host \
+          --ca-cert certs/server.pem \
+          --device-cert certs/client.pem \
+          --private-key certs/client.key \
+          --target_chip esp32c3 \
+          --secure_cert_type cust_flash \
+          --priv_key_algo RSA 2048
+          ```
     - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
       choose `Transport Interface Test`.
     - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-    - Set `Echo Server Domain Name/IP for Transport Interface Test`
-    - Set `Port for Echo Server to use`
-    - Set ECHO_SERVER_ROOT_CA / TRANSPORT_CLIENT_CERTIFICATE and TRANSPORT_CLIENT_PRIVATE_KEY
-      in [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h).
+    - Set `Echo Server Domain Name/IP for Transport Interface Test` to the Public IPv4 DNS of the ec2 instance.
+    - Set `Port for Echo Server to use` to 9000
     - Build and run.
     - See test result on target output.
     - Example output
