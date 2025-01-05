@@ -632,7 +632,7 @@ disabled when running the qualification test. You can change the log level by
 
 2. MQTT Test
    - Setup an AWS account and create a new thing. 
-   - Under the "Attach policies to certificate" section create a new policy with all the permissions (this is not suggested for Things associated with production applications, there you should choose only the required permissions):
+   - Under the "Attach policies to certificate" section create a new policy with all the MQTT related permissions as these are required for the tests:
     ![alt text](./artifacts/mqtt-thing-cert-policy-permissions.jpg)
    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
     choose `MQTT Test`.
@@ -664,10 +664,11 @@ disabled when running the qualification test. You can change the log level by
      ```
 
 3. Transport Interface Test
-    - Create an EC2 instance and change the security group inbound rules to accept packets from all traffic. 
-    - Clone [FreeRTOS-Libraries-Integration-Tests](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests) in a directory of your choice within your EC2 file system.
-    - Follow the instructions [here](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/tools/echo_server) to generate the self signed certificates. Download the certificates generated for the server to your PC.
-    - Run the go server at `FreeRTOS-Libraries-Integration-Tests/tools/echo_server` with TLS. Follow
+    - First setup a TCP echo server. This can be done on any Linux machine but following are the instructions to do so in an AWS EC2 instance.
+      - Create an EC2 instance and change the security group inbound rules to accept packets from all traffic. 
+      - Clone [FreeRTOS-Libraries-Integration-Tests](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests) in a directory of your choice within your EC2 file system.
+      - Follow the instructions [here](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/tools/echo_server) to generate the self signed certificates. Download the certificates generated for the server to your PC.
+      - Run the go server at `FreeRTOS-Libraries-Integration-Tests/tools/echo_server` with TLS. Follow
       [Run The Transport Interface Test](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/src/transport_interface#6-run-the-transport-interface-test)
       to start an echo server.
     - In the file [test_param_config.h](./components/FreeRTOS-Libraries-Integration-Tests/config/test_param_config.h) set `ECHO_SERVER_ROOT_CA` to `NULL`
@@ -686,8 +687,8 @@ disabled when running the qualification test. You can change the log level by
     - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test   Configurations`,
       choose `Transport Interface Test`.
     - Under `FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Parameter Configurations`
-    - Set `Echo Server Domain Name/IP for Transport Interface Test` to the Public IPv4 DNS of the ec2 instance.
-    - Set `Port for Echo Server to use` to 9000
+    - Set `Echo Server Domain Name/IP for Transport Interface Test` (it will be the Public IPv4 DNS of the EC2 instance if you are using one.)
+    - Set `Port for Echo Server to use`
     - Build and run.
     - See test result on target output.
     - Example output
