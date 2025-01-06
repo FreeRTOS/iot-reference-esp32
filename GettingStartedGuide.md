@@ -631,7 +631,7 @@ disabled when running the qualification test. You can change the log level by
      ![alt text](./artifacts/device-advisor-tests-result.jpg)
 
 2. MQTT Test
-   - Setup an AWS account and create a new thing. 
+   - Setup an AWS account and create a new thing.
    - Under the "Attach policies to certificate" section create a new policy with all the MQTT related permissions as these are required for the tests:
     ![alt text](./artifacts/mqtt-thing-cert-policy-permissions.jpg)
    - Under `Featured FreeRTOS IoT Integration -> Qualification Test Configurations -> Qualification Execution Test Configurations`,
@@ -643,7 +643,7 @@ disabled when running the qualification test. You can change the log level by
    - If you have memory leaks reported from unity, it could be due to retained messages. Try clearing the retained messages. Install any MQTT client library (e.g. mosquitto CLI) and publish a message to the test topic with an empty message.
       ```
       mosquitto_pub.exe \
-        --cert <device-certifiacte> \
+        --cert <device-certificate> \
         --key <device-private-key> \
         --cafile <server-root-CA> \
         -h <broker-endpoint> -p 8883 \
@@ -665,7 +665,7 @@ disabled when running the qualification test. You can change the log level by
 
 3. Transport Interface Test
     - First setup a TCP echo server. This can be done on any Linux machine but following are the instructions to do so in an AWS EC2 instance.
-      - Create an EC2 instance and change the security group inbound rules to accept packets from all traffic. 
+      - Create an EC2 instance and change the security group inbound rules to accept packets from all traffic.
       - Clone [FreeRTOS-Libraries-Integration-Tests](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests) in a directory of your choice within your EC2 file system.
       - Follow the instructions [here](https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/main/tools/echo_server) to generate the self signed certificates. Download the certificates generated for the server to your PC.
       - Run the go server at `FreeRTOS-Libraries-Integration-Tests/tools/echo_server` with TLS. Follow
