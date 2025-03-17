@@ -290,25 +290,6 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
                                          uint8_t ucQoS );
 
 /**
- * @brief Function is used by OTA agent to unsubscribe a topicfilter from MQTT broker.
- *
- * The implementation queues an UNSUBSCRIBE request for the topic filter with the MQTT agent. It then waits
- * for a successful completion of the request from the agent. Notification along with results of
- * operation is sent using xTaskNotify API to the caller task. MQTT agent also removes the topic filter
- * subscription from its memory so any future
- * packets on this topic will not be routed to the OTA agent.
- *
- * @param[in] pTopicFilter Topic filter to be unsubscribed.
- * @param[in] topicFilterLength Length of the topic filter.
- * @param[in] ucQos Qos value for the topic.
- * @return OtaMqttSuccess if successful. Appropriate error code otherwise.
- *
- */
-static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
-                                           uint16_t topicFilterLength,
-                                           uint8_t ucQoS );
-
-/**
  * @brief The function which runs the OTA demo task.
  *
  * The demo task initializes the OTA agent an loops until OTA agent is shutdown.
@@ -318,21 +299,6 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
  * @param[in] pvParam Any parameters to be passed to OTA demo task.
  */
 static void prvOTADemoTask( void * pvParam );
-
-/**
- * @brief Matches a client identifier within an OTA topic.
- * This function is used to validate that topic is valid and intended for this device thing name.
- *
- * @param[in] pTopic Pointer to the topic
- * @param[in] topicNameLength length of the topic
- * @param[in] pClientIdentifier Client identifier, should be null terminated.
- * @param[in] clientIdentifierLength Length of the client identifier.
- * @return true if client identifier is found within the topic at the right index.
- */
-static bool prvMatchClientIdentifierInTopic( const char * pTopic,
-                                             size_t topicNameLength,
-                                             const char * pClientIdentifier,
-                                             size_t clientIdentifierLength );
 
 /**
  * @brief Suspends the OTA agent.
@@ -355,39 +321,6 @@ static void prvCoreMqttAgentEventHandler( void * pvHandlerArg,
                                           void * pvEventData );
 
 /* Static function definitions ************************************************/
-
-static bool prvMatchClientIdentifierInTopic( const char * pTopic,
-                                             size_t topicNameLength,
-                                             const char * pClientIdentifier,
-                                             size_t clientIdentifierLength )
-{
-    bool isMatch = false;
-    size_t idx, matchIdx = 0;
-
-    for( idx = OTA_TOPIC_CLIENT_IDENTIFIER_START_IDX; idx < topicNameLength; idx++ )
-    {
-        if( matchIdx == clientIdentifierLength )
-        {
-            if( pTopic[ idx ] == '/' )
-            {
-                isMatch = true;
-            }
-
-            break;
-        }
-        else
-        {
-            if( pClientIdentifier[ matchIdx ] != pTopic[ idx ] )
-            {
-                break;
-            }
-        }
-
-        matchIdx++;
-    }
-
-    return isMatch;
-}
 
 static void prvCommandCallback( MQTTAgentCommandContext_t * pCommandContext,
                                 MQTTAgentReturnInfo_t * pxReturnInfo )
@@ -527,80 +460,6 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
         ESP_LOGI( TAG, "Sent PUBLISH packet to broker %.*s to broker.\n\n",
                   topicLen,
                   pacTopic );
-
-        otaRet = OtaMqttSuccess;
-    }
-
-    return otaRet;
-}
-
-static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
-                                           uint16_t topicFilterLength,
-                                           uint8_t ucQoS )
-{
-    MQTTStatus_t mqttStatus;
-    uint32_t ulNotifiedValue;
-    MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
-    MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
-    BaseType_t result;
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    MQTTAgentCommandContext_t xApplicationDefinedContext = { 0 };
-    OtaMqttStatus_t otaRet = OtaMqttSuccess;
-
-    configASSERT( pTopicFilter != NULL );
-    configASSERT( topicFilterLength > 0 );
-
-    xSubscribeInfo.pTopicFilter = pTopicFilter;
-    xSubscribeInfo.topicFilterLength = topicFilterLength;
-    xSubscribeInfo.qos = ucQoS;
-    xSubscribeArgs.pSubscribeInfo = &xSubscribeInfo;
-    xSubscribeArgs.numSubscriptions = 1;
-
-
-    xApplicationDefinedContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
-
-    xCommandParams.blockTimeMs = otademoconfigMQTT_TIMEOUT_MS;
-    xCommandParams.cmdCompleteCallback = prvCommandCallback;
-    xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xApplicationDefinedContext;
-
-    ESP_LOGI( TAG, "Unsubscribing to topic filter: %s", pTopicFilter );
-    xTaskNotifyStateClear( NULL );
-
-
-    mqttStatus = MQTTAgent_Unsubscribe( &xGlobalMqttAgentContext,
-                                        &xSubscribeArgs,
-                                        &xCommandParams );
-
-    /* Wait for command to complete so MQTTSubscribeInfo_t remains in scope for the
-     * duration of the command. */
-    if( mqttStatus == MQTTSuccess )
-    {
-        result = xTaskNotifyWait( 0, MAX_UINT32, &ulNotifiedValue, portMAX_DELAY );
-
-        if( result == pdTRUE )
-        {
-            mqttStatus = xApplicationDefinedContext.xReturnStatus;
-        }
-        else
-        {
-            mqttStatus = MQTTRecvFailed;
-        }
-    }
-
-    if( mqttStatus != MQTTSuccess )
-    {
-        ESP_LOGE( TAG, "Failed to UNSUBSCRIBE from topic %.*s with error = %u.",
-                  topicFilterLength,
-                  pTopicFilter,
-                  mqttStatus );
-
-        otaRet = OtaMqttUnsubscribeFailed;
-    }
-    else
-    {
-        ESP_LOGI( TAG, "UNSUBSCRIBED from topic %.*s.\n\n",
-                  topicFilterLength,
-                  pTopicFilter );
 
         otaRet = OtaMqttSuccess;
     }
@@ -825,7 +684,7 @@ static OtaPalJobDocProcessingResult_t receivedJobDocumentHandler( OtaJobEventDat
 {
     bool parseJobDocument = false;
     bool handled = false;
-    char * jobId;
+    const char * jobId;
     const char ** jobIdptr = &jobId;
     size_t jobIdLength = 0U;
     OtaPalStatus_t palStatus;
@@ -1304,6 +1163,7 @@ static void processOTAEvents( void )
                 case OtaAgentEventRequestFileBlock:
                 case OtaAgentEventReceivedFileBlock:
                     nextEvent.eventId = OtaAgentEventRequestFileBlock;
+                    break;
 
                 case OtaAgentEventCloseFile:
                     nextEvent.eventId = OtaAgentEventActivateImage;
