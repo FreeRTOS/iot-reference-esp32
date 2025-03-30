@@ -38,12 +38,12 @@ add_custom_target(
 # Add the partition table for firmware.sig
 set(FIRMWARE_SIG_PATH "${CMAKE_BINARY_DIR}/firmware.sig")
 
-# Custom target to flash the firmware.sig file into the firmware_sig partition
+# Custom target to flash the firmware.sig and firmware.hsh files into their respective partitions
 add_custom_target(flash_firmware_sig ALL
-    COMMAND ${ESPTOOLPY} --chip esp32s3 write_flash 0x2A0000 ${CMAKE_BINARY_DIR}/firmware.sig
-    COMMAND ${ESPTOOLPY} --chip esp32s3 write_flash 0x2A1000 ${CMAKE_BINARY_DIR}/firmware.hsh
+    COMMAND ${ESPTOOLPY} --chip esp32s3 write_flash 0x351000 ${CMAKE_BINARY_DIR}/firmware.sig
+    COMMAND ${ESPTOOLPY} --chip esp32s3 write_flash 0x352000 ${CMAKE_BINARY_DIR}/firmware.hsh
     DEPENDS firmware_signed
-    COMMENT "Flashing firmware.sig to firmware_sig partition"
+    COMMENT "Flashing firmware.sig and firmware.hsh to their respective partitions"
 )
 
 # Remove the duplicate rule for copying firmware.sig to the build directory

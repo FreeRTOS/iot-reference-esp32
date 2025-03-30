@@ -325,7 +325,7 @@ void app_main(void) {
     /* Initialize ESP-Event library default event loop.
      * This handles WiFi and TCP/IP events and this needs to be called before
      * starting WiFi and the coreMQTT-Agent network manager. */
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    // ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     /* Start WiFi. */
     // app_wifi_init();
