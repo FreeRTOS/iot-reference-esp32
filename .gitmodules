@@ -4,3 +4,6 @@
 [submodule "components/esp-aws-iot"]
 	path = components/esp-aws-iot
 	url = https://github.com/espressif/esp-aws-iot.git
+[submodule "components/gecl-nvs-manager"]
+	path = components/gecl-nvs-manager
+	url = https://github.com/gamename-esp32-component-library/GECL-nvs-manager
