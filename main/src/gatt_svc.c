@@ -272,28 +272,55 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
             goto cleanup;
         }
 
-        const char *certificate = cJSON_GetObjectItem(json_root, "certificate")
-                                      ? cJSON_GetObjectItem(json_root, "certificate")->valuestring
+        const char *certificate = cJSON_GetObjectItem(json_root, "certificatePem")
+                                      ? cJSON_GetObjectItem(json_root, "certificatePem")->valuestring
                                       : NULL;
+        if (!certificate) {
+            ESP_LOGE(TAG, "Invalid JSON structure: certificate not found");
+            goto cleanup;
+        }
+
         const char *cert_id = cJSON_GetObjectItem(json_root, "certificateId")
                                   ? cJSON_GetObjectItem(json_root, "certificateId")->valuestring
                                   : NULL;
+        if (!cert_id) {
+            ESP_LOGE(TAG, "Invalid JSON structure: cert_id not found");
+            goto cleanup;
+        }
+
         const char *cert_arn = cJSON_GetObjectItem(json_root, "certificateArn")
                                    ? cJSON_GetObjectItem(json_root, "certificateArn")->valuestring
                                    : NULL;
-        const char *root_ca =
-            cJSON_GetObjectItem(json_root, "rootCA") ? cJSON_GetObjectItem(json_root, "rootCA")->valuestring : NULL;
-        const char *private_key = cJSON_GetObjectItem(json_root, "privateKey")
-                                      ? cJSON_GetObjectItem(json_root, "privateKey")->valuestring
-                                      : NULL;
+        if (!cert_arn) {
+            ESP_LOGE(TAG, "Invalid JSON structure: cert_arn not found");
+            goto cleanup;
+        }
 
-        if (!certificate || !cert_id || !cert_arn) {
-            ESP_LOGE(TAG, "Invalid JSON structure.");
+        const char *root_ca =
+            cJSON_GetObjectItem(json_root, "rootCa") ? cJSON_GetObjectItem(json_root, "rootCa")->valuestring : NULL;
+        if (!root_ca) {
+            ESP_LOGE(TAG, "Invalid JSON structure: root_ca not found");
+            goto cleanup;
+        }
+
+        // Get the 'keypair' object
+        cJSON *keypair = cJSON_GetObjectItem(json_root, "keypair");
+        if (!keypair) {
+            ESP_LOGE(TAG, "Invalid JSON structure: keypair not found");
+            goto cleanup;
+        }
+
+        // Get 'PrivateKey' from within 'keypair'
+        const char *private_key =
+            cJSON_GetObjectItem(keypair, "PrivateKey") ? cJSON_GetObjectItem(keypair, "PrivateKey")->valuestring : NULL;
+        if (!private_key) {
+            ESP_LOGE(TAG, "Invalid JSON structure: PrivateKey not found in keypair");
             goto cleanup;
         }
 
         ESP_LOGI(TAG, "Certificate ID: %s", cert_id);
         ESP_LOGI(TAG, "Certificate ARN: %s", cert_arn);
+        ESP_LOGI(TAG, "Private Key: %s", private_key); // Optional: Log for debugging
 
         // Save data to NVS
         if (save_to_nvs("certificate", certificate) != ESP_OK || save_to_nvs("certificateId", cert_id) != ESP_OK ||
