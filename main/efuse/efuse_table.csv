@@ -1,0 +1,2 @@
+# Name,efuse_block,Start Bit,Bit Length
+COOP_COP_DEVICE_TYPE,EFUSE_BLK3,128,8
