@@ -19,7 +19,7 @@
 void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg);
 void gatt_svr_subscribe_cb(struct ble_gap_event *event);
 void register_mtu_callback();
-int gatt_svc_init(void);
+esp_err_t gatt_svc_init(void);
 void notify_mqtt_status(void);
 const char *get_iot_device_name(void);
 #endif // GATT_SVR_H

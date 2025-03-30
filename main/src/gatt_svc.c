@@ -582,7 +582,7 @@ void notify_mqtt_status() {
 const char *get_iot_device_name(void) { return iot_device_name; }
 
 /* Public Functions */
-int gatt_svc_init(void) {
+esp_err_t gatt_svc_init(void) {
 
     // Load firmware data once
     load_firmware_data();

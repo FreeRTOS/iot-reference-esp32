@@ -190,10 +190,8 @@ void adv_init(void) {
     start_advertising();
 }
 
-int gap_init(void) {
+void gap_init(void) {
     // Initialize GAP service
     ble_svc_gap_init();
     ble_svc_gap_device_name_set(DEVICE_NAME);
-
-    return 0;
 }

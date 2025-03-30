@@ -20,7 +20,7 @@
 void adv_init(void);
 void gap_security_init(uint16_t conn_handle);
 void start_advertising(void);
-int gap_init(void);
+void gap_init(void);
 uint16_t gap_get_conn_handle(void);
 
 #endif // GAP_SVC_H

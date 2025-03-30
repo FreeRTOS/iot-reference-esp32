@@ -60,18 +60,72 @@
 #include "ota_pal.h"
 #endif /* CONFIG_GRI_ENABLE_OTA_DEMO */
 
-/**
- * @brief The AWS RootCA1 passed in from ./certs/root_cert_auth.pem
- */
-extern const char root_cert_auth_start[] asm("_binary_root_cert_auth_crt_start");
-extern const char root_cert_auth_end[] asm("_binary_root_cert_auth_crt_end");
+#include "common.h"
+#include "esp_bt.h"
+#include "esp_bt_main.h"
+#include "esp_gap_ble_api.h"
+#include "esp_gatts_api.h"
+#include "esp_log.h"
+#include "esp_partition.h"
+#include "firmware_data.h"
+#include "gap.h"
+#include "gatt_svc.h"
+#include "host/ble_att.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/x509_crt.h"
+#include "utils.h"
+#include "wifi_handler.h"
+#include <string.h>
+
+static const char *TAG = "MAIN";
+
+/* Library function declarations */
+void ble_store_config_init(void);
+
+/* Private function declarations */
+static void on_stack_reset(int reason);
+static void on_stack_sync(void);
+static void nimble_host_config_init(void);
+static void nimble_host_task(void *param);
+
+static void nimble_host_config_init(void) {
+    ble_hs_cfg.reset_cb = on_stack_reset;
+    ble_hs_cfg.sync_cb = on_stack_sync;
+    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
+    // Initialize BLE store
+    ble_store_config_init();
+}
+
+static void on_stack_reset(int reason) {
+    /* On reset, print reset reason to console */
+    ESP_LOGI(TAG, "NimBLE stack reset, reset reason: %d", reason);
+}
+
+static void on_stack_sync(void) {
+    /* On stack sync, do advertising initialization */
+    ESP_LOGI(TAG, "NimBLE stack synced.");
+    // Set preferred MTU size
+    adv_init();
+}
+
+static void nimble_host_task(void *param) {
+    ESP_LOGI(TAG, "NimBLE host task started");
+
+    // Run the NimBLE host loop continuously
+    while (1) {
+        nimble_port_run(); // This processes BLE events and blocks until an error occurs
+        vTaskDelay(1);     // Yield to prevent the FreeRTOS task watchdog from triggering
+    }
+
+    // We shouldn't reach this point
+    ESP_LOGE(TAG, "NimBLE host task exited unexpectedly!");
+    nimble_port_freertos_deinit(); // Clean up if the task ever exits (should not happen)
+}
 
 /* Global variables ***********************************************************/
-
-/**
- * @brief Logging tag for ESP-IDF logging functions.
- */
-static const char *TAG = "main";
 
 /**
  * @brief The global network context used to store the credentials
@@ -153,19 +207,19 @@ static BaseType_t prvInitializeNetworkContext(void) {
     }
 
     /* Putting the Root CA certificate into the network context. */
-    xNetworkContext.pcServerRootCA = root_cert_auth_start;
-    xNetworkContext.pcServerRootCASize = root_cert_auth_end - root_cert_auth_start;
+    // xNetworkContext.pcServerRootCA = root_cert_auth_start;
+    // xNetworkContext.pcServerRootCASize = root_cert_auth_end - root_cert_auth_start;
 
-    if (xEspErrRet == ESP_OK) {
-#if CONFIG_GRI_OUTPUT_CERTS_KEYS
-        ESP_LOGI(TAG, "\nCA Cert: \nLength: %" PRIu32 "\n%s", xNetworkContext.pcServerRootCASize,
-                 xNetworkContext.pcServerRootCA);
-#endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
-    } else {
-        ESP_LOGE(TAG, "Error in getting CA certificate. Error: %s", esp_err_to_name(xEspErrRet));
+    //     if (xEspErrRet == ESP_OK) {
+    // #if CONFIG_GRI_OUTPUT_CERTS_KEYS
+    //         ESP_LOGI(TAG, "\nCA Cert: \nLength: %" PRIu32 "\n%s", xNetworkContext.pcServerRootCASize,
+    //                  xNetworkContext.pcServerRootCA);
+    // #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
+    //     } else {
+    //         ESP_LOGE(TAG, "Error in getting CA certificate. Error: %s", esp_err_to_name(xEspErrRet));
 
-        xRet = pdFAIL;
-    }
+    //         xRet = pdFAIL;
+    //     }
 
 #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
 
@@ -239,6 +293,34 @@ void app_main(void) {
         /* Retry nvs_flash_init */
         ESP_ERROR_CHECK(nvs_flash_init());
     }
+
+    xEspErrRet = wifi_init_for_scan();
+    if (xEspErrRet != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize WiFi for scanning: %s", esp_err_to_name(xEspErrRet));
+    }
+
+    // Initialize the NimBLE stack
+    xEspErrRet = nimble_port_init();
+    if (xEspErrRet != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize NimBLE stack, error code: %d", xEspErrRet);
+        return;
+    }
+
+    // Initialize GAP service
+    gap_init();
+
+    // Initialize GATT service
+    xEspErrRet = gatt_svc_init();
+    if (xEspErrRet != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize GATT service, error code: %d", xEspErrRet);
+        return;
+    }
+
+    // Configure the NimBLE host
+    nimble_host_config_init();
+
+    // Start the NimBLE host task
+    xTaskCreate(nimble_host_task, "NimBLE Host", 8 * 1024, NULL, 5, NULL);
 
     /* Initialize ESP-Event library default event loop.
      * This handles WiFi and TCP/IP events and this needs to be called before
