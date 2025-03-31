@@ -8,6 +8,7 @@
 #include "gatt_svc.h"
 #include "host/ble_gatt.h"
 #include "mbedtls/base64.h"
+#include "mqtt_handler.h"
 #include "nvs_flash.h"
 #include "os/os_mbuf.h"
 
@@ -26,7 +27,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_id == IP_EVENT_STA_GOT_IP) {
         ESP_LOGI(TAG, "Got IP, starting MQTT client...");
-        // init_mqtt_client();
+        init_mqtt_client();
     }
 }
 

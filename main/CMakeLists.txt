@@ -6,6 +6,7 @@ set(MAIN_SRCS
     "networking/mqtt/core_mqtt_agent_manager_events.c"
     "networking/ota/ota_over_mqtt_demo.c"
     "src/wifi_handler.c"
+    "src/mqtt_handler.c"
     "src/ble_handler.c"
     "src/device_id.c"
     "src/efuse_table.c"
@@ -31,6 +32,8 @@ set(MAIN_REQUIRES
     nvs_flash
     json
     mbedtls
+    mqtt
+    gecl-nvs-manager
     qrcode
     wifi_provisioning
     coreMQTT

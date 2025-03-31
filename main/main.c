@@ -261,39 +261,8 @@ static BaseType_t prvInitializeNetworkContext(void) {
     return xRet;
 }
 
-/* Main function definition ***************************************************/
-
-/**
- * @brief This function serves as the main entry point of this project.
- */
-void app_main(void) {
-    /* This is used to store the return of initialization functions. */
-    BaseType_t xRet;
-
-    /* This is used to store the error return of ESP-IDF functions. */
+void first_incarnation() {
     esp_err_t xEspErrRet;
-
-    /* Initialize global network context. */
-    // xRet = prvInitializeNetworkContext();
-
-    // if (xRet != pdPASS) {
-    //     ESP_LOGE(TAG, "Failed to initialize global network context.");
-    //     return;
-    // }
-
-    /* Initialize NVS partition. This needs to be done before initializing
-     * WiFi. */
-    xEspErrRet = nvs_flash_init();
-
-    if ((xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES) || (xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND)) {
-        /* NVS partition was truncated
-         * and needs to be erased */
-        ESP_ERROR_CHECK(nvs_flash_erase());
-
-        /* Retry nvs_flash_init */
-        ESP_ERROR_CHECK(nvs_flash_init());
-    }
-
     xEspErrRet = wifi_init_for_scan();
     if (xEspErrRet != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize WiFi for scanning: %s", esp_err_to_name(xEspErrRet));
@@ -321,13 +290,60 @@ void app_main(void) {
 
     // Start the NimBLE host task
     xTaskCreate(nimble_host_task, "NimBLE Host", 8 * 1024, NULL, 5, NULL);
+}
+
+void second_incarnation() {
+    /* This is used to store the return of initialization functions. */
+    BaseType_t xRet;
+
+    /* This is used to store the error return of ESP-IDF functions. */
+    esp_err_t xEspErrRet;
+
+    /* Initialize global network context. */
+    xRet = prvInitializeNetworkContext();
+
+    if (xRet != pdPASS) {
+        ESP_LOGE(TAG, "Failed to initialize global network context.");
+        return;
+    }
 
     /* Initialize ESP-Event library default event loop.
      * This handles WiFi and TCP/IP events and this needs to be called before
      * starting WiFi and the coreMQTT-Agent network manager. */
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     /* Start WiFi. */
-    // app_wifi_init();
-    // app_wifi_start(POP_TYPE_MAC);
+    app_wifi_init();
+    app_wifi_start(POP_TYPE_MAC);
+}
+/* Main function definition ***************************************************/
+
+/**
+ * @brief This function serves as the main entry point of this project.
+ */
+void app_main(void) {
+
+    /* This is used to store the error return of ESP-IDF functions. */
+    esp_err_t xEspErrRet;
+
+    /* Initialize NVS partition. This needs to be done before initializing
+     * WiFi. */
+    xEspErrRet = nvs_flash_init();
+
+    if ((xEspErrRet == ESP_ERR_NVS_NO_FREE_PAGES) || (xEspErrRet == ESP_ERR_NVS_NEW_VERSION_FOUND)) {
+        ESP_LOGE(TAG, "NVS partition error! code: %d", xEspErrRet);
+        /* NVS partition was truncated and needs to be erased */
+        ESP_ERROR_CHECK(nvs_flash_erase());
+
+        /* Retry nvs_flash_init */
+        ESP_ERROR_CHECK(nvs_flash_init());
+    }
+
+    if (key_found_in_nvs("provisioned")) {
+        ESP_LOGI(TAG, "Device is provisioned. Starting second incarnation.");
+        second_incarnation();
+    } else {
+        ESP_LOGI(TAG, "Device is not yet provisioned. Starting first incarnation.");
+        first_incarnation();
+    }
 }

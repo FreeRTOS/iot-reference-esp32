@@ -1,5 +1,7 @@
 #include "utils.h"
+#include "cJSON.h"
 #include "ctype.h"
+#include <stdio.h>
 
 static const char *TAG = "UTILS";
 
@@ -68,141 +70,6 @@ const char *lookup_ble_disconnection_reason(int reason_code) {
         return "Unknown Disconnection Reason";
     }
 }
-bool key_found_in_nvs(const char *key) {
-    nvs_handle_t nvs_handle;
-    size_t required_size = 0;
-    esp_err_t err;
-
-    // Open NVS storage in READONLY mode
-    err = nvs_open("storage", NVS_READONLY, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(err));
-        return false;
-    }
-
-    // Check if key exists by querying its size
-    err = nvs_get_str(nvs_handle, key, NULL, &required_size);
-
-    nvs_close(nvs_handle); // Always close NVS handle
-
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Key %s found in NVS.", key);
-        return true; // ✅ Key exists
-    } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGW(TAG, "Key %s not found in NVS.", key);
-        return false; // ❌ Key not found
-    } else {
-        ESP_LOGE(TAG, "Error checking key %s in NVS: %s", key, esp_err_to_name(err));
-        return false; // ❌ Other errors (e.g., storage failure)
-    }
-}
-
-int save_to_nvs(const char *key, const char *value) {
-    nvs_handle_t nvs_handle;
-    esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(err));
-        return err;
-    }
-
-    if (key_found_in_nvs(key)) {
-        ESP_LOGW(TAG, "Key %s already exists in NVS. Deleting...", key);
-        int rc = delete_from_nvs(key);
-        if (rc != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to delete key %s from NVS: %s", key, esp_err_to_name(rc));
-            nvs_close(nvs_handle);
-            return rc;
-        }
-    }
-
-    err = nvs_set_str(nvs_handle, key, value);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set key %s in NVS: %s", key, esp_err_to_name(err));
-        nvs_close(nvs_handle);
-        return err;
-    }
-
-    err = nvs_commit(nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to commit NVS: %s", esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "Saved key %s to NVS successfully.", key);
-    }
-
-    nvs_close(nvs_handle);
-    return err;
-}
-
-int read_from_nvs(const char *key, char **value) {
-    nvs_handle_t nvs_handle;
-    size_t required_size = 0; // Variable to store required size
-    esp_err_t err = nvs_open("storage", NVS_READONLY, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(err));
-        return err;
-    }
-
-    // Query the size of the value stored with the given key
-    err = nvs_get_str(nvs_handle, key, NULL, &required_size);
-    if (err != ESP_OK) {
-        if (err == ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGW(TAG, "Key %s not found in NVS.", key);
-        } else {
-            ESP_LOGE(TAG, "Failed to query size of key %s: %s", key, esp_err_to_name(err));
-        }
-        nvs_close(nvs_handle);
-        return err;
-    }
-
-    // Allocate memory for the value dynamically
-    *value = malloc(required_size);
-    if (*value == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate memory for key %s", key);
-        nvs_close(nvs_handle);
-        return ESP_ERR_NO_MEM;
-    }
-
-    // Retrieve the value from NVS
-    err = nvs_get_str(nvs_handle, key, *value, &required_size);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Read key %s from NVS successfully: %s", key, *value);
-    } else {
-        ESP_LOGE(TAG, "Failed to read key %s from NVS: %s", key, esp_err_to_name(err));
-        free(*value); // Free allocated memory on failure
-        *value = NULL;
-    }
-
-    nvs_close(nvs_handle);
-    return err;
-}
-
-int delete_from_nvs(const char *key) {
-    nvs_handle_t nvs_handle;
-    esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(err));
-        return err;
-    }
-
-    // Erase the key from NVS
-    err = nvs_erase_key(nvs_handle, key);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Deleted key %s from NVS successfully.", key);
-    } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGW(TAG, "Key %s not found in NVS.", key);
-    } else {
-        ESP_LOGE(TAG, "Failed to delete key %s from NVS: %s", key, esp_err_to_name(err));
-    }
-
-    // Commit changes
-    esp_err_t commit_err = nvs_commit(nvs_handle);
-    if (commit_err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to commit changes to NVS: %s", esp_err_to_name(commit_err));
-    }
-
-    nvs_close(nvs_handle);
-    return err;
-}
 
 bool is_valid_base64(const char *str, size_t len) {
     // Base64 strings must be a multiple of 4 in length
@@ -228,4 +95,18 @@ bool is_valid_base64(const char *str, size_t len) {
     }
 
     return true;
+}
+
+void print_json(cJSON *root) {
+    if (root) {
+        char *json_string = cJSON_Print(root); // Pretty print JSON
+        if (json_string) {
+            ESP_LOGI(TAG, "Parsed JSON:\n%s\n", json_string);
+            free(json_string); // Free the memory allocated by cJSON_Print
+        } else {
+            ESP_LOGE(TAG, "Failed to print JSON\n");
+        }
+    } else {
+        ESP_LOGW(TAG, "cJSON root is NULL\n");
+    }
 }

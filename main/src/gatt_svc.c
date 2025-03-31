@@ -324,7 +324,7 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
 
         // Save data to NVS
         if (save_to_nvs("certificate", certificate) != ESP_OK || save_to_nvs("certificateId", cert_id) != ESP_OK ||
-            save_to_nvs("certificateArn", cert_arn) != ESP_OK || save_to_nvs("rootCA", root_ca) != ESP_OK ||
+            save_to_nvs("certificateArn", cert_arn) != ESP_OK || save_to_nvs("rootCa", root_ca) != ESP_OK ||
             save_to_nvs("privateKey", private_key) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to save data to NVS.");
             goto cleanup;
