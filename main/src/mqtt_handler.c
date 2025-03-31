@@ -3,10 +3,12 @@
 #include "device_id.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
+#include "esp_wifi.h"
 #include "gap.h"
 #include "gatt_svc.h"
 #include "gecl-nvs-manager.h"
 #include "mbedtls/base64.h"
+#include "provisioning_state.h"
 #include "string.h"
 #include "utils.h"
 
@@ -18,7 +20,8 @@ static size_t ota_total_written = 0;
 static size_t ota_expected_size = 0;
 static bool ota_in_progress = false;
 static char current_job_id[128] = {0};
-static char *thing_name = NULL; // Assuming this was already global in your code
+static char *thing_name = NULL;              // Assuming this was already global in your code
+static esp_netif_t *s_wifi_sta_netif = NULL; // Track the STA interface
 
 esp_mqtt_client_handle_t get_mqtt_client() { return mqtt_client; }
 
@@ -78,6 +81,35 @@ void subscribe_to_ota_topics(esp_mqtt_client_handle_t my_client, char *thing_nam
     printf("  %s\n", streams_wildcard_topic);
 
     list_keys_in_nvs();
+}
+
+static void cleanup_and_reboot(void *arg) {
+    esp_mqtt_client_handle_t client = (esp_mqtt_client_handle_t)arg;
+
+    provisioning_complete = true;
+
+    // Stop and destroy MQTT client only
+    esp_err_t ret = esp_mqtt_client_stop(client);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to stop MQTT client: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "MQTT client stopped successfully");
+    }
+
+    ret = esp_mqtt_client_destroy(client);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to destroy MQTT client: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "MQTT client destroyed successfully");
+    }
+    mqtt_client = NULL;
+
+    // Leave WiFi and esp_netif running
+    ESP_LOGI(TAG, "Keeping WiFi connection active for second incarnation");
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    ESP_LOGI(TAG, "Rebooting now...");
+    esp_restart();
 }
 
 // MQTT Event Handler
@@ -149,9 +181,8 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
         if (event->topic && strcmp(event->topic, MQTT_PROVISION_ACCEPTED_TOPIC) == 0) {
             ESP_LOGI(TAG, "✅ Provisioning set, rebooting to use permanent certificate");
             save_to_nvs("provisioned", "true");
-            esp_mqtt_client_stop(client);
-            vTaskDelay(pdMS_TO_TICKS(5000)); // Give time to disconnect
-            esp_restart();                   // Reboot to load new credentials
+            xTaskCreate(cleanup_and_reboot, "cleanup_task", 4096, client, 10, NULL);
+
         } else if (event->topic && strcmp(event->topic, MQTT_CREATE_ACCEPTED_TOPIC) == 0) {
             // Start of new message
             response_len = 0;
@@ -253,6 +284,13 @@ void init_mqtt_client() {
     if (is_initialized) {
         ESP_LOGW(TAG, "MQTT client initialization already performed.");
         return;
+    }
+
+    // After WiFi is initialized in first_incarnation (via wifi_init_for_scan),
+    // store the netif handle
+    s_wifi_sta_netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+    if (!s_wifi_sta_netif) {
+        ESP_LOGE(TAG, "Failed to get STA netif handle after init");
     }
 
     list_keys_in_nvs();

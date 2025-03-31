@@ -1,3 +1,38 @@
 {
-    "idf.adapterTargetName": "esp32s3"
+    // Editor Settings
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": true,
+    // C/C++ Extension Settings
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    // Clang-Format Settings
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, IndentWidth: 4, UseTab: Never, AllowShortFunctionsOnASingleLine: Empty, BreakBeforeBraces: Attach, ColumnLimit: 100 }",
+    // Files to Format
+    "files.associations": {
+        "*.c": "c",
+        "*.h": "c"
+    },
+    "idf.adapterTargetName": "esp32s3",
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "terminal.integrated.profiles.osx": {
+        "MyCustomProfile": {
+            "path": "/bin/zsh",
+            "args": [
+                "-c",
+                "source ~/.zshrc && setidf && export COMPONENT_KCONFIGS_DIR=$(pwd)/components && export EXTRA_COMPONENT_DIRS=$(pwd)/components && exec zsh"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.osx": "MyCustomProfile",
+    "git.autoRepositoryDetection": true,
+    "git.ignoreLimitWarning": true,
+    "terminal.integrated.fontSize": 10,
+    "terminal.integrated.scrollback": 10000,
+    // Doxygen Documentation
+    "doxdocgen.generic.authorName": "Your Name",
+    "doxdocgen.generic.authorEmail": "your.email@example.com",
+    "doxdocgen.generic.briefTemplate": "/// @brief ${brief}.",
+    "doxdocgen.generic.paramTemplate": "/// @param ${param} ${cursor}",
+    "doxdocgen.generic.returnTemplate": "/// @return ${cursor}"
 }

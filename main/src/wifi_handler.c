@@ -11,15 +11,19 @@
 #include "mqtt_handler.h"
 #include "nvs_flash.h"
 #include "os/os_mbuf.h"
+#include "provisioning_state.h"
 
 #define TAG "WIFI_HANDLER"
+
 // Wi-Fi Event Handler
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
-    if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        ESP_LOGI(TAG, "Wi-Fi disconnected, attempting to reconnect...");
-        esp_wifi_connect();
-    } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
-        ESP_LOGI(TAG, "Wi-Fi connected.");
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        if (!provisioning_complete) {
+            ESP_LOGI(TAG, "Wi-Fi disconnected, attempting to reconnect...");
+            esp_wifi_connect();
+        } else {
+            ESP_LOGI(TAG, "Wi-Fi disconnected during provisioning cleanup, skipping reconnect");
+        }
     }
 }
 

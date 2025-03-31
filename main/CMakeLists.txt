@@ -15,6 +15,7 @@ set(MAIN_SRCS
     "src/gatt_svc.c"
     "src/secure_connections.c"
     "src/utils.c"
+    "src/provisioning_state.c"
 )
 
 set(MAIN_INCLUDE_DIRS
@@ -34,6 +35,7 @@ set(MAIN_REQUIRES
     mbedtls
     mqtt
     gecl-nvs-manager
+    esp-tls
     qrcode
     wifi_provisioning
     coreMQTT
