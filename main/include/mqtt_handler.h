@@ -31,6 +31,8 @@ void init_mqtt_client(void);
 
 esp_mqtt_client_handle_t get_mqtt_client();
 
+void subscribe_to_ota_topics(esp_mqtt_client_handle_t my_client, char *thing_name);
+
 // Path to the Root CA certificate
 extern const char *ROOT_CA_PATH;
 

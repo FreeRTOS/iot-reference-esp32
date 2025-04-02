@@ -14,6 +14,7 @@
 #include "esp_wifi.h"
 #include "firmware_data.h"
 #include "gap.h"
+#include "gecl-nvs-manager.h"
 #include "host/ble_hs.h"
 #include "host/ble_sm.h"
 #include "mbedtls/base64.h"
@@ -323,14 +324,14 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
         ESP_LOGI(TAG, "Private Key: %s", private_key); // Optional: Log for debugging
 
         // Save data to NVS
-        if (save_to_nvs("certificate", certificate) != ESP_OK || save_to_nvs("certificateId", cert_id) != ESP_OK ||
-            save_to_nvs("certificateArn", cert_arn) != ESP_OK || save_to_nvs("rootCa", root_ca) != ESP_OK ||
-            save_to_nvs("privateKey", private_key) != ESP_OK) {
+        if (save_to_nvs("p1_cert", certificate) != ESP_OK || save_to_nvs("p1_certId", cert_id) != ESP_OK ||
+            save_to_nvs("p1_certArn", cert_arn) != ESP_OK || save_to_nvs("p1_rootCa", root_ca) != ESP_OK ||
+            save_to_nvs("p1_key", private_key) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to save data to NVS.");
             goto cleanup;
         }
 
-        ESP_LOGI(TAG, "Certificate data saved successfully.");
+        ESP_LOGI(TAG, "Phase one certificate data saved successfully.");
 
     cleanup:
         if (json_root)

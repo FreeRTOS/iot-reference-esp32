@@ -16,7 +16,9 @@
 #include "firmware_data.h"
 #include "gap.h"
 #include "gatt_svc.h"
+#include "gecl-nvs-manager.h"
 #include "host/ble_att.h"
+#include "mqtt_handler.h"
 #include "network_transport.h"
 #include "utils.h"
 #include "wifi_handler.h"
@@ -43,12 +45,6 @@ static void on_stack_reset(int reason);
 static void on_stack_sync(void);
 static void nimble_host_config_init(void);
 static void nimble_host_task(void *param);
-static BaseType_t prvInitializeNetworkContext(NetworkContext_t *pxNetworkContext);
-static void prvCoreMqttAgentEventHandler(void *pvHandlerArg, esp_event_base_t xEventBase, int32_t lEventId,
-                                         void *pvEventData);
-
-/* Global variables */
-static NetworkContext_t xNetworkContext;
 
 /* Static function definitions */
 static void on_stack_reset(int reason) { ESP_LOGI(TAG, "NimBLE stack reset, reset reason: %d", reason); }
@@ -74,121 +70,32 @@ static void nimble_host_task(void *param) {
     ESP_LOGE(TAG, "NimBLE host task exited unexpectedly!");
     nimble_port_freertos_deinit();
 }
+// Static flag to track Wi-Fi connection status
+static bool wifi_connected = false;
 
-static BaseType_t prvInitializeNetworkContext(NetworkContext_t *pxNetworkContext) {
-    char *mqtt_url = NULL;
-    char *root_ca = NULL;
-    char *client_cert = NULL;
-    char *private_key = NULL;
-
-    if (read_from_nvs("mqtt_url", &mqtt_url) != ESP_OK || read_from_nvs("rootCa", &root_ca) != ESP_OK ||
-        read_from_nvs("certificate", &client_cert) != ESP_OK || read_from_nvs("privateKey", &private_key) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to read MQTT credentials from NVS");
-        free(mqtt_url);
-        free(root_ca);
-        free(client_cert);
-        free(private_key);
-        return pdFAIL;
-    }
-
-    // Initialize esp_tls_t
-    pxNetworkContext->pxTls = esp_tls_init();
-    if (!pxNetworkContext->pxTls) {
-        ESP_LOGE(TAG, "Failed to initialize esp_tls");
-        free(mqtt_url);
-        free(root_ca);
-        free(client_cert);
-        free(private_key);
-        return pdFAIL;
-    }
-
-    // Extract hostname and port from mqtt_url (e.g., "mqtts://endpoint:8883")
-    char *hostname = strstr(mqtt_url, "://");
-    int port = 8883; // Default MQTT TLS port
-    if (hostname) {
-        hostname += 3;
-        char *port_str = strchr(hostname, ':');
-        if (port_str) {
-            *port_str = '\0';
-            port = atoi(port_str + 1);
+// Event handler for Wi-Fi and IP events
+static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        ESP_LOGI("WIFI", "Wi-Fi started, connecting...");
+        esp_wifi_connect(); // Initiate connection when Wi-Fi starts
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        ESP_LOGW("WIFI", "Disconnected from Wi-Fi, retrying...");
+        esp_wifi_connect(); // Retry connection on disconnect
+        wifi_connected = false;
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+        char ip_str[16];
+        esp_ip4addr_ntoa(&event->ip_info.ip, ip_str, sizeof(ip_str)); // Convert IP to string
+        ESP_LOGI("WIFI", "Got IP: %s", ip_str);
+        if (!key_found_in_nvs("provisioned")) {
+            ESP_LOGI("WIFI", "Phase 1: Device is not provisioned, starting MQTT client...");
+            init_mqtt_client(); // Initialize MQTT client when IP is obtained
         }
-    } else {
-        hostname = mqtt_url; // Assume plain hostname if no protocol
-    }
-    ESP_LOGI(TAG, "MQTT hostname: %s, port: %d", hostname, port);
-
-    // Store credentials and configuration in NetworkContext for xTlsConnect
-    esp_tls_cfg_t *tls_cfg = malloc(sizeof(esp_tls_cfg_t));
-    if (!tls_cfg) {
-        ESP_LOGE(TAG, "Failed to allocate tls_cfg");
-        esp_tls_conn_destroy(pxNetworkContext->pxTls);
-        free(mqtt_url);
-        free(root_ca);
-        free(client_cert);
-        free(private_key);
-        return pdFAIL;
-    }
-
-    *tls_cfg = (esp_tls_cfg_t){
-        .cacert_buf = (const unsigned char *)root_ca,
-        .cacert_bytes = strlen(root_ca) + 1,
-        .clientcert_buf = (const unsigned char *)client_cert,
-        .clientcert_bytes = strlen(client_cert) + 1,
-        .clientkey_buf = (const unsigned char *)private_key,
-        .clientkey_bytes = strlen(private_key) + 1,
-        .timeout_ms = 3000,
-        .non_block = true,
-    };
-
-    // Store hostname and port (custom fields for xTlsConnect to use)
-    pxNetworkContext->pcHostname = strdup(hostname);
-    pxNetworkContext->xPort = port;
-    pxNetworkContext->pxTls = tls_cfg;
-
-    // Don’t free strings yet; they’re used in tls_cfg
-    pxNetworkContext->pcServerRootCA = root_ca;
-    pxNetworkContext->pcServerRootCASize = strlen(root_ca) + 1;
-    pxNetworkContext->pcClientCert = client_cert;
-    pxNetworkContext->pcClientCertSize = strlen(client_cert) + 1;
-    pxNetworkContext->pcClientKey = private_key;
-    pxNetworkContext->pcClientKeySize = strlen(private_key) + 1;
-
-    pxNetworkContext->xTlsContextSemaphore = xSemaphoreCreateMutex();
-    if (pxNetworkContext->xTlsContextSemaphore == NULL) {
-        ESP_LOGE(TAG, "Failed to create TLS semaphore");
-        esp_tls_conn_destroy(pxNetworkContext->pxTls);
-        free(pxNetworkContext->pxTls);
-        free(pxNetworkContext->pcHostname);
-        free(mqtt_url);
-        free(root_ca);
-        free(client_cert);
-        free(private_key);
-        return pdFAIL;
-    }
-
-    return pdPASS;
-}
-
-static void prvCoreMqttAgentEventHandler(void *pvHandlerArg, esp_event_base_t xEventBase, int32_t lEventId,
-                                         void *pvEventData) {
-    (void)pvHandlerArg;
-    (void)xEventBase;
-    (void)pvEventData;
-
-    switch (lEventId) {
-    case CORE_MQTT_AGENT_CONNECTED_EVENT:
-        ESP_LOGI(TAG, "coreMQTT-Agent connected.");
-        break;
-    case CORE_MQTT_AGENT_DISCONNECTED_EVENT:
-        ESP_LOGI(TAG, "coreMQTT-Agent disconnected.");
-        break;
-    default:
-        ESP_LOGI(TAG, "Unhandled MQTT Agent event: %ld", lEventId);
-        break;
+        wifi_connected = true; // Set flag when IP is obtained
     }
 }
 
-void first_incarnation(void) {
+void first_phase(void) {
     esp_err_t xEspErrRet = wifi_init_for_scan();
     if (xEspErrRet != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize WiFi for scanning: %s", esp_err_to_name(xEspErrRet));
@@ -211,38 +118,70 @@ void first_incarnation(void) {
     xTaskCreate(nimble_host_task, "NimBLE Host", 8 * 1024, NULL, 5, NULL);
 }
 
-void second_incarnation(void) {
-    BaseType_t xRet;
-
+void second_phase(void) {
+    // Step 1: Initialize network interface and event loop
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_create_default_wifi_sta();
 
-    // app_wifi_init();
-    // app_wifi_start(POP_TYPE_MAC);
+    // Step 2: Register event handlers for Wi-Fi and IP events
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL));
 
-    xRet = prvInitializeNetworkContext(&xNetworkContext);
-    if (xRet != pdPASS) {
-        ESP_LOGE(TAG, "Failed to initialize network context");
-        return;
+    // Step 3: Initialize Wi-Fi with default configuration
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    // Step 4: Set Wi-Fi mode to station
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+
+    // Step 5: Read Wi-Fi credentials from NVS
+    esp_err_t err;
+    char *ssid = NULL;
+    char *password = NULL;
+    char *thing_name = NULL;
+
+    read_from_nvs("wifi_ssid", &ssid);
+    read_from_nvs("wifi_pass", &password);
+
+    // Step 6: Configure Wi-Fi with retrieved credentials
+    wifi_config_t wifi_config = {0}; // Initialize all fields to zero
+    if (ssid) {
+        strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
+        wifi_config.sta.ssid[sizeof(wifi_config.sta.ssid) - 1] = '\0'; // Ensure null termination
+    }
+    if (password) {
+        strncpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
+        wifi_config.sta.password[sizeof(wifi_config.sta.password) - 1] = '\0'; // Ensure null termination
     }
 
-    xRet = xCoreMqttAgentManagerStart(&xNetworkContext);
-    if (xRet != pdPASS) {
-        ESP_LOGE(TAG, "Failed to start coreMQTT-Agent");
-        esp_tls_conn_destroy(xNetworkContext.pxTls);
-        free(xNetworkContext.pxTls);
-        free(xNetworkContext.pcHostname);
-        free(xNetworkContext.pcServerRootCA);
-        free(xNetworkContext.pcClientCert);
-        free(xNetworkContext.pcClientKey);
-        return;
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+
+    // Step 7: Start Wi-Fi
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    // Step 8: Wait for Wi-Fi connection (up to 30 seconds)
+    int retries = 0;
+    while (!wifi_connected && retries < 30) {
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // Wait 1 second per retry
+        retries++;
     }
 
-    xRet = xCoreMqttAgentManagerRegisterHandler(prvCoreMqttAgentEventHandler);
-    if (xRet != pdPASS) {
-        ESP_LOGE(TAG, "Failed to register MQTT event handler");
+    if (!wifi_connected) {
+        ESP_LOGE("WIFI", "Failed to connect to Wi-Fi after 30 seconds");
+        free(ssid);
+        free(password);
+        return; // Exit if connection fails
     }
+
+    ESP_LOGI("WIFI", "Wi-Fi connected successfully");
+
+    // Step 9: Initialize MQTT client once Wi-Fi is confirmed up
+    init_mqtt_client();
+
+    // Free allocated memory
+    free(ssid);
+    free(password);
 }
 
 void app_main(void) {
@@ -254,10 +193,10 @@ void app_main(void) {
     }
 
     if (key_found_in_nvs("provisioned")) {
-        ESP_LOGI(TAG, "Device is provisioned. Starting second incarnation.");
-        second_incarnation();
+        ESP_LOGI(TAG, "Device is provisioned. Starting second phase.");
+        second_phase();
     } else {
-        ESP_LOGI(TAG, "Device is not yet provisioned. Starting first incarnation.");
-        first_incarnation();
+        ESP_LOGI(TAG, "Device is not yet provisioned. Starting first phase.");
+        first_phase();
     }
 }

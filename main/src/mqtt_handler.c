@@ -25,36 +25,6 @@ static esp_netif_t *s_wifi_sta_netif = NULL; // Track the STA interface
 
 esp_mqtt_client_handle_t get_mqtt_client() { return mqtt_client; }
 
-int handle_accepted_topic(const char *data) {
-    ESP_LOGI(TAG, "Handling accepted response...");
-    cJSON *json = cJSON_Parse(data);
-    if (!json) {
-        ESP_LOGE(TAG, "❌ Failed to parse provisioning response.");
-        return ESP_FAIL;
-    }
-
-    // Extract certificate and private key
-    const char *certificate = cJSON_GetObjectItem(json, "certificatePem")->valuestring;
-    const cJSON *keyPair = cJSON_GetObjectItem(json, "keyPair");
-    const char *privateKey = cJSON_GetObjectItem(keyPair, "PrivateKey")->valuestring;
-    const char *thingName = cJSON_GetObjectItem(json, "thingName")->valuestring;
-    const char *certOwnershipToken = cJSON_GetObjectItem(json, "certificateOwnershipToken")->valuestring;
-
-    if (save_to_nvs("certificate", certificate) != ESP_OK || save_to_nvs("privateKey", privateKey) != ESP_OK ||
-        save_to_nvs("certOwnershipToken", certOwnershipToken) != ESP_OK ||
-        save_to_nvs("thingName", thingName) != ESP_OK) {
-        ESP_LOGE(TAG, "❌ Failed to save provisioning data to NVS.");
-        cJSON_Delete(json);
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "✅ Provisioning data saved to NVS.");
-
-    // Cleanup
-    cJSON_Delete(json);
-    return ESP_OK;
-}
-
 void subscribe_to_ota_topics(esp_mqtt_client_handle_t my_client, char *thing_name) {
     if (thing_name == NULL) {
         printf("Thing name not set, cannot subscribe to OTA topics\n");
@@ -105,7 +75,7 @@ static void cleanup_and_reboot(void *arg) {
     mqtt_client = NULL;
 
     // Leave WiFi and esp_netif running
-    ESP_LOGI(TAG, "Keeping WiFi connection active for second incarnation");
+    ESP_LOGI(TAG, "Keeping WiFi connection active for second phase");
 
     vTaskDelay(pdMS_TO_TICKS(1000));
     ESP_LOGI(TAG, "Rebooting now...");
@@ -128,6 +98,13 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
     switch (event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+        if (key_found_in_nvs("provisioned")) {
+            ESP_LOGI(TAG, "Device is already provisioned, skipping provisioning");
+            char *thing_name = NULL;
+            read_from_nvs("iot_device_name", &thing_name);
+            subscribe_to_ota_topics(client, thing_name);
+            return;
+        }
         notify_mqtt_status();
 
         response_len = 0; // Reset buffer on new connection
@@ -219,8 +196,9 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
 
             ESP_LOGI(TAG, "Certificate ID: %s", cert_id); // Debug certificate ID
 
-            save_to_nvs("certificate", cert_pem);
-            save_to_nvs("privateKey", private_key);
+            save_to_nvs("p2_cert", cert_pem);
+            save_to_nvs("p2_key", private_key);
+            save_to_nvs("p2_certId", cert_id);
             strncpy(ownership_token, token, sizeof(ownership_token) - 1);
             ownership_token[sizeof(ownership_token) - 1] = '\0';
             strncpy(certificate_id, cert_id, sizeof(certificate_id) - 1);
@@ -286,7 +264,7 @@ void init_mqtt_client() {
         return;
     }
 
-    // After WiFi is initialized in first_incarnation (via wifi_init_for_scan),
+    // After WiFi is initialized in first_phase (via wifi_init_for_scan),
     // store the netif handle
     s_wifi_sta_netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (!s_wifi_sta_netif) {
@@ -295,15 +273,27 @@ void init_mqtt_client() {
 
     list_keys_in_nvs();
 
-    // Retrieve data from NVS
-    if (read_from_nvs("mqtt_url", &mqtt_url) != ESP_OK || read_from_nvs("rootCa", &root_ca) != ESP_OK ||
-        read_from_nvs("certificate", &client_cert) != ESP_OK || read_from_nvs("privateKey", &private_key) != ESP_OK ||
+    if (key_found_in_nvs("provisioned")) {
+        if (read_from_nvs("p2_cert", &client_cert) != ESP_OK || read_from_nvs("p2_key", &private_key) != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to read one or more p2 values from NVS");
+            free(client_cert);
+            free(private_key);
+            return;
+        }
+    } else {
+        if (read_from_nvs("p1_cert", &client_cert) != ESP_OK || read_from_nvs("p1_key", &private_key) != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to read one or more p1 values from NVS");
+            free(client_cert);
+            free(private_key);
+            return;
+        }
+    }
+
+    if (read_from_nvs("mqtt_url", &mqtt_url) != ESP_OK || read_from_nvs("p1_rootCa", &root_ca) != ESP_OK ||
         read_from_nvs("iot_device_name", &thing_name) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to read one or more values from NVS");
         free(mqtt_url);
         free(root_ca);
-        free(client_cert);
-        free(private_key);
         free(thing_name);
         return;
     }
