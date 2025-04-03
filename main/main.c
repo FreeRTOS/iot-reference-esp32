@@ -4,10 +4,7 @@
  */
 
 /* Includes */
-#include "app_wifi.h"
 #include "common.h"
-#include "core_mqtt_agent_manager.h"
-#include "core_mqtt_agent_manager_events.h"
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
@@ -20,6 +17,7 @@
 #include "host/ble_att.h"
 #include "mqtt_handler.h"
 #include "network_transport.h"
+#include "ota_over_mqtt_demo.h"
 #include "utils.h"
 #include "wifi_handler.h"
 #include <esp_err.h>
@@ -178,6 +176,8 @@ void second_phase(void) {
 
     // Step 9: Initialize MQTT client once Wi-Fi is confirmed up
     init_mqtt_client();
+
+    vStartOTACodeSigningDemo(); // Start OTA task
 
     // Free allocated memory
     free(ssid);

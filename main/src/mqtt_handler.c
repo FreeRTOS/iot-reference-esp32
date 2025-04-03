@@ -8,6 +8,8 @@
 #include "gatt_svc.h"
 #include "gecl-nvs-manager.h"
 #include "mbedtls/base64.h"
+#include "ota_over_mqtt_demo.h"
+#include "ota_state.h"
 #include "provisioning_state.h"
 #include "string.h"
 #include "utils.h"
@@ -99,8 +101,9 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         if (key_found_in_nvs("provisioned")) {
+            ESP_LOGI(TAG, "MQTT connected, setting xSuspendOta to pdFALSE");
+            xSuspendOta = pdFALSE; // Resume OTA operations
             ESP_LOGI(TAG, "Device is already provisioned, skipping provisioning");
-            char *thing_name = NULL;
             read_from_nvs("iot_device_name", &thing_name);
             subscribe_to_ota_topics(client, thing_name);
             return;
@@ -136,10 +139,15 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
         cert_requested = false;
         vTaskDelay(pdMS_TO_TICKS(1000));
         esp_mqtt_client_start(client);
+        ESP_LOGI(TAG, "MQTT disconnected, setting xSuspendOta to pdTRUE");
+        xSuspendOta = pdTRUE; // Suspend OTA operations
         break;
 
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+        if (currentSubscribeSemaphore) {
+            xSemaphoreGive(currentSubscribeSemaphore);
+        }
         break;
 
     case MQTT_EVENT_UNSUBSCRIBED:
@@ -155,11 +163,44 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
         printf("TOPIC=%.*s\r\n", event->topic_len, event->topic ? event->topic : "NULL");
         printf("DATA=%.*s\r\n", event->data_len, event->data);
 
+        if (key_found_in_nvs("provisioned")) {
+            read_from_nvs("iot_device_name", &thing_name);
+        }
+        // Check if the topic is related to OTA
+        if (event->topic && thing_name && strncmp(event->topic, "$aws/things/", 12) == 0) {
+            ESP_LOGI(TAG, "Received OTA message on topic: %.*s", event->topic_len, event->topic);
+
+            char ota_jobs_prefix[128];
+            char ota_streams_prefix[128];
+            snprintf(ota_jobs_prefix, sizeof(ota_jobs_prefix), "$aws/things/%s/jobs/", thing_name);
+            snprintf(ota_streams_prefix, sizeof(ota_streams_prefix), "$aws/things/%s/streams/", thing_name);
+
+            MQTTPublishInfo_t publishInfo = {
+                .pTopicName = event->topic,
+                .topicNameLength = event->topic_len,
+                .pPayload = event->data,
+                .payloadLength = event->data_len,
+            };
+
+            // Check if the topic matches OTA job or stream prefixes
+            if (strncmp(event->topic, ota_jobs_prefix, strlen(ota_jobs_prefix)) == 0 ||
+                strncmp(event->topic, ota_streams_prefix, strlen(ota_streams_prefix)) == 0) {
+                if (vOTAProcessMessage(NULL, &publishInfo)) {
+                    ESP_LOGI(TAG, "Message processed by OTA");
+                    return; // OTA handled the message
+                } else {
+                    ESP_LOGI(TAG, "Message not processed by OTA");
+                }
+            } else {
+                ESP_LOGI(TAG, "Not an OTA message, ignoring");
+            }
+        }
+
+        // Handle provisioning messages
         if (event->topic && strcmp(event->topic, MQTT_PROVISION_ACCEPTED_TOPIC) == 0) {
             ESP_LOGI(TAG, "✅ Provisioning set, rebooting to use permanent certificate");
             save_to_nvs("provisioned", "true");
             xTaskCreate(cleanup_and_reboot, "cleanup_task", 4096, client, 10, NULL);
-
         } else if (event->topic && strcmp(event->topic, MQTT_CREATE_ACCEPTED_TOPIC) == 0) {
             // Start of new message
             response_len = 0;

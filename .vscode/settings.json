@@ -11,7 +11,9 @@
     // Files to Format
     "files.associations": {
         "*.c": "c",
-        "*.h": "c"
+        "*.h": "c",
+        "limits": "c",
+        "ratio": "c"
     },
     "idf.adapterTargetName": "esp32s3",
     "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",

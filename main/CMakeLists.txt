@@ -1,9 +1,5 @@
 set(MAIN_SRCS
     "main.c"
-    "networking/wifi/app_wifi.c"
-    "networking/mqtt/subscription_manager.c"
-    "networking/mqtt/core_mqtt_agent_manager.c"
-    "networking/mqtt/core_mqtt_agent_manager_events.c"
     "src/wifi_handler.c"
     "src/mqtt_handler.c"
     "src/ble_handler.c"
@@ -15,15 +11,15 @@ set(MAIN_SRCS
     "src/secure_connections.c"
     "src/utils.c"
     "src/provisioning_state.c"
+    "src/ota_over_mqtt_demo.c"
 )
 
 set(MAIN_INCLUDE_DIRS
     "."
-    "networking/wifi"
-    "networking/mqtt"
     "include"
     "${IDF_PATH}/components/bt/host/bluedroid/api/include/api"
     "${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/include"
+    "networking/mqtt"
 )
 
 set(MAIN_REQUIRES
