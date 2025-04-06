@@ -194,11 +194,8 @@ void second_phase(void) {
 
     char *ota_key = NULL;
     if (read_from_nvs("ota_key", &ota_key) == ESP_OK) {
-        const char *publicKeyPem =
-            "-----BEGIN PUBLIC "
-            "KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEn2w3tD3bVTgQ2D3CwWBkFEQWKbmFOupEZQGDPlciH90J5qfoVc6fLcsf/"
-            "IuIqcrOPC0x4g15M0qyuE480jsnrg==\n-----END PUBLIC KEY-----\n";
-        if (!otaPal_SetCodeSigningCertificate(publicKeyPem)) {
+        ESP_LOG_BUFFER_HEXDUMP(TAG, ota_key, strlen(ota_key), ESP_LOG_INFO);
+        if (!otaPal_SetCodeSigningCertificate(ota_key)) {
             ESP_LOGE(TAG, "Failed to set OTA public key in PAL");
         } else {
             ESP_LOGI(TAG, "OTA public key set in PAL");

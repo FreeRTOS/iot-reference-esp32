@@ -29,7 +29,7 @@
     "terminal.integrated.defaultProfile.osx": "MyCustomProfile",
     "git.autoRepositoryDetection": true,
     "git.ignoreLimitWarning": true,
-    "terminal.integrated.fontSize": 9,
+    "terminal.integrated.fontSize": 12,
     "terminal.integrated.scrollback": 10000,
     // Doxygen Documentation
     "doxdocgen.generic.authorName": "Your Name",

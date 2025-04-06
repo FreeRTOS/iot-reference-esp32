@@ -306,6 +306,8 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
             goto cleanup;
         }
 
+        ESP_LOG_BUFFER_HEXDUMP(TAG, ota_key, strlen(ota_key), ESP_LOG_INFO);
+
         const char *root_ca =
             cJSON_GetObjectItem(json_root, "rootCa") ? cJSON_GetObjectItem(json_root, "rootCa")->valuestring : NULL;
         if (!root_ca) {
