@@ -12,6 +12,7 @@ set(MAIN_SRCS
     "src/utils.c"
     "src/provisioning_state.c"
     "src/ota_over_mqtt_demo.c"
+    "src/ota_pal.c"
 )
 
 set(MAIN_INCLUDE_DIRS

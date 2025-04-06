@@ -18,6 +18,7 @@
 #include "mqtt_handler.h"
 #include "network_transport.h"
 #include "ota_over_mqtt_demo.h"
+#include "ota_pal.h"
 #include "utils.h"
 #include "wifi_handler.h"
 #include <esp_err.h>
@@ -34,6 +35,9 @@
 #include <string.h>
 
 static const char *TAG = "MAIN";
+
+#define MAX_THING_NAME_SIZE 64
+char thing_name[MAX_THING_NAME_SIZE] = {0};
 
 /* BLE Library function declarations */
 void ble_store_config_init(void);
@@ -137,7 +141,18 @@ void second_phase(void) {
     esp_err_t err;
     char *ssid = NULL;
     char *password = NULL;
-    char *thing_name = NULL;
+    char *temp_thing_name = NULL;
+
+    if (read_from_nvs("thing_name", &temp_thing_name) == ESP_OK) {
+        if (temp_thing_name != NULL && temp_thing_name[0] != '\0') {
+            strncpy(thing_name, temp_thing_name, MAX_THING_NAME_SIZE - 1);
+            thing_name[MAX_THING_NAME_SIZE - 1] = '\0';
+            ESP_LOGI(TAG, "Thing name loaded from NVS: %s", thing_name);
+        } else {
+            ESP_LOGE(TAG, "Empty or invalid thing name from NVS");
+        }
+        free(temp_thing_name);
+    }
 
     read_from_nvs("wifi_ssid", &ssid);
     read_from_nvs("wifi_pass", &password);
@@ -176,6 +191,22 @@ void second_phase(void) {
 
     // Step 9: Initialize MQTT client once Wi-Fi is confirmed up
     init_mqtt_client();
+
+    char *ota_key = NULL;
+    if (read_from_nvs("ota_key", &ota_key) == ESP_OK) {
+        const char *publicKeyPem =
+            "-----BEGIN PUBLIC "
+            "KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEn2w3tD3bVTgQ2D3CwWBkFEQWKbmFOupEZQGDPlciH90J5qfoVc6fLcsf/"
+            "IuIqcrOPC0x4g15M0qyuE480jsnrg==\n-----END PUBLIC KEY-----\n";
+        if (!otaPal_SetCodeSigningCertificate(publicKeyPem)) {
+            ESP_LOGE(TAG, "Failed to set OTA public key in PAL");
+        } else {
+            ESP_LOGI(TAG, "OTA public key set in PAL");
+        }
+        free(ota_key); // Free memory allocated by read_from_nvs
+    } else {
+        ESP_LOGE(TAG, "Failed to read ota_key from NVS");
+    }
 
     vStartOTACodeSigningDemo(); // Start OTA task
 

@@ -21,5 +21,5 @@ void gatt_svr_subscribe_cb(struct ble_gap_event *event);
 void register_mtu_callback();
 esp_err_t gatt_svc_init(void);
 void notify_mqtt_status(void);
-const char *get_iot_device_name(void);
+const char *get_thing_name(void);
 #endif // GATT_SVR_H

@@ -36,7 +36,7 @@ static uint8_t *certificate_buffer = NULL;
 static size_t certificate_length = 0;
 static size_t expected_length = 0; // Holds expected total size from first 2 bytes
 cJSON *json_root = NULL;
-char iot_device_name[IOT_DEVICE_NAME_MAX_LEN + 1] = {0}; // Global storage
+extern char thing_name[32];
 
 /* Callback Prototypes */
 static int gatt_svc_r_device_type_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt,
@@ -58,8 +58,8 @@ static int gatt_svc_r_mqtt_url_cb(uint16_t conn_handle, uint16_t attr_handle, st
                                   void *arg);
 static int gatt_svc_r_device_mqtt_status_cb(uint16_t conn_handle, uint16_t attr_handle,
                                             struct ble_gatt_access_ctxt *ctxt, void *arg);
-static int gatt_svc_w_iot_device_name_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt,
-                                         void *arg);
+static int gatt_svc_w_thing_name_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt,
+                                    void *arg);
 // Private Functions
 
 // GATT service definition
@@ -122,7 +122,7 @@ static const struct ble_gatt_svc_def gatt_svr_svc[] = {
                 },
                 {
                     .uuid = &WRITE_IOT_DEVICE_NAME_UUID.u,
-                    .access_cb = gatt_svc_w_iot_device_name_cb,
+                    .access_cb = gatt_svc_w_thing_name_cb,
                     .flags = BLE_GATT_CHR_F_WRITE,
                 },
                 {0}, // End of characteristics
@@ -131,8 +131,8 @@ static const struct ble_gatt_svc_def gatt_svr_svc[] = {
     {0}, // End of services
 };
 
-static int gatt_svc_w_iot_device_name_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt,
-                                         void *arg) {
+static int gatt_svc_w_thing_name_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt,
+                                    void *arg) {
     ESP_LOGI(TAG, "IoT device name write request received: conn_handle=%d", conn_handle);
 
     // Check if data exists
@@ -151,14 +151,14 @@ static int gatt_svc_w_iot_device_name_cb(uint16_t conn_handle, uint16_t attr_han
     }
 
     // Copy received name to global variable
-    memset(iot_device_name, 0, sizeof(iot_device_name)); // Clear old name
-    memcpy(iot_device_name, ctxt->om->om_data, name_len);
-    iot_device_name[name_len] = '\0'; // Ensure null termination
+    memset(thing_name, 0, sizeof(thing_name)); // Clear old name
+    memcpy(thing_name, ctxt->om->om_data, name_len);
+    thing_name[name_len] = '\0'; // Ensure null termination
 
-    save_to_nvs("iot_device_name", iot_device_name);
+    save_to_nvs("thing_name", thing_name);
 
     // Log the stored name
-    ESP_LOGI(TAG, "Iot device name stored to NVS: %s", iot_device_name);
+    ESP_LOGI(TAG, "Iot device name stored to NVS: %s", thing_name);
 
     return 0; // Return success
 }
@@ -297,6 +297,15 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
             goto cleanup;
         }
 
+        const char *ota_key = cJSON_GetObjectItem(json_root, "OtaPubKey")
+                                  ? cJSON_GetObjectItem(json_root, "OtaPubKey")->valuestring
+                                  : NULL;
+
+        if (!ota_key) {
+            ESP_LOGE(TAG, "Invalid JSON structure: ota_pub_key not found");
+            goto cleanup;
+        }
+
         const char *root_ca =
             cJSON_GetObjectItem(json_root, "rootCa") ? cJSON_GetObjectItem(json_root, "rootCa")->valuestring : NULL;
         if (!root_ca) {
@@ -319,14 +328,14 @@ static int gatt_svc_rw_ota_certificate_cb(uint16_t conn_handle, uint16_t attr_ha
             goto cleanup;
         }
 
-        ESP_LOGI(TAG, "Certificate ID: %s", cert_id);
-        ESP_LOGI(TAG, "Certificate ARN: %s", cert_arn);
-        ESP_LOGI(TAG, "Private Key: %s", private_key); // Optional: Log for debugging
+        // ESP_LOGI(TAG, "Certificate ID: %s", cert_id);
+        // ESP_LOGI(TAG, "Certificate ARN: %s", cert_arn);
+        // ESP_LOGI(TAG, "Private Key: %s", private_key); // Optional: Log for debugging
 
         // Save data to NVS
         if (save_to_nvs("p1_cert", certificate) != ESP_OK || save_to_nvs("p1_certId", cert_id) != ESP_OK ||
             save_to_nvs("p1_certArn", cert_arn) != ESP_OK || save_to_nvs("p1_rootCa", root_ca) != ESP_OK ||
-            save_to_nvs("p1_key", private_key) != ESP_OK) {
+            save_to_nvs("p1_key", private_key) != ESP_OK || save_to_nvs("ota_key", ota_key) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to save data to NVS.");
             goto cleanup;
         }
@@ -607,7 +616,7 @@ void notify_mqtt_status() {
     }
 }
 
-const char *get_iot_device_name(void) { return iot_device_name; }
+const char *get_thing_name(void) { return thing_name; }
 
 /* Public Functions */
 esp_err_t gatt_svc_init(void) {

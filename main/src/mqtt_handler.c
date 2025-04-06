@@ -22,8 +22,9 @@ static size_t ota_total_written = 0;
 static size_t ota_expected_size = 0;
 static bool ota_in_progress = false;
 static char current_job_id[128] = {0};
-static char *thing_name = NULL;              // Assuming this was already global in your code
 static esp_netif_t *s_wifi_sta_netif = NULL; // Track the STA interface
+
+extern char thing_name[32];
 
 esp_mqtt_client_handle_t get_mqtt_client() { return mqtt_client; }
 
@@ -91,7 +92,6 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
     esp_mqtt_client_handle_t client = event->client;
     static char ownership_token[1024] = {0};
     static char certificate_id[65] = {0}; // 64 chars + null terminator for CertificateId
-    static char *thing_name = NULL;
     static bool cert_requested = false;
     static char response_buffer[4096] = {0}; // Buffer for full response
     static size_t response_len = 0;
@@ -104,7 +104,6 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
             ESP_LOGI(TAG, "MQTT connected, setting xSuspendOta to pdFALSE");
             xSuspendOta = pdFALSE; // Resume OTA operations
             ESP_LOGI(TAG, "Device is already provisioned, skipping provisioning");
-            read_from_nvs("iot_device_name", &thing_name);
             subscribe_to_ota_topics(client, thing_name);
             return;
         }
@@ -113,15 +112,6 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
         response_len = 0; // Reset buffer on new connection
         memset(response_buffer, 0, sizeof(response_buffer));
         provisioning_sent = false;
-
-        if (!thing_name) {
-            esp_err_t err = read_from_nvs("iot_device_name", &thing_name);
-            if (err != ESP_OK) {
-                ESP_LOGE(TAG, "Failed to read iot_device_name from NVS");
-                thing_name = strdup("coop_cop_2_7bbf803b_27dc4bfc");
-            }
-            ESP_LOGI(TAG, "Loaded thing_name: %s", thing_name);
-        }
 
         if (!cert_requested) {
             int sub1 = esp_mqtt_client_subscribe(client, MQTT_CREATE_ACCEPTED_TOPIC, 0);
@@ -159,16 +149,13 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
         break;
 
     case MQTT_EVENT_DATA:
-        ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-        printf("TOPIC=%.*s\r\n", event->topic_len, event->topic ? event->topic : "NULL");
-        printf("DATA=%.*s\r\n", event->data_len, event->data);
+        ESP_LOGD(TAG, "MQTT_EVENT_DATA");
+        // printf("TOPIC=%.*s\r\n", event->topic_len, event->topic ? event->topic : "NULL");
+        // printf("DATA=%.*s\r\n", event->data_len, event->data);
 
-        if (key_found_in_nvs("provisioned")) {
-            read_from_nvs("iot_device_name", &thing_name);
-        }
         // Check if the topic is related to OTA
-        if (event->topic && thing_name && strncmp(event->topic, "$aws/things/", 12) == 0) {
-            ESP_LOGI(TAG, "Received OTA message on topic: %.*s", event->topic_len, event->topic);
+        if (event->topic && strncmp(event->topic, "$aws/things/", 12) == 0) {
+            // ESP_LOGI(TAG, "Received OTA message on topic: %.*s", event->topic_len, event->topic);
 
             char ota_jobs_prefix[128];
             char ota_streams_prefix[128];
@@ -186,7 +173,7 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
             if (strncmp(event->topic, ota_jobs_prefix, strlen(ota_jobs_prefix)) == 0 ||
                 strncmp(event->topic, ota_streams_prefix, strlen(ota_streams_prefix)) == 0) {
                 if (vOTAProcessMessage(NULL, &publishInfo)) {
-                    ESP_LOGI(TAG, "Message processed by OTA");
+                    // ESP_LOGI(TAG, "Message processed by OTA");
                     return; // OTA handled the message
                 } else {
                     ESP_LOGI(TAG, "Message not processed by OTA");
@@ -240,8 +227,10 @@ static void bootstrap_mqtt_event_handler_cb(void *handler_args, esp_event_base_t
             save_to_nvs("p2_cert", cert_pem);
             save_to_nvs("p2_key", private_key);
             save_to_nvs("p2_certId", cert_id);
+
             strncpy(ownership_token, token, sizeof(ownership_token) - 1);
             ownership_token[sizeof(ownership_token) - 1] = '\0';
+
             strncpy(certificate_id, cert_id, sizeof(certificate_id) - 1);
             certificate_id[sizeof(certificate_id) - 1] = '\0';
 
@@ -295,7 +284,6 @@ void init_mqtt_client() {
     char *root_ca = NULL;
     char *client_cert = NULL;
     char *private_key = NULL;
-    char *thing_name = NULL;
 
     static bool is_initialized = false;
 
@@ -330,12 +318,10 @@ void init_mqtt_client() {
         }
     }
 
-    if (read_from_nvs("mqtt_url", &mqtt_url) != ESP_OK || read_from_nvs("p1_rootCa", &root_ca) != ESP_OK ||
-        read_from_nvs("iot_device_name", &thing_name) != ESP_OK) {
+    if (read_from_nvs("mqtt_url", &mqtt_url) != ESP_OK || read_from_nvs("p1_rootCa", &root_ca) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to read one or more values from NVS");
         free(mqtt_url);
         free(root_ca);
-        free(thing_name);
         return;
     }
 
