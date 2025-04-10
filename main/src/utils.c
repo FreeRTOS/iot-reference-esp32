@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "cJSON.h"
 #include "ctype.h"
+#include "job_parser.h"
 #include <stdio.h>
 
 static const char *TAG = "UTILS";
@@ -109,4 +110,53 @@ void print_json(cJSON *root) {
     } else {
         ESP_LOGW(TAG, "cJSON root is NULL\n");
     }
+}
+
+void print_ota_job_fields(const AfrOtaJobDocumentFields_t *fields, const char *file, const char *function, int line) {
+    printf("AfrOtaJobDocumentFields_t [File: %s, Function: %s, Line: %d]:\n", file, function, line);
+
+    // Print signature with exact length
+    if (fields->signature != NULL) {
+        printf("  signature:        %.*s\n", (int)fields->signatureLen, fields->signature);
+    } else {
+        printf("  signature:        (null)\n");
+    }
+    printf("  signatureLen:     %zu\n", fields->signatureLen);
+
+    // Print filepath with exact length
+    if (fields->filepath != NULL) {
+        printf("  filepath:         %.*s\n", (int)fields->filepathLen, fields->filepath);
+    } else {
+        printf("  filepath:         (null)\n");
+    }
+    printf("  filepathLen:      %zu\n", fields->filepathLen);
+
+    // Print certfile with exact length
+    if (fields->certfile != NULL) {
+        printf("  certfile:         %.*s\n", (int)fields->certfileLen, fields->certfile);
+    } else {
+        printf("  certfile:         (null)\n");
+    }
+    printf("  certfileLen:      %zu\n", fields->certfileLen);
+
+    // Print authScheme with exact length
+    if (fields->authScheme != NULL) {
+        printf("  authScheme:       %.*s\n", (int)fields->authSchemeLen, fields->authScheme);
+    } else {
+        printf("  authScheme:       (null)\n");
+    }
+    printf("  authSchemeLen:    %zu\n", fields->authSchemeLen);
+
+    // Print imageRef with exact length
+    if (fields->imageRef != NULL) {
+        printf("  imageRef:         %.*s\n", (int)fields->imageRefLen, fields->imageRef);
+    } else {
+        printf("  imageRef:         (null)\n");
+    }
+    printf("  imageRefLen:      %zu\n", fields->imageRefLen);
+
+    // Print integer fields
+    printf("  fileId:           %lu\n", fields->fileId);
+    printf("  fileSize:         %lu\n", fields->fileSize);
+    printf("  fileType:         %lu\n", fields->fileType);
 }

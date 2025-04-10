@@ -38,11 +38,12 @@ set(MAIN_REQUIRES
     corePKCS11
     coreJSON
     backoffAlgorithm
-    esp_secure_cert_mgr
+#    esp_secure_cert_mgr
     aws-iot-core-mqtt-file-streams-embedded-c
-    FreeRTOS-Libraries-Integration-Tests
+#    FreeRTOS-Libraries-Integration-Tests
     unity
     driver
+    esp_gdbstub
 )
 
 idf_component_register(
@@ -53,3 +54,4 @@ idf_component_register(
     REQUIRES
         ${MAIN_REQUIRES}
 )
+

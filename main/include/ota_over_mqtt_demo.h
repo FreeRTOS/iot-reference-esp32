@@ -59,6 +59,8 @@ void vStartOTACodeSigningDemo(void);
  */
 bool vOTAProcessMessage(void *pvIncomingPublishCallbackContext, MQTTPublishInfo_t *pxPublishInfo);
 
+#define mqttFileDownloader_CONFIG_BLOCK_SIZE 2048U
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
 } /* extern "C" */

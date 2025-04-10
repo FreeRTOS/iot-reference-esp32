@@ -59,6 +59,7 @@
 #include "mbedtls/bignum.h"
 #include "mbedtls/md.h" // Add this at the top with other includes
 #include "mbedtls/pk.h"
+#include "utils.h"
 
 static mbedtls_pk_context codeSigningKey; // Declare static key context globally
 
@@ -440,6 +441,8 @@ cleanup:
 /* Close the specified file. This shall authenticate the file if it is marked as secure. */
 OtaPalStatus_t otaPal_CloseFile(AfrOtaJobDocumentFields_t *const pFileContext) {
     OtaPalStatus_t mainErr = OtaPalSuccess;
+
+    PRINT_OTA_FIELDS(pFileContext);
 
     if (!_esp_ota_ctx_validate(pFileContext)) {
         return OtaPalFileClose;

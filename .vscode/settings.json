@@ -29,12 +29,22 @@
     "terminal.integrated.defaultProfile.osx": "MyCustomProfile",
     "git.autoRepositoryDetection": true,
     "git.ignoreLimitWarning": true,
-    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.fontSize": 10,
     "terminal.integrated.scrollback": 10000,
     // Doxygen Documentation
     "doxdocgen.generic.authorName": "Your Name",
     "doxdocgen.generic.authorEmail": "your.email@example.com",
     "doxdocgen.generic.briefTemplate": "/// @brief ${brief}.",
     "doxdocgen.generic.paramTemplate": "/// @param ${param} ${cursor}",
-    "doxdocgen.generic.returnTemplate": "/// @return ${cursor}"
+    "doxdocgen.generic.returnTemplate": "/// @return ${cursor}",
+    "idf.port": "/dev/cu.usbmodem21101",
+    "idf.openOcdDebugLevel": 3,
+    "idf.openOcdLaunchArgs": [
+        "-c",
+        "init",
+        "-c",
+        "reset halt",
+        "-c",
+        "esp appimage_offset 0x20000"
+    ],
 }
