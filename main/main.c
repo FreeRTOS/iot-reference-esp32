@@ -109,7 +109,8 @@ void first_phase(void) {
         return;
     }
 
-    gap_init();
+    // gap_init();
+    ble_svc_gap_init();
     xEspErrRet = gatt_svc_init();
     if (xEspErrRet != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize GATT service: %d", xEspErrRet);

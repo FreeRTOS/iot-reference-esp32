@@ -34,7 +34,10 @@
 static uint8_t own_addr_type;
 
 /* Defines */
-#define DEVICE_NAME "CoopDevice"
+#define DEVICE_CONTROLLER_NAME "MaHenCtrl"
+#define DEVICE_EGG_NAME "MaHenEgg"
+#define DEVICE_TYPE_CONTROLLER 0x01
+#define DEVICE_TYPE_EGG 0x02
 #define SIG_SIZE 256
 #define HASH_SIZE 32                  // Firmware hash size in bytes
 #define CUSTOM_DESCRIPTOR_UUID 0x2901 // UUID for User Description Descriptor

@@ -5,6 +5,7 @@
 #include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gatts_api.h"
+#include "firmware_data.h"
 #include "gatt_svc.h"
 #include "host/ble_gap.h"
 #include "utils.h"
@@ -157,25 +158,41 @@ void adv_init(void) {
     struct ble_hs_adv_fields fields;
     memset(&fields, 0, sizeof(fields));
 
+    // Set flags (3 bytes)
+    fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+
     // Include the 128-bit service UUID in the advertisement
     static ble_uuid128_t service_uuid;
-    memcpy(service_uuid.value, &SERVICE_UUID.u, sizeof(&SERVICE_UUID.u));
-
+    memcpy(service_uuid.value, &SERVICE_UUID.u, sizeof(SERVICE_UUID.u));
     fields.uuids128 = &service_uuid;
     fields.num_uuids128 = 1;
     fields.uuids128_is_complete = 1;
 
     // Include the device name from common.h
-    fields.name = (uint8_t *)DEVICE_NAME;
-    fields.name_len = strlen(DEVICE_NAME);
-
-    // If the total advertisement size exceeds 31 bytes, truncate the name
-    if ((fields.name_len + 2 + 16) > 31) { // 2 bytes for type/length + 16 bytes for UUID
-        fields.name_len = 31 - (2 + 16);   // Adjust name length to fit within the limit
-        fields.name_is_complete = 0;       // Mark as a shortened name
-    } else {
-        fields.name_is_complete = 1; // Mark as a complete name
+    switch (get_firmware_device_type()) {
+    case DEVICE_TYPE_CONTROLLER:
+        fields.name = (uint8_t *)DEVICE_CONTROLLER_NAME;
+        fields.name_len = strlen(DEVICE_CONTROLLER_NAME);
+        break;
+    case DEVICE_TYPE_EGG:
+        fields.name = (uint8_t *)DEVICE_EGG_NAME;
+        fields.name_len = strlen(DEVICE_EGG_NAME);
+        break;
+    default:
+        ESP_LOGE(TAG, "Unknown device type");
+        return;
     }
+
+    // Ensure advertisement fits within 31 bytes: Flags (3) + UUID (18) + Name (2 + len)
+    if ((3 + 18 + 2 + fields.name_len) > 31) {
+        fields.name_len = 31 - (3 + 18 + 2); // Max 8 bytes for name
+        fields.name_is_complete = 0;
+    } else {
+        fields.name_is_complete = 1;
+    }
+
+    // Log the advertisement size
+    ESP_LOGI(TAG, "Adv size: Flags=3, UUID=18, Name=%d+%d, Total=%d", fields.name_len, 2, 3 + 18 + 2 + fields.name_len);
 
     // Set the advertisement data
     rc = ble_gap_adv_set_fields(&fields);
@@ -188,10 +205,4 @@ void adv_init(void) {
 
     // Start advertising
     start_advertising();
-}
-
-void gap_init(void) {
-    // Initialize GAP service
-    ble_svc_gap_init();
-    ble_svc_gap_device_name_set(DEVICE_NAME);
 }
