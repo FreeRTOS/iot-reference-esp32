@@ -31,83 +31,85 @@
 #include <sdkconfig.h>
 
 #if CONFIG_GRI_RUN_QUALIFICATION_TEST
-    #include "qualification_wrapper_config.h"
+#include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
 /* *INDENT-OFF* */
-    #ifdef __cplusplus
-        extern "C" {
-    #endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* *INDENT-ON* */
 
 /**
  * @brief The thing name of the device.
  */
-#define otademoconfigCLIENT_IDENTIFIER           ( CONFIG_GRI_THING_NAME )
+#define otademoconfigCLIENT_IDENTIFIER (CONFIG_GRI_THING_NAME)
 
 /**
  * @brief The maximum size of the file paths used in the demo.
  */
-#define otademoconfigMAX_FILE_PATH_SIZE          ( CONFIG_GRI_OTA_DEMO_MAX_FILE_PATH_SIZE )
+#define otademoconfigMAX_FILE_PATH_SIZE (CONFIG_GRI_OTA_DEMO_MAX_FILE_PATH_SIZE)
 
 /**
  * @brief The maximum size of the stream name required for downloading update file
  * from streaming service.
  */
-#define otademoconfigMAX_STREAM_NAME_SIZE        ( CONFIG_GRI_OTA_DEMO_MAX_STREAM_NAME_SIZE )
+#define otademoconfigMAX_STREAM_NAME_SIZE (CONFIG_GRI_OTA_DEMO_MAX_STREAM_NAME_SIZE)
 
 /**
  * @brief The delay used in the OTA demo task to periodically output the OTA
  * statistics like number of packets received, dropped, processed and queued per connection.
  */
-#define otademoconfigTASK_DELAY_MS               ( CONFIG_GRI_OTA_DEMO_TASK_DELAY_MS )
+#define otademoconfigTASK_DELAY_MS (CONFIG_GRI_OTA_DEMO_TASK_DELAY_MS)
 
 /**
  * @brief The maximum time for which OTA demo waits for an MQTT operation to be complete.
- * This involves receiving an acknowledgment for broker for SUBSCRIBE, UNSUBSCRIBE and non
- * QOS0 publishes.
  */
-#define otademoconfigMQTT_TIMEOUT_MS             ( CONFIG_GRI_OTA_DEMO_MQTT_TIMEOUT_MS )
+#define otademoconfigMQTT_TIMEOUT_MS (CONFIG_GRI_OTA_DEMO_MQTT_TIMEOUT_MS)
 
 /**
  * @brief The task priority of OTA agent task.
  */
-#define otademoconfigAGENT_TASK_PRIORITY         ( CONFIG_GRI_OTA_DEMO_AGENT_TASK_PRIORITY )
+#define otademoconfigAGENT_TASK_PRIORITY (CONFIG_GRI_OTA_DEMO_AGENT_TASK_PRIORITY)
 
 /**
  * @brief The stack size of OTA agent task.
  */
-#define otademoconfigAGENT_TASK_STACK_SIZE       ( CONFIG_GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE )
+#define otademoconfigAGENT_TASK_STACK_SIZE (CONFIG_GRI_OTA_DEMO_AGENT_TASK_STACK_SIZE)
 
 /**
  * @brief The task priority of the OTA demo task.
  */
-#define otademoconfigDEMO_TASK_PRIORITY          ( CONFIG_GRI_OTA_DEMO_DEMO_TASK_PRIORITY )
+#define otademoconfigDEMO_TASK_PRIORITY (CONFIG_GRI_OTA_DEMO_DEMO_TASK_PRIORITY)
 
 /**
  * @brief The task stack size of the OTA demo task.
  */
-#define otademoconfigDEMO_TASK_STACK_SIZE        ( CONFIG_GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE )
+#define otademoconfigDEMO_TASK_STACK_SIZE (CONFIG_GRI_OTA_DEMO_DEMO_TASK_STACK_SIZE)
 
 /**
  * @brief The number of OTA data buffer.
  */
-#define otademoconfigMAX_NUM_OTA_DATA_BUFFERS    ( CONFIG_GRI_OTA_MAX_NUM_DATA_BUFFERS )
+#define otademoconfigMAX_NUM_OTA_DATA_BUFFERS (CONFIG_GRI_OTA_MAX_NUM_DATA_BUFFERS)
 
 /**
- * @brief The version for the firmware which is running. OTA agent uses this
- * version number to perform anti-rollback validation. The firmware version for the
- * download image should be higher than the current version, otherwise the new image is
- * rejected in self test phase.
+ * @brief The version for the firmware which is running.
  */
-#define APP_VERSION_MAJOR                        ( CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR )
-#define APP_VERSION_MINOR                        ( CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR )
-#define APP_VERSION_BUILD                        ( CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD )
+#define APP_VERSION_MAJOR (CONFIG_GRI_OTA_DEMO_APP_VERSION_MAJOR)
+#define APP_VERSION_MINOR (CONFIG_GRI_OTA_DEMO_APP_VERSION_MINOR)
+#define APP_VERSION_BUILD (CONFIG_GRI_OTA_DEMO_APP_VERSION_BUILD)
+
+/**
+ * @brief The block size for MQTT file downloader.
+ */
+#ifndef mqttFileDownloader_CONFIG_BLOCK_SIZE
+#define mqttFileDownloader_CONFIG_BLOCK_SIZE 2048U
+#endif
 
 /* *INDENT-OFF* */
-    #ifdef __cplusplus
-        } /* extern "C" */
-    #endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 /* *INDENT-ON* */
 
 #endif /* OTA_OVER_MQTT_DEMO_CONFIG_H */

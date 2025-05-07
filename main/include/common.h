@@ -31,7 +31,7 @@
 #include "nimble/nimble_port_freertos.h"
 
 /* Global vars*/
-static uint8_t own_addr_type;
+// static uint8_t own_addr_type;
 
 /* Defines */
 #define DEVICE_CONTROLLER_NAME "MaHenCtrl"
