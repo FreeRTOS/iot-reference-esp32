@@ -1038,11 +1038,10 @@ static bool sendSuccessMessage( void )
          * Creating the message which contains the status of OTA job.
          * It will be published on the topic created in the previous step.
          */
-        size_t messageBufferLength = Jobs_UpdateMsg( Succeeded,
-                                                     "2",
-                                                     1U,
-                                                     messageBuffer,
-                                                     UPDATE_JOB_MSG_LENGTH );
+        size_t messageBufferLength = snprintf( messageBuffer,
+                                               UPDATE_JOB_MSG_LENGTH,
+                                               "%sSUCCEEDED\"}",
+                                               JOBS_API_STATUS );
 
         result = prvMQTTPublish( topicBuffer,
                                  topicBufferLength,
