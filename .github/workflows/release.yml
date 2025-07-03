@@ -90,6 +90,8 @@ jobs:
           name: ${{ env.repostiory_zip_name }}
           path: zip-check/${{ env.repostiory_zip_name }}
   create-release:
+    permissions:
+      id-token: write
     needs: create-zip
     name: Create Release and Upload Release Asset
     runs-on: ubuntu-latest
@@ -119,3 +121,8 @@ jobs:
           asset_path: ./${{ env.repostiory_zip_name }}
           asset_name: ${{ env.repostiory_zip_name }}
           asset_content_type: application/zip
+      - name: Backup Release Asset
+        uses: FreeRTOS/CI-CD-Github-Actions/artifact-backup@main
+        with:
+          artifact_path: ./${{ env.repostiory_zip_name }}
+          release_tag: ${{ github.event.inputs.version_number }}
