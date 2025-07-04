@@ -1392,6 +1392,19 @@ static void prvOTADemoTask( void * pvParam )
             vTaskDelay( pdMS_TO_TICKS( 100 ) );
         }
 
+        // Subscribe to notify-next
+        char jobNotifyTopic[JOBS_API_MAX_LENGTH(strlen(otademoconfigCLIENT_IDENTIFIER))];
+        size_t jobNotifyTopicLen = 0;
+
+        JobsStatus_t status = Jobs_GetTopic( jobNotifyTopic,
+                                             sizeof(jobNotifyTopic),
+                                             otademoconfigCLIENT_IDENTIFIER,
+                                             strlen(otademoconfigCLIENT_IDENTIFIER),
+                                             JobsNextJobChanged,
+                                             &jobNotifyTopicLen);
+
+        prvMQTTSubscribe( jobNotifyTopic, (uint16_t) jobNotifyTopicLen, 1 );
+
         while( otaAgentState != OtaAgentStateStopped )
         {
             processOTAEvents();
