@@ -130,6 +130,9 @@ static BaseType_t prvInitializeNetworkContext( void )
     /* This is used to store the error return of ESP-IDF functions. */
     esp_err_t xEspErrRet;
 
+    /* This is used as a temporary buffer for anything */
+    char *variableBuffer = NULL;
+
     /* Verify that the MQTT endpoint and thing name have been configured by the
      * user. */
     if( strlen( CONFIG_GRI_MQTT_ENDPOINT ) == 0 )
@@ -155,8 +158,9 @@ static BaseType_t prvInitializeNetworkContext( void )
 
     /* Get the device certificate from esp_secure_crt_mgr and put into network
      * context. */
-    xEspErrRet = esp_secure_cert_get_device_cert( &xNetworkContext.pcClientCert,
+    xEspErrRet = esp_secure_cert_get_device_cert( &variableBuffer,
                                                   &xNetworkContext.pcClientCertSize );
+    xNetworkContext.pcClientCert = variableBuffer;
 
     if( xEspErrRet == ESP_OK )
     {
@@ -208,8 +212,10 @@ static BaseType_t prvInitializeNetworkContext( void )
             xRet = pdFAIL;
         }
     #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-        xEspErrRet = esp_secure_cert_get_priv_key( &xNetworkContext.pcClientKey,
+        xEspErrRet = esp_secure_cert_get_priv_key( &variableBuffer,
                                                    &xNetworkContext.pcClientKeySize );
+        
+        xNetworkContext.pcClientKey = variableBuffer;
 
         if( xEspErrRet == ESP_OK )
         {
