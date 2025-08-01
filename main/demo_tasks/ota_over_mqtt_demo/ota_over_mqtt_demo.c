@@ -1358,6 +1358,10 @@ static void prvOTADemoTask( void * pvParam )
     /* OTA Agent state returned from calling OTA_GetAgentState.*/
     OtaState_t state = OtaAgentStateStopped;
 
+    /* Buffer to hold the notify-next topic. */
+    char jobNotifyTopic[ JOBS_API_MAX_LENGTH( strlen( otademoconfigCLIENT_IDENTIFIER ) ) ];
+    size_t jobNotifyTopicLen = 0;
+
     ESP_LOGI( TAG, "OTA over MQTT demo, Application version %u.%u.%u",
               appFirmwareVersion.u.x.major,
               appFirmwareVersion.u.x.minor,
@@ -1391,6 +1395,16 @@ static void prvOTADemoTask( void * pvParam )
         {
             vTaskDelay( pdMS_TO_TICKS( 100 ) );
         }
+
+        /* Subscribe to notify-next */
+        JobsStatus_t status = Jobs_GetTopic( jobNotifyTopic,
+                                             sizeof( jobNotifyTopic ),
+                                             otademoconfigCLIENT_IDENTIFIER,
+                                             strlen( otademoconfigCLIENT_IDENTIFIER ),
+                                             JobsNextJobChanged,
+                                             &jobNotifyTopicLen );
+
+        prvMQTTSubscribe( jobNotifyTopic, ( uint16_t ) jobNotifyTopicLen, 1 );
 
         while( otaAgentState != OtaAgentStateStopped )
         {
