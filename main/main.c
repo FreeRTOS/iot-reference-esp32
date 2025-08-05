@@ -131,7 +131,7 @@ static BaseType_t prvInitializeNetworkContext( void )
     esp_err_t xEspErrRet;
 
     /* This is used as a temporary buffer for anything */
-    char *variableBuffer = NULL;
+    char * variableBuffer = NULL;
 
     /* Verify that the MQTT endpoint and thing name have been configured by the
      * user. */
@@ -214,7 +214,7 @@ static BaseType_t prvInitializeNetworkContext( void )
     #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
         xEspErrRet = esp_secure_cert_get_priv_key( &variableBuffer,
                                                    &xNetworkContext.pcClientKeySize );
-        
+
         xNetworkContext.pcClientKey = variableBuffer;
 
         if( xEspErrRet == ESP_OK )
