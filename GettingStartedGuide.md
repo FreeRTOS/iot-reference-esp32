@@ -640,7 +640,7 @@ disabled when running the qualification test. You can change the log level by
      - Set `Endpoint for MQTT Broker to use` to your AWS IoT endpoint
      - Set `Client Identifier for MQTT Test`
    - Build and run.
-   - If you have memory leaks reported from unity, it could be due to retained messages. Try clearing the retained messages. Install any MQTT client library (e.g. mosquitto CLI) and publish a message to the test topic with an empty message.
+   - The test requires that there be no retained message associated with the test topic. If you receive memory leak reports from Unity, it could be due to retained messages. Try clearing the retained messages. Install any MQTT client library (e.g. mosquitto CLI) and publish a message to the test topic with an empty message.
       ```
       mosquitto_pub.exe \
         --cert <device-certificate> \
